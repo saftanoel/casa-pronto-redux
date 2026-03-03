@@ -38,7 +38,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <a href="#home" className="flex items-center gap-3">
-            <img src={logo} alt="Casa Pronto Logo" className="h-12 md:h-14 w-auto" />
+            <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-20 w-auto object-contain" />
             <div className="hidden sm:block">
               <h1 className="font-serif font-bold text-lg leading-tight">Casa Pronto</h1>
               <p className="text-xs text-muted-foreground">Imobiliare</p>
