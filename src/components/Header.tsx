@@ -132,7 +132,6 @@ const Header = () => {
             <Button variant="ghost" size="icon" className="text-foreground/70" onClick={handleSearchToggle}>
               {isSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
             </Button>
-            <Button>Publică Anunț</Button>
           </div>
 
           {/* Mobile menu button */}
