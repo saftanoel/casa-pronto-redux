@@ -35,7 +35,7 @@ const Header = () => {
 
       {/* Main nav */}
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-16 md:h-20 relative">
           {/* Logo */}
           <a href="#home" className="flex items-center gap-3">
             <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-20 w-auto object-contain" />
