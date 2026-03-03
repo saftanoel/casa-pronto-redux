@@ -156,6 +156,10 @@ const PropertiesPage = () => {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // React to URL category changes (from footer links)
   useEffect(() => {
     const urlCategory = searchParams.get("category") || "";
