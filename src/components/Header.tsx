@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Menu, X, Phone, Mail, Search } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { filters, setFilter, scrollToProperties } = useSearch();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const navLinks = [
     { label: "Acasă", href: "/" },
@@ -30,6 +32,39 @@ const Header = () => {
   const handleSearchChange = (value: string) => {
     setFilter("searchQuery", value);
     scrollToProperties();
+  };
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    if (href === "/") {
+      // "Acasă" - go to home and scroll to top
+      e.preventDefault();
+      if (location.pathname === "/") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        navigate("/");
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+      }
+    } else if (href.startsWith("/#")) {
+      // Hash links like /#about, /#contact
+      e.preventDefault();
+      const hash = href.substring(1); // e.g. "#about"
+      if (location.pathname === "/") {
+        const el = document.querySelector(hash);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      } else {
+        navigate("/" + hash);
+      }
+    }
+  };
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      navigate("/");
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+    }
   };
 
   return (
