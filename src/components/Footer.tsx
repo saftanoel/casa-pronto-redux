@@ -32,7 +32,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-primary text-primary-foreground">
+    <footer className="bg-foreground text-background">
       {/* Main footer */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -40,18 +40,18 @@ const Footer = () => {
           <div>
             <h4 className="font-serif font-semibold text-lg mb-5">Contact</h4>
             <ul className="space-y-4 text-sm">
-              <li className="flex items-start gap-2">
-                <span className="text-primary-foreground/80">📍</span>
-                <span className="text-primary-foreground/80">{links.contact.address}</span>
+              <li className="flex items-start gap-2 text-background/70">
+                <span>📍</span>
+                <span>{links.contact.address}</span>
               </li>
               <li>
-                <a href={`tel:${links.contact.phone}`} className="flex items-start gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                <a href={`tel:${links.contact.phone}`} className="flex items-start gap-2 text-background/70 hover:text-primary transition-colors">
                   <span>📞</span>
                   <span>{links.contact.phone}</span>
                 </a>
               </li>
               <li>
-                <a href={`mailto:${links.contact.email}`} className="flex items-start gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                <a href={`mailto:${links.contact.email}`} className="flex items-start gap-2 text-background/70 hover:text-primary transition-colors">
                   <span>✉️</span>
                   <span>{links.contact.email}</span>
                 </a>
@@ -62,7 +62,7 @@ const Footer = () => {
           {/* Cine suntem */}
           <div>
             <h4 className="font-serif font-semibold text-lg mb-5">Cine suntem ?</h4>
-            <p className="text-primary-foreground/80 text-sm leading-relaxed">
+            <p className="text-background/70 text-sm leading-relaxed">
               Casa Pronto, o agentie imobiliara din Alba Iulia lansata pe piata imobiliara in anul 2004, si-a prefigurat cu fermitate inca de la inceput standardele de inalta clasa pentru calitatea serviciilor si produselor oferite.
             </p>
           </div>
@@ -70,7 +70,7 @@ const Footer = () => {
           {/* De ce noi */}
           <div>
             <h4 className="font-serif font-semibold text-lg mb-5">De ce noi ?</h4>
-            <p className="text-primary-foreground/80 text-sm leading-relaxed">
+            <p className="text-background/70 text-sm leading-relaxed">
               Experienta in domeniul imobiliar si partenerii de incredere ai agentiei fac din serviciile noastre oferta ideala pentru satisfacerea cererilor dumneavoastra.
             </p>
           </div>
@@ -83,7 +83,7 @@ const Footer = () => {
                 <li key={link.label}>
                   <Link
                     to={`/proprietati?category=${link.category}`}
-                    className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm"
+                    className="text-background/70 hover:text-primary transition-colors text-sm"
                   >
                     {link.label}
                   </Link>
@@ -95,9 +95,9 @@ const Footer = () => {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-primary-foreground/10">
+      <div className="border-t border-background/10">
         <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-primary-foreground/50 text-sm text-center sm:text-left">
+          <p className="text-background/50 text-sm text-center sm:text-left">
             © 2024 Casa Pronto Imobiliare. Toate drepturile rezervate.
           </p>
           
@@ -107,7 +107,7 @@ const Footer = () => {
                 key={social.label}
                 href={social.href}
                 aria-label={social.label}
-                className="w-9 h-9 rounded-lg bg-primary-foreground/10 hover:bg-primary-foreground/20 flex items-center justify-center transition-colors"
+                className="w-9 h-9 rounded-lg bg-background/10 hover:bg-primary flex items-center justify-center transition-colors"
               >
                 <social.icon className="h-4 w-4" />
               </a>
@@ -121,7 +121,7 @@ const Footer = () => {
         onClick={scrollToTop}
         variant="default"
         size="icon"
-        className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 bg-foreground text-background hover:bg-foreground/90"
+        className="fixed bottom-6 right-6 rounded-full shadow-lg z-50"
       >
         <ArrowUp className="h-5 w-5" />
       </Button>
