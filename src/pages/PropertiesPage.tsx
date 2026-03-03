@@ -238,7 +238,7 @@ const PropertiesPage = () => {
     }
 
     return result;
-  }, [activeTab, zone, category, searchQuery, sortBy]);
+  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy]);
 
   const handleSearch = () => {
     // Already filtering in real-time via useMemo
