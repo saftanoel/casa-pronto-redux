@@ -160,7 +160,7 @@ const PropertiesPage = () => {
   const [price, setPrice] = useState(searchParams.get("price") || "");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
