@@ -8,7 +8,9 @@ import property6 from "@/assets/property-6.jpg";
 export interface Property {
   id: number;
   image: string;
+  images: string[];
   title: string;
+  description: string;
   location: string;
   zone: string;
   price: string;
@@ -19,13 +21,17 @@ export interface Property {
   type: "Vânzare" | "Închiriere" | "Vândut";
   propertyType: string;
   isNew: boolean;
+  features: string[];
+  agent: string;
 }
 
 export const allProperties: Property[] = [
   {
     id: 1,
     image: property1,
+    images: [property1, property2, property3],
     title: "Apartament Modern cu 3 Camere",
+    description: "Agentia Imobiliară Casa Pronto oferă spre vânzare un apartament modern cu 3 camere, situat în zona Centru, Alba Iulia.\n\n- Suprafața imobilului este de 85 mp.\n- Apartamentul dispune de 2 băi, bucătărie separată și balcon spațios.\n- Finisaje de calitate superioară.\n- Centrală termică proprie.\n- Loc de parcare inclus.\n\nPreț vânzare: 89.000 Euro.",
     location: "Centru, Alba Iulia",
     zone: "centru",
     price: "89.000 €",
@@ -36,11 +42,15 @@ export const allProperties: Property[] = [
     type: "Vânzare",
     propertyType: "apartamente",
     isNew: true,
+    features: ["Centrală termică", "Balcon", "Loc parcare", "Finisaje premium"],
+    agent: "Baba Elena",
   },
   {
     id: 2,
     image: property2,
+    images: [property2, property1, property4],
     title: "Apartament Lux cu Bucătărie Open Space",
+    description: "Agentia Imobiliară Casa Pronto oferă spre vânzare un apartament de lux cu bucătărie open space, situat în zona Cetate, Alba Iulia.\n\n- Suprafața imobilului este de 65 mp.\n- Design modern cu materiale premium.\n- Bucătărie complet utilată.\n- Vedere panoramică.\n\nPreț vânzare: 120.000 Euro.",
     location: "Cetate, Alba Iulia",
     zone: "cetate",
     price: "120.000 €",
@@ -51,11 +61,15 @@ export const allProperties: Property[] = [
     type: "Vânzare",
     propertyType: "apartamente",
     isNew: false,
+    features: ["Bucătărie open space", "Vedere panoramică", "Materiale premium"],
+    agent: "Baba Elena",
   },
   {
     id: 3,
     image: property3,
+    images: [property3, property5, property6],
     title: "Casă Familială cu Grădină",
+    description: "Agentia Imobiliară Casa Pronto oferă spre vânzare o casă familială cu grădină, situată în zona Ampoi, Alba Iulia.\n\n- Suprafața imobilului este de 180 mp.\n- Grădină spațioasă de 300 mp.\n- 4 camere, 2 băi.\n- Garaj pentru 2 mașini.\n- Centrală termică proprie.\n\nPreț vânzare: 175.000 Euro.",
     location: "Ampoi, Alba Iulia",
     zone: "ampoi",
     price: "175.000 €",
@@ -66,11 +80,15 @@ export const allProperties: Property[] = [
     type: "Vânzare",
     propertyType: "case",
     isNew: true,
+    features: ["Grădină 300mp", "Garaj 2 mașini", "Centrală termică", "Pivniță"],
+    agent: "Baba Elena",
   },
   {
     id: 4,
     image: property4,
+    images: [property4, property1, property2],
     title: "Penthouse cu Vedere Panoramică",
+    description: "Agentia Imobiliară Casa Pronto oferă spre închiriere un penthouse cu vedere panoramică, situat în zona Centru, Alba Iulia.\n\n- Suprafața imobilului este de 120 mp.\n- Terasă de 40 mp.\n- 3 camere, 2 băi.\n- Complet mobilat și utilat.\n\nPreț închiriere: 1.200 Euro/lună.",
     location: "Centru, Alba Iulia",
     zone: "centru",
     price: "1.200 €",
@@ -81,11 +99,15 @@ export const allProperties: Property[] = [
     type: "Închiriere",
     propertyType: "apartamente",
     isNew: false,
+    features: ["Terasă 40mp", "Mobilat complet", "Vedere panoramică", "Lift"],
+    agent: "Baba Elena",
   },
   {
     id: 5,
     image: property5,
+    images: [property5, property6, property1],
     title: "Garsonieră Modernă",
+    description: "Agentia Imobiliară Casa Pronto oferă spre vânzare o garsonieră modernă, situată în zona Partoș, Alba Iulia.\n\n- Suprafața imobilului este de 38 mp.\n- Renovată recent.\n- Mobilată și utilată.\n- Centrală termică.\n\nPreț vânzare: 45.000 Euro.",
     location: "Partoș, Alba Iulia",
     zone: "partos",
     price: "45.000 €",
@@ -96,11 +118,15 @@ export const allProperties: Property[] = [
     type: "Vânzare",
     propertyType: "garsoniere",
     isNew: false,
+    features: ["Renovată recent", "Mobilată", "Centrală termică"],
+    agent: "Baba Elena",
   },
   {
     id: 6,
     image: property6,
+    images: [property6, property2, property4],
     title: "Spațiu Comercial Premium",
+    description: "Agentia Imobiliară Casa Pronto oferă spre închiriere un spațiu comercial premium, situat în zona Centru, Alba Iulia.\n\n- Suprafața imobilului este de 250 mp.\n- Arteră principală.\n- Vad comercial excelent.\n- Vitrine generoase.\n\nPreț închiriere: 2.500 Euro/lună.",
     location: "Centru, Alba Iulia",
     zone: "centru",
     price: "2.500 €",
@@ -111,11 +137,15 @@ export const allProperties: Property[] = [
     type: "Închiriere",
     propertyType: "spatii-comerciale",
     isNew: true,
+    features: ["Arteră principală", "Vad comercial", "Vitrine", "Parcare"],
+    agent: "Baba Elena",
   },
   {
     id: 7,
     image: property1,
+    images: [property1, property3, property5],
     title: "Apartament 2 Camere Renovat",
+    description: "Agentia Imobiliară Casa Pronto oferă spre vânzare un apartament cu 2 camere, renovat, situat în zona Ampoi, Alba Iulia.\n\n- Suprafața imobilului este de 55 mp.\n- Renovat complet în 2023.\n- Centrală termică proprie.\n\nPreț vânzare: 67.000 Euro.",
     location: "Ampoi, Alba Iulia",
     zone: "ampoi",
     price: "67.000 €",
@@ -126,11 +156,15 @@ export const allProperties: Property[] = [
     type: "Vânzare",
     propertyType: "apartamente",
     isNew: false,
+    features: ["Renovat 2023", "Centrală termică", "Izolație termică"],
+    agent: "Baba Elena",
   },
   {
     id: 8,
     image: property3,
+    images: [property3, property1, property6],
     title: "Vilă cu Piscină",
+    description: "Agentia Imobiliară Casa Pronto oferă spre vânzare o vilă cu piscină, situată în zona Oarda, Alba Iulia.\n\n- Suprafața imobilului este de 280 mp.\n- Teren de 500 mp.\n- Piscină exterioară.\n- 5 camere, 3 băi.\n- Garaj dublu.\n\nPreț vânzare: 320.000 Euro.",
     location: "Oarda, Alba Iulia",
     zone: "oarda",
     price: "320.000 €",
@@ -141,11 +175,15 @@ export const allProperties: Property[] = [
     type: "Vânzare",
     propertyType: "vile",
     isNew: true,
+    features: ["Piscină", "Teren 500mp", "Garaj dublu", "Smart home"],
+    agent: "Baba Elena",
   },
   {
     id: 9,
     image: property2,
+    images: [property2, property4, property6],
     title: "Birou Modern Open Space",
+    description: "Agentia Imobiliară Casa Pronto oferă spre închiriere un birou modern open space, situat în zona Centru, Alba Iulia.\n\n- Suprafața imobilului este de 90 mp.\n- Open space modern.\n- Aer condiționat.\n- Internet fibră optică.\n\nPreț închiriere: 800 Euro/lună.",
     location: "Centru, Alba Iulia",
     zone: "centru",
     price: "800 €",
@@ -156,11 +194,15 @@ export const allProperties: Property[] = [
     type: "Închiriere",
     propertyType: "birouri",
     isNew: false,
+    features: ["Open space", "Aer condiționat", "Fibră optică", "Parcare"],
+    agent: "Baba Elena",
   },
   {
     id: 10,
     image: property4,
+    images: [property4, property2, property5],
     title: "Apartament Vândut Recent",
+    description: "Acest apartament a fost vândut prin intermediul Agenției Imobiliare Casa Pronto.\n\n- Suprafața imobilului este de 70 mp.\n- 2 camere, 1 baie.\n- Zona Cetate.\n\nPreț vânzare: 95.000 Euro.",
     location: "Cetate, Alba Iulia",
     zone: "cetate",
     price: "95.000 €",
@@ -171,11 +213,15 @@ export const allProperties: Property[] = [
     type: "Vândut",
     propertyType: "apartamente",
     isNew: false,
+    features: ["Centrală termică", "Balcon", "Renovar"],
+    agent: "Baba Elena",
   },
   {
     id: 11,
     image: property5,
+    images: [property5, property3, property1],
     title: "Teren Intravilan 1000mp",
+    description: "Agentia Imobiliară Casa Pronto oferă spre vânzare un teren intravilan de 1000 mp, situat în zona Ciugud, Alba Iulia.\n\n- Suprafața terenului este de 1000 mp.\n- Toate utilitățile la poartă.\n- PUZ aprobat.\n- Acces asfaltat.\n\nPreț vânzare: 35.000 Euro.",
     location: "Ciugud, Alba Iulia",
     zone: "ciugud",
     price: "35.000 €",
@@ -186,11 +232,15 @@ export const allProperties: Property[] = [
     type: "Vânzare",
     propertyType: "terenuri",
     isNew: true,
+    features: ["Utilități la poartă", "PUZ aprobat", "Acces asfaltat"],
+    agent: "Baba Elena",
   },
   {
     id: 12,
     image: property6,
+    images: [property6, property4, property2],
     title: "Casă Tradițională Renovată",
+    description: "Agentia Imobiliară Casa Pronto a intermediat vânzarea unei case tradiționale renovate, situată în zona Sebeș.\n\n- Suprafața imobilului este de 150 mp.\n- 3 camere, 2 băi.\n- Curte de 200 mp.\n- Renovată complet.\n\nPreț vânzare: 145.000 Euro.",
     location: "Sebeș, Alba Iulia",
     zone: "sebes",
     price: "145.000 €",
@@ -201,5 +251,7 @@ export const allProperties: Property[] = [
     type: "Vândut",
     propertyType: "case",
     isNew: false,
+    features: ["Curte 200mp", "Renovată complet", "Centrală termică"],
+    agent: "Baba Elena",
   },
 ];
