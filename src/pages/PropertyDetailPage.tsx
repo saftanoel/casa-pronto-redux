@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { ChevronRight, ChevronLeft, MapPin, Bed, Bath, Square, Phone, Mail, Heart, Share2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import { SearchProvider } from "@/context/SearchContext";
 
 const PropertyDetailPage = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const backToPropertiesUrl = `/proprietati${location.search}`;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -40,7 +42,7 @@ const PropertyDetailPage = () => {
               <h1 className="font-serif text-3xl font-bold mb-4">Proprietatea nu a fost găsită</h1>
               <p className="text-muted-foreground mb-6">Anunțul pe care îl cauți nu există sau a fost eliminat.</p>
               <Button asChild>
-                <Link to="/proprietati">Înapoi la Proprietăți</Link>
+                <Link to={backToPropertiesUrl}>Înapoi la Proprietăți</Link>
               </Button>
             </div>
           </div>
@@ -301,7 +303,7 @@ const PropertyDetailPage = () => {
 
                 {/* Back button */}
                 <Button variant="outline" className="w-full gap-2" asChild>
-                  <Link to="/proprietati">
+                  <Link to={backToPropertiesUrl}>
                     <ArrowLeft className="h-4 w-4" />
                     Înapoi la Proprietăți
                   </Link>
