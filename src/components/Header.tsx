@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { Menu, X, Phone, Mail, Search } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -13,10 +14,10 @@ const Header = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const navLinks = [
-    { label: "Acasă", href: "#home" },
-    { label: "Proprietăți", href: "#properties" },
-    { label: "Despre Noi", href: "#about" },
-    { label: "Contact", href: "#contact" },
+    { label: "Acasă", href: "/" },
+    { label: "Proprietăți", href: "/proprietati" },
+    { label: "Despre Noi", href: "/#about" },
+    { label: "Contact", href: "/#contact" },
   ];
 
   const handleSearchToggle = () => {
@@ -54,26 +55,31 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20 relative">
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3">
             <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-20 w-auto object-contain" />
             <div className="hidden sm:block">
               <h1 className="font-serif font-bold text-lg leading-tight">Casa Pronto</h1>
               <p className="text-xs text-muted-foreground">Imobiliare</p>
             </div>
-          </a>
+          </Link>
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
-              >
-                {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isRoute = link.href.startsWith("/") && !link.href.startsWith("/#");
+              const El = isRoute ? Link : "a";
+              const props = isRoute ? { to: link.href } : { href: link.href };
+              return (
+                <El
+                  key={link.href}
+                  {...(props as any)}
+                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
+                >
+                  {link.label}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                </El>
+              );
+            })}
           </nav>
 
           {/* CTA & Search */}
@@ -120,16 +126,21 @@ const Header = () => {
             onChange={(e) => handleSearchChange(e.target.value)}
             className="mb-2"
           />
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setIsMenuOpen(false)}
-              className="py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+          {navLinks.map((link) => {
+            const isRoute = link.href.startsWith("/") && !link.href.startsWith("/#");
+            const El = isRoute ? Link : "a";
+            const props = isRoute ? { to: link.href } : { href: link.href };
+            return (
+              <El
+                key={link.href}
+                {...(props as any)}
+                onClick={() => setIsMenuOpen(false)}
+                className="py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
+              >
+                {link.label}
+              </El>
+            );
+          })}
           <Button className="mt-2 w-full">Publică Anunț</Button>
         </nav>
       </div>
