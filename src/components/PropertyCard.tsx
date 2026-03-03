@@ -103,14 +103,11 @@ const PropertyCard = ({
               <Square className="h-4 w-4" />
               <span>{area} mp</span>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-auto h-8 w-8 rounded-full hover:bg-primary hover:text-primary-foreground"
-              onClick={(e) => e.preventDefault()}
+            <span
+              className="ml-auto h-8 w-8 rounded-full hover:bg-primary hover:text-primary-foreground flex items-center justify-center transition-colors"
             >
               <ArrowRight className="h-4 w-4" />
-            </Button>
+            </span>
           </div>
         </div>
       </article>
