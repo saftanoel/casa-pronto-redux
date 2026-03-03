@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, MapPin, Home, Building2, Ruler, Euro } from "lucide-react";
+import { Search, MapPin, Home, Building2, Ruler, Euro, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -119,7 +119,12 @@ const Hero = () => {
             {/* Search form - Row 1 */}
             <div className="relative">
             {isFilterLoading && (
-              <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-20 rounded-lg transition-opacity duration-100" />
+              <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-20 rounded-lg flex items-center justify-center animate-fade-in">
+                <div className="flex items-center gap-2 bg-background/90 px-4 py-2 rounded-full shadow-md">
+                  <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                  <span className="text-sm font-medium text-foreground/80">Se încarcă</span>
+                </div>
+              </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
               <div className="relative">
