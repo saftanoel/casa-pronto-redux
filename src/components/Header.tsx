@@ -36,7 +36,6 @@ const Header = () => {
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
     if (href === "/") {
-      // "Acasă" - go to home and scroll to top
       e.preventDefault();
       if (location.pathname === "/") {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -45,15 +44,18 @@ const Header = () => {
         setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
       }
     } else if (href.startsWith("/#")) {
-      // Hash links like /#about, /#contact
       e.preventDefault();
-      const hash = href.substring(1); // e.g. "#about"
+      const hash = href.substring(1);
       if (location.pathname === "/") {
         const el = document.querySelector(hash);
         if (el) el.scrollIntoView({ behavior: "smooth" });
       } else {
         navigate("/" + hash);
       }
+    } else {
+      // Regular route like /proprietati
+      e.preventDefault();
+      navigate(href);
     }
   };
 
