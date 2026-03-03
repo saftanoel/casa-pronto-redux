@@ -99,7 +99,7 @@ const PropertyDetailPage = () => {
 
                 {/* Property Details Card */}
                 <div className="bg-card rounded-xl border border-border p-6 mb-6">
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4 overflow-x-auto scrollbar-hide -mx-6 px-6">
                     <span className="flex items-center gap-1.5">
                       <span className="font-medium text-foreground">Categorie</span>
                       <Link to={`/proprietati?category=${property.propertyType}`} className="text-primary hover:underline">{getCategoryLabel()}</Link>
