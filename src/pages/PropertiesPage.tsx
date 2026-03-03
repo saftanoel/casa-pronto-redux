@@ -279,16 +279,16 @@ const PropertiesPage = () => {
         <div className="bg-background border-b border-border sticky top-[calc(2rem+5rem)] z-30">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between py-3 gap-4">
-              <div className="flex gap-0">
+              <div className="flex gap-1.5 bg-muted/40 p-1 rounded-xl">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "px-5 py-2.5 text-sm font-semibold tracking-wide transition-all border-b-2",
+                      "px-5 py-2 text-sm font-medium tracking-wider rounded-lg transition-all duration-200",
                       activeTab === tab.id
-                        ? "border-primary text-primary bg-accent/50"
-                        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "text-muted-foreground hover:text-foreground hover:bg-background/80"
                     )}
                   >
                     {tab.label}
