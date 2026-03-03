@@ -14,6 +14,7 @@ import { SearchProvider } from "@/context/SearchContext";
 const PropertyDetailPage = () => {
   const { id } = useParams();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const backToPropertiesUrl = `/proprietati${location.search}`;
 
   useEffect(() => {
@@ -315,6 +316,27 @@ const PropertyDetailPage = () => {
         </div>
 
         <Footer />
+
+        {/* Mobile Sticky Contact Bar */}
+        {isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border shadow-[0_-4px_20px_-4px_hsl(0_0%_0%/0.1)] p-3 flex gap-3 md:hidden">
+            <Button className="flex-1 gap-2 h-12 text-base" asChild>
+              <a href="tel:0740197476">
+                <Phone className="h-5 w-5" />
+                Sună Acum
+              </a>
+            </Button>
+            <Button variant="outline" className="flex-1 gap-2 h-12 text-base border-primary/30 text-primary hover:bg-accent" asChild>
+              <a href="mailto:casa_pronto@yahoo.com">
+                <Mail className="h-5 w-5" />
+                Email
+              </a>
+            </Button>
+          </div>
+        )}
+
+        {/* Spacer for sticky bar on mobile */}
+        {isMobile && <div className="h-[72px] md:hidden" />}
       </div>
     </SearchProvider>
   );
