@@ -15,6 +15,7 @@ const PropertyDetailPage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setActiveImage(0);
   }, [id]);
   const property = allProperties.find((p) => p.id === Number(id));
   const [activeImage, setActiveImage] = useState(0);
