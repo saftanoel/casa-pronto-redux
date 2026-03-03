@@ -90,13 +90,13 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20 relative">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
+          <a href="/" onClick={handleLogoClick} className="flex items-center gap-3 cursor-pointer">
             <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-20 w-auto object-contain" />
             <div className="hidden sm:block">
               <h1 className="font-serif font-bold text-lg leading-tight">Casa Pronto</h1>
               <p className="text-xs text-muted-foreground">Imobiliare</p>
             </div>
-          </Link>
+          </a>
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
