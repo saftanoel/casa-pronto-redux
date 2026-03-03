@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, MapPin, Home, Building2, Ruler } from "lucide-react";
+import { Search, MapPin, Home, Building2, Ruler, Euro } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -182,13 +182,32 @@ const Hero = () => {
                 </Select>
               </div>
 
-              <div className="lg:col-start-3">
+              <div className="relative">
+                <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                <Select>
+                  <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
+                    <SelectValue placeholder="Preț" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sub-25000">Sub 25,000 €</SelectItem>
+                    <SelectItem value="25000-50000">25,000 - 50,000 €</SelectItem>
+                    <SelectItem value="50000-75000">50,000 - 75,000 €</SelectItem>
+                    <SelectItem value="75000-100000">75,000 - 100,000 €</SelectItem>
+                    <SelectItem value="100000-150000">100,000 - 150,000 €</SelectItem>
+                    <SelectItem value="150000-200000">150,000 - 200,000 €</SelectItem>
+                    <SelectItem value="200000-300000">200,000 - 300,000 €</SelectItem>
+                    <SelectItem value="peste-300000">Peste 300,000 €</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Button className="h-12 w-full gap-2">
                   <Search className="h-4 w-4" />
                   Caută Anunțuri
                 </Button>
+              </div>
             </div>
-          </div>
             </div>
           </div>
 
