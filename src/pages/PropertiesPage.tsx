@@ -358,38 +358,8 @@ const PropertiesPage = () => {
         <div className="flex-1 bg-background py-8">
           <div className="container mx-auto px-4">
             <div className="flex flex-col lg:flex-row gap-8">
-              {/* Property List */}
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-6">
-                  {filteredProperties.length} proprietăți găsite
-                </p>
-
-                {filteredProperties.length > 0 ? (
-                  viewMode === "list" ? (
-                    <div className="flex flex-col gap-6">
-                      {filteredProperties.map((property) => (
-                        <PropertyRow key={property.id} property={property} search={currentSearch} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {filteredProperties.map((property) => (
-                        <PropertyGrid key={property.id} property={property} search={currentSearch} />
-                      ))}
-                    </div>
-                  )
-                ) : (
-                  <div className="text-center py-20 bg-muted/30 rounded-xl">
-                    <p className="text-muted-foreground text-lg">Nu s-au găsit proprietăți cu filtrele selectate.</p>
-                    <Button variant="outline" className="mt-4" onClick={resetAllFilters}>
-                      Resetează Filtrele
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Sidebar */}
-              <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
+              {/* Sidebar - shows on top on mobile, right side on desktop */}
+              <aside className="w-full lg:w-80 flex-shrink-0 space-y-6 order-first lg:order-last">
                 {/* Filters Card */}
                 <div className="bg-card rounded-xl p-6 shadow-[var(--card-shadow)] border border-border">
                   <h3 className="font-serif font-semibold text-lg mb-5">Filtre</h3>
