@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useLocation } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,8 +44,8 @@ function matchTab(p: Property, tab: FilterTab): boolean {
   }
 }
 
-const PropertyRow = ({ property }: { property: Property }) => (
-  <Link to={`/proprietate/${property.id}`} className="block">
+const PropertyRow = ({ property, search }: { property: Property; search: string }) => (
+  <Link to={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 flex flex-col md:flex-row animate-fade-up">
       <div className="relative md:w-80 aspect-[4/3] md:aspect-auto overflow-hidden flex-shrink-0">
         <img src={property.image} alt={property.title} className="w-full h-full object-cover" />
@@ -100,8 +100,8 @@ const PropertyRow = ({ property }: { property: Property }) => (
   </Link>
 );
 
-const PropertyGrid = ({ property }: { property: Property }) => (
-  <Link to={`/proprietate/${property.id}`} className="block">
+const PropertyGrid = ({ property, search }: { property: Property; search: string }) => (
+  <Link to={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 animate-fade-up">
       <div className="relative aspect-[4/3] overflow-hidden">
         <img src={property.image} alt={property.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
