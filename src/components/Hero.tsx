@@ -105,11 +105,12 @@ const Hero = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select value={filters.zone || undefined} onValueChange={(v) => setFilter("zone", v)}>
+                <Select value={filters.zone || "all"} onValueChange={(v) => setFilter("zone", v === "all" ? "" : v)}>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Zonă" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
+                    <SelectItem value="all">Toate Zonele</SelectItem>
                     {zones.map((zone) => (
                       <SelectItem key={zone} value={zone.toLowerCase().replace(/\s+/g, "-")}>
                         {zone}
@@ -121,11 +122,12 @@ const Hero = () => {
 
               <div className="relative">
                 <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select value={filters.propertyType || undefined} onValueChange={(v) => setFilter("propertyType", v)}>
+                <Select value={filters.propertyType || "all"} onValueChange={(v) => setFilter("propertyType", v === "all" ? "" : v)}>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Tip proprietate" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Toate Tipurile</SelectItem>
                     <SelectItem value="apartamente">Apartamente</SelectItem>
                     <SelectItem value="birouri">Birouri</SelectItem>
                     <SelectItem value="cabana">Cabană</SelectItem>
@@ -144,11 +146,12 @@ const Hero = () => {
 
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select value={filters.rooms || undefined} onValueChange={(v) => setFilter("rooms", v)}>
+                <Select value={filters.rooms || "all"} onValueChange={(v) => setFilter("rooms", v === "all" ? "" : v)}>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Camere" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Toate</SelectItem>
                     <SelectItem value="1">1 cameră</SelectItem>
                     <SelectItem value="2">2 camere</SelectItem>
                     <SelectItem value="3">3 camere</SelectItem>
@@ -162,11 +165,12 @@ const Hero = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="relative">
                 <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select value={filters.area || undefined} onValueChange={(v) => setFilter("area", v)}>
+                <Select value={filters.area || "all"} onValueChange={(v) => setFilter("area", v === "all" ? "" : v)}>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Suprafață" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Toate</SelectItem>
                     {suprafataOptions.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
@@ -179,11 +183,12 @@ const Hero = () => {
               {activeTab !== "vandute" && (
                 <div className="relative">
                   <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                  <Select value={filters.price || undefined} onValueChange={(v) => setFilter("price", v)}>
+                  <Select value={filters.price || "all"} onValueChange={(v) => setFilter("price", v === "all" ? "" : v)}>
                     <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                       <SelectValue placeholder="Preț" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="all">Toate Prețurile</SelectItem>
                       {activeTab === "inchiriere" ? (
                         <>
                           <SelectItem value="sub-200">Sub 200 €/lună</SelectItem>
