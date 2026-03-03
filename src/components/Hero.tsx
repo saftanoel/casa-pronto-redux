@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { Search, MapPin, Home, Building2, Ruler, Euro } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useSearch } from "@/context/SearchContext";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const zones = [
@@ -29,15 +29,17 @@ const suprafataOptions = [
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
 const Hero = () => {
-  const [activeTab, setActiveTab] = useState<FilterTab>("toate");
-  const [isLoading, setIsLoading] = useState(false);
+  const { filters, setFilter, scrollToProperties } = useSearch();
+  const activeTab = filters.tab;
 
   const handleTabChange = (tab: FilterTab) => {
-    if (tab === activeTab) return;
-    setIsLoading(true);
-    setActiveTab(tab);
-    setTimeout(() => setIsLoading(false), 100);
+    setFilter("tab", tab);
   };
+
+  const handleSearch = () => {
+    scrollToProperties();
+  };
+
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "Toate Proprietățile" },
     { id: "cumparare", label: "Cumpărare" },
@@ -100,18 +102,10 @@ const Hero = () => {
 
             {/* Search form - Row 1 */}
             <div className="relative">
-              {isLoading && (
-                <div className="absolute inset-0 z-20 bg-background/60 backdrop-blur-[2px] rounded-xl flex items-center justify-center transition-opacity duration-200">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <span>Se încarcă...</span>
-                  </div>
-                </div>
-              )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select>
+                <Select value={filters.zone || undefined} onValueChange={(v) => setFilter("zone", v)}>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Zonă" />
                   </SelectTrigger>
@@ -127,7 +121,7 @@ const Hero = () => {
 
               <div className="relative">
                 <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select>
+                <Select value={filters.propertyType || undefined} onValueChange={(v) => setFilter("propertyType", v)}>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Tip proprietate" />
                   </SelectTrigger>
@@ -150,7 +144,7 @@ const Hero = () => {
 
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select>
+                <Select value={filters.rooms || undefined} onValueChange={(v) => setFilter("rooms", v)}>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Camere" />
                   </SelectTrigger>
@@ -168,7 +162,7 @@ const Hero = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="relative">
                 <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select>
+                <Select value={filters.area || undefined} onValueChange={(v) => setFilter("area", v)}>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Suprafață" />
                   </SelectTrigger>
@@ -185,7 +179,7 @@ const Hero = () => {
               {activeTab !== "vandute" && (
                 <div className="relative">
                   <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                  <Select>
+                  <Select value={filters.price || undefined} onValueChange={(v) => setFilter("price", v)}>
                     <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                       <SelectValue placeholder="Preț" />
                     </SelectTrigger>
@@ -218,7 +212,7 @@ const Hero = () => {
               )}
 
               <div className={cn(activeTab === "vandute" && "lg:col-start-3")}>
-                <Button className="h-12 w-full gap-2">
+                <Button className="h-12 w-full gap-2" onClick={handleSearch}>
                   <Search className="h-4 w-4" />
                   Caută Anunțuri
                 </Button>
