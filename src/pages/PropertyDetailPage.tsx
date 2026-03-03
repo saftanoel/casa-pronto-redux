@@ -20,12 +20,6 @@ const PropertyDetailPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
-  const property = allProperties.find((p) => p.id === Number(id));
-  const [galleryState, setGalleryState] = useState<{ propertyId: string | undefined; index: number }>({ propertyId: id, index: 0 });
-  const activeImage = galleryState.propertyId === id ? galleryState.index : 0;
-  const setActiveImage = (index: number) => {
-    setGalleryState({ propertyId: id, index });
-  };
 
   const similarProperties = useMemo(() => {
     if (!property) return [];
