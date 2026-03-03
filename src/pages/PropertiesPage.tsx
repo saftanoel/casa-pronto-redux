@@ -175,6 +175,21 @@ const PropertiesPage = () => {
     setPrice(searchParams.get("price") || "");
   }, [searchParams]);
 
+  // Sync local filter state back to URL params
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
+    if (zone) params.set("zone", zone);
+    if (category) params.set("category", category);
+    if (rooms) params.set("rooms", rooms);
+    if (area) params.set("area", area);
+    if (price) params.set("price", price);
+    if (searchQuery) params.set("q", searchQuery);
+    setSearchParams(params, { replace: true });
+  }, [activeTab, zone, category, rooms, area, price, searchQuery]);
+
+  const currentSearch = searchParams.toString() ? `?${searchParams.toString()}` : "";
+
   const resetAllFilters = () => {
     setActiveTab("toate");
     setSearchQuery("");
