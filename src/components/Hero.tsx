@@ -30,7 +30,14 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
 const Hero = () => {
   const [activeTab, setActiveTab] = useState<FilterTab>("toate");
+  const [isLoading, setIsLoading] = useState(false);
 
+  const handleTabChange = (tab: FilterTab) => {
+    if (tab === activeTab) return;
+    setIsLoading(true);
+    setActiveTab(tab);
+    setTimeout(() => setIsLoading(false), 400);
+  };
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "Toate Proprietățile" },
     { id: "cumparare", label: "Cumpărare" },
