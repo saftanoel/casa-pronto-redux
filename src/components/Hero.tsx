@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Search, MapPin, Home, Building2, Ruler, Euro } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -32,11 +33,14 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 const Hero = () => {
   const { filters, setFilter, scrollToProperties } = useSearch();
   const activeTab = filters.tab;
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleTabChange = (tab: FilterTab) => {
+    setIsFilterLoading(true);
     setFilter("tab", tab);
+    setTimeout(() => setIsFilterLoading(false), 100);
   };
 
   const handleSearch = () => {
@@ -101,10 +105,10 @@ const Hero = () => {
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    "flex-1 sm:flex-none px-4 md:px-6 py-2.5 rounded-lg font-medium text-sm transition-all",
+                    "flex-1 sm:flex-none px-4 md:px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200",
                     activeTab === tab.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground hover:bg-muted/80"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-muted text-foreground hover:text-primary hover:bg-primary/10"
                   )}
                 >
                   {tab.label}
@@ -114,6 +118,9 @@ const Hero = () => {
 
             {/* Search form - Row 1 */}
             <div className="relative">
+            {isFilterLoading && (
+              <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-20 rounded-lg transition-opacity duration-100" />
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
