@@ -15,15 +15,15 @@ const zones = [
 ];
 
 const suprafataOptions = [
-  { value: "sub-1000", label: "Sub 1,000" },
-  { value: "1000-2000", label: "1,000 - 2,000" },
-  { value: "2000-3000", label: "2,000 - 3,000" },
-  { value: "3000-4000", label: "3,000 - 4,000" },
-  { value: "4000-5000", label: "4,000 - 5,000" },
-  { value: "5000-6000", label: "5,000 - 6,000" },
-  { value: "6000-7000", label: "6,000 - 7,000" },
-  { value: "7000-8000", label: "7,000 - 8,000" },
-  { value: "peste-8000", label: "Peste 8,000" },
+  { value: "sub-1000", label: "Sub 1,000 m²" },
+  { value: "1000-2000", label: "1,000 - 2,000 m²" },
+  { value: "2000-3000", label: "2,000 - 3,000 m²" },
+  { value: "3000-4000", label: "3,000 - 4,000 m²" },
+  { value: "4000-5000", label: "4,000 - 5,000 m²" },
+  { value: "5000-6000", label: "5,000 - 6,000 m²" },
+  { value: "6000-7000", label: "6,000 - 7,000 m²" },
+  { value: "7000-8000", label: "7,000 - 8,000 m²" },
+  { value: "peste-8000", label: "Peste 8,000 m²" },
 ];
 
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
