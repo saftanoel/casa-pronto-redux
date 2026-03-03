@@ -15,10 +15,13 @@ const PropertyDetailPage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    setActiveImage(0);
   }, [id]);
   const property = allProperties.find((p) => p.id === Number(id));
-  const [activeImage, setActiveImage] = useState(0);
+  const [galleryState, setGalleryState] = useState<{ propertyId: string | undefined; index: number }>({ propertyId: id, index: 0 });
+  const activeImage = galleryState.propertyId === id ? galleryState.index : 0;
+  const setActiveImage = (index: number) => {
+    setGalleryState({ propertyId: id, index });
+  };
 
   const similarProperties = useMemo(() => {
     if (!property) return [];
@@ -99,13 +102,13 @@ const PropertyDetailPage = () => {
                     {property.images.length > 1 && (
                       <>
                         <button
-                          onClick={() => setActiveImage((prev) => (prev === 0 ? property.images.length - 1 : prev - 1))}
+                          onClick={() => setActiveImage(activeImage === 0 ? property.images.length - 1 : activeImage - 1)}
                           className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
                         >
                           <ChevronLeft className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => setActiveImage((prev) => (prev === property.images.length - 1 ? 0 : prev + 1))}
+                          onClick={() => setActiveImage(activeImage === property.images.length - 1 ? 0 : activeImage + 1)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
                         >
                           <ChevronRight className="h-5 w-5" />
