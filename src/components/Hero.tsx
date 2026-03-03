@@ -118,6 +118,9 @@ const Hero = () => {
 
             {/* Search form - Row 1 */}
             <div className="relative">
+            {isFilterLoading && (
+              <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-20 rounded-lg transition-opacity duration-100" />
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
