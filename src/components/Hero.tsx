@@ -30,7 +30,14 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
 const Hero = () => {
   const [activeTab, setActiveTab] = useState<FilterTab>("toate");
+  const [isLoading, setIsLoading] = useState(false);
 
+  const handleTabChange = (tab: FilterTab) => {
+    if (tab === activeTab) return;
+    setIsLoading(true);
+    setActiveTab(tab);
+    setTimeout(() => setIsLoading(false), 400);
+  };
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "Toate Proprietățile" },
     { id: "cumparare", label: "Cumpărare" },
@@ -78,7 +85,7 @@ const Hero = () => {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={cn(
                     "flex-1 sm:flex-none px-4 md:px-6 py-2.5 rounded-lg font-medium text-sm transition-all",
                     activeTab === tab.id
@@ -92,6 +99,15 @@ const Hero = () => {
             </div>
 
             {/* Search form - Row 1 */}
+            <div className="relative">
+              {isLoading && (
+                <div className="absolute inset-0 z-20 bg-background/60 backdrop-blur-[2px] rounded-xl flex items-center justify-center transition-opacity duration-200">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span>Se încarcă...</span>
+                  </div>
+                </div>
+              )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
@@ -171,7 +187,8 @@ const Hero = () => {
                   <Search className="h-4 w-4" />
                   Caută Anunțuri
                 </Button>
-              </div>
+            </div>
+          </div>
             </div>
           </div>
 
