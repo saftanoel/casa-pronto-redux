@@ -188,7 +188,18 @@ const PropertiesPage = () => {
     setSearchParams(params, { replace: true });
   }, [activeTab, zone, category, rooms, area, price, searchQuery]);
 
-  const currentSearch = searchParams.toString() ? `?${searchParams.toString()}` : "";
+  const currentSearch = useMemo(() => {
+    const params = new URLSearchParams();
+    if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
+    if (zone) params.set("zone", zone);
+    if (category) params.set("category", category);
+    if (rooms) params.set("rooms", rooms);
+    if (area) params.set("area", area);
+    if (price) params.set("price", price);
+    if (searchQuery) params.set("q", searchQuery);
+    const qs = params.toString();
+    return qs ? `?${qs}` : "";
+  }, [activeTab, zone, category, rooms, area, price, searchQuery]);
 
   const resetAllFilters = () => {
     setActiveTab("toate");
