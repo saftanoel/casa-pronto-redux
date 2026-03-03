@@ -343,13 +343,13 @@ const PropertiesPage = () => {
                   viewMode === "list" ? (
                     <div className="flex flex-col gap-6">
                       {filteredProperties.map((property) => (
-                        <PropertyRow key={property.id} property={property} />
+                        <PropertyRow key={property.id} property={property} search={currentSearch} />
                       ))}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {filteredProperties.map((property) => (
-                        <PropertyGrid key={property.id} property={property} />
+                        <PropertyGrid key={property.id} property={property} search={currentSearch} />
                       ))}
                     </div>
                   )
