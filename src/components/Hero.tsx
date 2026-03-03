@@ -1,4 +1,5 @@
 import { Search, MapPin, Home, Building2, Ruler, Euro } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -32,12 +33,14 @@ const Hero = () => {
   const { filters, setFilter, scrollToProperties } = useSearch();
   const activeTab = filters.tab;
 
+  const navigate = useNavigate();
+
   const handleTabChange = (tab: FilterTab) => {
     setFilter("tab", tab);
   };
 
   const handleSearch = () => {
-    scrollToProperties();
+    navigate("/proprietati");
   };
 
   const tabs: { id: FilterTab; label: string }[] = [
