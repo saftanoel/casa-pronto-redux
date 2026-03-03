@@ -32,11 +32,14 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 const Hero = () => {
   const { filters, setFilter, scrollToProperties } = useSearch();
   const activeTab = filters.tab;
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleTabChange = (tab: FilterTab) => {
+    setIsFilterLoading(true);
     setFilter("tab", tab);
+    setTimeout(() => setIsFilterLoading(false), 100);
   };
 
   const handleSearch = () => {
@@ -101,10 +104,10 @@ const Hero = () => {
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    "flex-1 sm:flex-none px-4 md:px-6 py-2.5 rounded-lg font-medium text-sm transition-all",
+                    "flex-1 sm:flex-none px-4 md:px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200",
                     activeTab === tab.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground hover:bg-muted/80"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-muted text-foreground hover:text-primary hover:bg-primary/10"
                   )}
                 >
                   {tab.label}
