@@ -42,7 +42,7 @@ const PropertyDetailPage = () => {
               <h1 className="font-serif text-3xl font-bold mb-4">Proprietatea nu a fost găsită</h1>
               <p className="text-muted-foreground mb-6">Anunțul pe care îl cauți nu există sau a fost eliminat.</p>
               <Button asChild>
-                <Link to="/proprietati">Înapoi la Proprietăți</Link>
+                <Link to={backToPropertiesUrl}>Înapoi la Proprietăți</Link>
               </Button>
             </div>
           </div>
@@ -303,7 +303,7 @@ const PropertyDetailPage = () => {
 
                 {/* Back button */}
                 <Button variant="outline" className="w-full gap-2" asChild>
-                  <Link to="/proprietati">
+                  <Link to={backToPropertiesUrl}>
                     <ArrowLeft className="h-4 w-4" />
                     Înapoi la Proprietăți
                   </Link>
