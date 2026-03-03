@@ -40,7 +40,7 @@ const Hero = () => {
   const handleTabChange = (tab: FilterTab) => {
     setIsFilterLoading(true);
     setFilter("tab", tab);
-    setTimeout(() => setIsFilterLoading(false), 100);
+    setTimeout(() => setIsFilterLoading(false), 200);
   };
 
   const handleSearch = () => {
@@ -119,8 +119,8 @@ const Hero = () => {
             {/* Search form - Row 1 */}
             <div className="relative">
             {isFilterLoading && (
-              <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-20 rounded-lg flex items-center justify-center animate-fade-in">
-                <div className="flex items-center gap-2 bg-background/90 px-4 py-2 rounded-full shadow-md">
+              <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-20 rounded-lg flex items-center justify-center transition-all duration-200 ease-in-out">
+                <div className="flex items-center gap-2 bg-background/90 px-4 py-2 rounded-full shadow-md animate-scale-in">
                   <Loader2 className="h-4 w-4 text-primary animate-spin" />
                   <span className="text-sm font-medium text-foreground/80">Se încarcă</span>
                 </div>
