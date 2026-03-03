@@ -285,10 +285,10 @@ const PropertiesPage = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "px-5 py-2 text-sm font-medium tracking-wider rounded-lg transition-all duration-200",
+                      "px-5 py-2 text-sm font-medium tracking-wider rounded-lg transition-all duration-200 font-serif",
                       activeTab === tab.id
                         ? "bg-primary text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:text-foreground hover:bg-background/80"
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/10"
                     )}
                   >
                     {tab.label}
