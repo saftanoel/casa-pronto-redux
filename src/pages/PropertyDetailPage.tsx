@@ -1,14 +1,14 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { ChevronRight, ChevronLeft, MapPin, Bed, Bath, Square, Phone, Mail, Heart, Share2, ArrowLeft } from "lucide-react";
+import { ChevronRight, MapPin, Bed, Bath, Square, Phone, Mail, Heart, Share2, ArrowLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { allProperties } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
+import PropertyGallery from "@/components/PropertyGallery";
 import { SearchProvider } from "@/context/SearchContext";
 
 const PropertyDetailPage = () => {
@@ -21,11 +21,6 @@ const PropertyDetailPage = () => {
     window.scrollTo(0, 0);
   }, [id]);
   const property = allProperties.find((p) => p.id === Number(id));
-  const [galleryState, setGalleryState] = useState<{ propertyId: string | undefined; index: number }>({ propertyId: id, index: 0 });
-  const activeImage = galleryState.propertyId === id ? galleryState.index : 0;
-  const setActiveImage = (index: number) => {
-    setGalleryState({ propertyId: id, index });
-  };
 
   const similarProperties = useMemo(() => {
     if (!property) return [];
@@ -95,57 +90,12 @@ const PropertyDetailPage = () => {
               {/* Left - Main Content */}
               <div className="flex-1 min-w-0">
                 {/* Image Gallery */}
-                <div className="rounded-xl overflow-hidden bg-muted mb-6">
-                  <div className="relative aspect-[16/10] md:aspect-[16/9]">
-                    <img
-                      src={property.images[activeImage]}
-                      alt={property.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Nav arrows */}
-                    {property.images.length > 1 && (
-                      <>
-                        <button
-                          onClick={() => setActiveImage(activeImage === 0 ? property.images.length - 1 : activeImage - 1)}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-                        >
-                          <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => setActiveImage(activeImage === property.images.length - 1 ? 0 : activeImage + 1)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-                        >
-                          <ChevronRight className="h-5 w-5" />
-                        </button>
-                      </>
-                    )}
-                    {/* Badges */}
-                    <div className="absolute top-4 left-4 flex gap-2">
-                      <Badge variant={property.type === "Vânzare" ? "default" : property.type === "Închiriere" ? "secondary" : "outline"}
-                        className={cn("text-xs", property.type === "Vândut" && "bg-foreground/80 text-background")}>
-                        {property.type}
-                      </Badge>
-                      {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
-                    </div>
-                  </div>
-                  {/* Thumbnails */}
-                  {property.images.length > 1 && (
-                    <div className="flex gap-2 p-3 overflow-x-auto">
-                      {property.images.map((img, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setActiveImage(i)}
-                          className={cn(
-                            "w-20 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all",
-                            activeImage === i ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
-                          )}
-                        >
-                          <img src={img} alt="" className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <PropertyGallery
+                  images={property.images}
+                  title={property.title}
+                  type={property.type}
+                  isNew={property.isNew}
+                />
 
                 {/* Property Details Card */}
                 <div className="bg-card rounded-xl border border-border p-6 mb-6">
