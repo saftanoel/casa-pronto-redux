@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Linkedin, Youtube, ArrowUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {
@@ -7,25 +8,19 @@ const Footer = () => {
   };
 
   const links = {
-    quickLinks: [
-      { label: "Acasă", href: "#home" },
-      { label: "Proprietăți", href: "#properties" },
-      { label: "Despre Noi", href: "#about" },
-      { label: "Contact", href: "#contact" },
-    ],
+    contact: {
+      address: "Alba Iulia, Calea Moților, Nr 59C",
+      phone: "0740197476",
+      email: "casa_pronto@yahoo.com",
+    },
     propertyTypes: [
-      { label: "Apartamente", href: "#" },
-      { label: "Case", href: "#" },
-      { label: "Garsoniere", href: "#" },
-      { label: "Terenuri", href: "#" },
-      { label: "Spații Comerciale", href: "#" },
-    ],
-    services: [
-      { label: "Vânzare", href: "#" },
-      { label: "Cumpărare", href: "#" },
-      { label: "Închiriere", href: "#" },
-      { label: "Evaluare", href: "#" },
-      { label: "Consultanță", href: "#" },
+      { label: "Apartamente", category: "apartamente" },
+      { label: "Case", category: "case" },
+      { label: "Terenuri", category: "terenuri" },
+      { label: "Spații Comerciale", category: "spatii-comerciale" },
+      { label: "Garsoniere", category: "garsoniere" },
+      { label: "Vile", category: "vile" },
+      { label: "Proiecte Rezidențiale", category: "proiecte-rezidentiale" },
     ],
   };
 
@@ -37,88 +32,61 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-foreground text-background">
+    <footer className="bg-primary text-primary-foreground">
       {/* Main footer */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-primary rounded-lg p-2">
-                <span className="text-primary-foreground font-serif font-bold text-xl">CP</span>
-              </div>
-              <div>
-                <h3 className="font-serif font-bold text-lg">Casa Pronto</h3>
-                <p className="text-xs text-background/60">Imobiliare</p>
-              </div>
-            </div>
-            
-            <p className="text-background/70 leading-relaxed mb-6 max-w-sm">
-              Din anul 2004 vă punem la dispoziție cele mai frumoase proprietăți 
-              imobiliare în Alba Iulia. Echipa noastră de profesioniști vă așteaptă.
-            </p>
-
-            {/* Social links */}
-            <div className="flex gap-3">
-              {socials.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  aria-label={social.label}
-                  className="w-10 h-10 rounded-lg bg-background/10 hover:bg-primary flex items-center justify-center transition-colors"
-                >
-                  <social.icon className="h-5 w-5" />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Contact */}
           <div>
-            <h4 className="font-semibold mb-5">Link-uri Rapide</h4>
-            <ul className="space-y-3">
-              {links.quickLinks.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-background/70 hover:text-primary transition-colors text-sm"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
+            <h4 className="font-serif font-semibold text-lg mb-5">Contact</h4>
+            <ul className="space-y-4 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="text-primary-foreground/80">📍</span>
+                <span className="text-primary-foreground/80">{links.contact.address}</span>
+              </li>
+              <li>
+                <a href={`tel:${links.contact.phone}`} className="flex items-start gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                  <span>📞</span>
+                  <span>{links.contact.phone}</span>
+                </a>
+              </li>
+              <li>
+                <a href={`mailto:${links.contact.email}`} className="flex items-start gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                  <span>✉️</span>
+                  <span>{links.contact.email}</span>
+                </a>
+              </li>
             </ul>
           </div>
 
-          {/* Property types */}
+          {/* Cine suntem */}
           <div>
-            <h4 className="font-semibold mb-5">Tipuri de Proprietăți</h4>
-            <ul className="space-y-3">
+            <h4 className="font-serif font-semibold text-lg mb-5">Cine suntem ?</h4>
+            <p className="text-primary-foreground/80 text-sm leading-relaxed">
+              Casa Pronto, o agentie imobiliara din Alba Iulia lansata pe piata imobiliara in anul 2004, si-a prefigurat cu fermitate inca de la inceput standardele de inalta clasa pentru calitatea serviciilor si produselor oferite.
+            </p>
+          </div>
+
+          {/* De ce noi */}
+          <div>
+            <h4 className="font-serif font-semibold text-lg mb-5">De ce noi ?</h4>
+            <p className="text-primary-foreground/80 text-sm leading-relaxed">
+              Experienta in domeniul imobiliar si partenerii de incredere ai agentiei fac din serviciile noastre oferta ideala pentru satisfacerea cererilor dumneavoastra.
+            </p>
+          </div>
+
+          {/* Tipuri de proprietati */}
+          <div>
+            <h4 className="font-serif font-semibold text-lg mb-5">Tipuri de proprietati</h4>
+            <ul className="space-y-2.5">
               {links.propertyTypes.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-background/70 hover:text-primary transition-colors text-sm"
+                  <Link
+                    to={`/proprietati?category=${link.category}`}
+                    className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm"
                   >
                     {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h4 className="font-semibold mb-5">Servicii</h4>
-            <ul className="space-y-3">
-              {links.services.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-background/70 hover:text-primary transition-colors text-sm"
-                  >
-                    {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -127,19 +95,23 @@ const Footer = () => {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-background/10">
+      <div className="border-t border-primary-foreground/10">
         <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-background/50 text-sm text-center sm:text-left">
+          <p className="text-primary-foreground/50 text-sm text-center sm:text-left">
             © 2024 Casa Pronto Imobiliare. Toate drepturile rezervate.
           </p>
           
-          <div className="flex items-center gap-6 text-sm text-background/50">
-            <a href="#" className="hover:text-background transition-colors">
-              Termeni și Condiții
-            </a>
-            <a href="#" className="hover:text-background transition-colors">
-              Politica de Confidențialitate
-            </a>
+          <div className="flex gap-3">
+            {socials.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                aria-label={social.label}
+                className="w-9 h-9 rounded-lg bg-primary-foreground/10 hover:bg-primary-foreground/20 flex items-center justify-center transition-colors"
+              >
+                <social.icon className="h-4 w-4" />
+              </a>
+            ))}
           </div>
         </div>
       </div>
@@ -149,7 +121,7 @@ const Footer = () => {
         onClick={scrollToTop}
         variant="default"
         size="icon"
-        className="fixed bottom-6 right-6 rounded-full shadow-lg z-50"
+        className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 bg-foreground text-background hover:bg-foreground/90"
       >
         <ArrowUp className="h-5 w-5" />
       </Button>
