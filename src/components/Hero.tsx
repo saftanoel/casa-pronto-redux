@@ -36,7 +36,7 @@ const Hero = () => {
     if (tab === activeTab) return;
     setIsLoading(true);
     setActiveTab(tab);
-    setTimeout(() => setIsLoading(false), 150);
+    setTimeout(() => setIsLoading(false), 100);
   };
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "Toate Proprietățile" },
