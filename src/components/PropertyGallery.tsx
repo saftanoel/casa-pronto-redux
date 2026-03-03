@@ -102,7 +102,7 @@ const PropertyGallery = ({ images, title, type, isNew }: PropertyGalleryProps) =
       {images.length > 1 && (
         <>
           {/* Desktop thumbnails */}
-          <div className="hidden lg:flex gap-2 p-3 overflow-x-auto">
+          <div className="hidden lg:flex gap-2 p-3 overflow-x-auto scrollbar-hide">
             {images.map((img, i) => (
               <button
                 key={i}
