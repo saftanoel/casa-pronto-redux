@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Menu, X, Phone, Mail, Search } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { filters, setFilter, scrollToProperties } = useSearch();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const navLinks = [
     { label: "Acasă", href: "/" },
@@ -30,6 +32,41 @@ const Header = () => {
   const handleSearchChange = (value: string) => {
     setFilter("searchQuery", value);
     scrollToProperties();
+  };
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    if (href === "/") {
+      e.preventDefault();
+      if (location.pathname === "/") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        navigate("/");
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+      }
+    } else if (href.startsWith("/#")) {
+      e.preventDefault();
+      const hash = href.substring(1);
+      if (location.pathname === "/") {
+        const el = document.querySelector(hash);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      } else {
+        navigate("/" + hash);
+      }
+    } else {
+      // Regular route like /proprietati
+      e.preventDefault();
+      navigate(href);
+    }
+  };
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      navigate("/");
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+    }
   };
 
   return (
@@ -55,31 +92,27 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20 relative">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
+          <a href="/" onClick={handleLogoClick} className="flex items-center gap-3 cursor-pointer">
             <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-20 w-auto object-contain" />
             <div className="hidden sm:block">
               <h1 className="font-serif font-bold text-lg leading-tight">Casa Pronto</h1>
               <p className="text-xs text-muted-foreground">Imobiliare</p>
             </div>
-          </Link>
+          </a>
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-            {navLinks.map((link) => {
-              const isRoute = link.href.startsWith("/") && !link.href.startsWith("/#");
-              const El = isRoute ? Link : "a";
-              const props = isRoute ? { to: link.href } : { href: link.href };
-              return (
-                <El
-                  key={link.href}
-                  {...(props as any)}
-                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
-                >
-                  {link.label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-                </El>
-              );
-            })}
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
+              >
+                {link.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+              </a>
+            ))}
           </nav>
 
           {/* CTA & Search */}
@@ -126,21 +159,16 @@ const Header = () => {
             onChange={(e) => handleSearchChange(e.target.value)}
             className="mb-2"
           />
-          {navLinks.map((link) => {
-            const isRoute = link.href.startsWith("/") && !link.href.startsWith("/#");
-            const El = isRoute ? Link : "a";
-            const props = isRoute ? { to: link.href } : { href: link.href };
-            return (
-              <El
-                key={link.href}
-                {...(props as any)}
-                onClick={() => setIsMenuOpen(false)}
-                className="py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
-              >
-                {link.label}
-              </El>
-            );
-          })}
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={(e) => { handleNavClick(e, link.href); setIsMenuOpen(false); }}
+              className="py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
+            >
+              {link.label}
+            </a>
+          ))}
           <Button className="mt-2 w-full">Publică Anunț</Button>
         </nav>
       </div>
