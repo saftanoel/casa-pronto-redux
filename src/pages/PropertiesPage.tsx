@@ -436,6 +436,36 @@ const PropertiesPage = () => {
                   </div>
                 </div>
               </aside>
+
+              {/* Property List */}
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-6">
+                  {filteredProperties.length} proprietăți găsite
+                </p>
+
+                {filteredProperties.length > 0 ? (
+                  viewMode === "list" ? (
+                    <div className="flex flex-col gap-6">
+                      {filteredProperties.map((property) => (
+                        <PropertyRow key={property.id} property={property} search={currentSearch} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {filteredProperties.map((property) => (
+                        <PropertyGrid key={property.id} property={property} search={currentSearch} />
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <div className="text-center py-20 bg-muted/30 rounded-xl">
+                    <p className="text-muted-foreground text-lg">Nu s-au găsit proprietăți cu filtrele selectate.</p>
+                    <Button variant="outline" className="mt-4" onClick={resetAllFilters}>
+                      Resetează Filtrele
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
