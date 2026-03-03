@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Menu, X, Phone, Mail, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -37,9 +38,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <a href="#home" className="flex items-center gap-3">
-            <div className="bg-primary rounded-lg p-2">
-              <span className="text-primary-foreground font-serif font-bold text-xl">CP</span>
-            </div>
+            <img src={logo} alt="Casa Pronto Logo" className="h-12 md:h-14 w-auto" />
             <div className="hidden sm:block">
               <h1 className="font-serif font-bold text-lg leading-tight">Casa Pronto</h1>
               <p className="text-xs text-muted-foreground">Imobiliare</p>
