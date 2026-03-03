@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronRight, ChevronLeft, MapPin, Bed, Bath, Square, Phone, Mail, Heart, Share2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,10 @@ import { SearchProvider } from "@/context/SearchContext";
 
 const PropertyDetailPage = () => {
   const { id } = useParams();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
   const property = allProperties.find((p) => p.id === Number(id));
   const [activeImage, setActiveImage] = useState(0);
 
