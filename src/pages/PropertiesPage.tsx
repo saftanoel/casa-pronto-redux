@@ -354,7 +354,7 @@ const PropertiesPage = () => {
                 ) : (
                   <div className="text-center py-20 bg-muted/30 rounded-xl">
                     <p className="text-muted-foreground text-lg">Nu s-au găsit proprietăți cu filtrele selectate.</p>
-                    <Button variant="outline" className="mt-4" onClick={() => { setActiveTab("toate"); setZone(""); setCategory(""); setSearchQuery(""); }}>
+                    <Button variant="outline" className="mt-4" onClick={resetAllFilters}>
                       Resetează Filtrele
                     </Button>
                   </div>
