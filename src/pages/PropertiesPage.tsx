@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
-import { useSearchParams, Link, useLocation } from "react-router-dom";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -148,9 +148,8 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
 );
 
 const PropertiesPage = () => {
-  const [searchParams] = useSearchParams();
-  const location = useLocation();
-  const currentSearch = location.search;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [zone, setZone] = useState(searchParams.get("zone") || "");
