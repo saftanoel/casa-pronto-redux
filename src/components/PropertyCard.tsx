@@ -68,13 +68,6 @@ const PropertyCard = ({
             )}
           </div>
 
-          {/* Favorite button */}
-          <button
-            onClick={(e) => e.preventDefault()}
-            className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors group/heart"
-          >
-            <Heart className="h-4 w-4 text-muted-foreground group-hover/heart:text-primary transition-colors" />
-          </button>
 
           {/* Price tag */}
           <div className="absolute bottom-4 left-4">
