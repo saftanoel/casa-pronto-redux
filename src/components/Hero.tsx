@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, MapPin, Home, Building2, Ruler } from "lucide-react";
+import { Search, MapPin, Home, Building2, Ruler, Euro } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
