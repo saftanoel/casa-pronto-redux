@@ -100,21 +100,17 @@ const Header = () => {
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-            {navLinks.map((link) => {
-              const isRoute = link.href.startsWith("/") && !link.href.startsWith("/#");
-              const El = isRoute ? Link : "a";
-              const props = isRoute ? { to: link.href } : { href: link.href };
-              return (
-                <El
-                  key={link.href}
-                  {...(props as any)}
-                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
-                >
-                  {link.label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-                </El>
-              );
-            })}
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
+              >
+                {link.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+              </a>
+            ))}
           </nav>
 
           {/* CTA & Search */}
@@ -161,21 +157,16 @@ const Header = () => {
             onChange={(e) => handleSearchChange(e.target.value)}
             className="mb-2"
           />
-          {navLinks.map((link) => {
-            const isRoute = link.href.startsWith("/") && !link.href.startsWith("/#");
-            const El = isRoute ? Link : "a";
-            const props = isRoute ? { to: link.href } : { href: link.href };
-            return (
-              <El
-                key={link.href}
-                {...(props as any)}
-                onClick={() => setIsMenuOpen(false)}
-                className="py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
-              >
-                {link.label}
-              </El>
-            );
-          })}
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={(e) => { handleNavClick(e, link.href); setIsMenuOpen(false); }}
+              className="py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
+            >
+              {link.label}
+            </a>
+          ))}
           <Button className="mt-2 w-full">Publică Anunț</Button>
         </nav>
       </div>
