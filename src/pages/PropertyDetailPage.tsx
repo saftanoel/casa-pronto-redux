@@ -12,6 +12,8 @@ import { SearchProvider } from "@/context/SearchContext";
 
 const PropertyDetailPage = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const backToPropertiesUrl = `/proprietati${location.search}`;
 
   useEffect(() => {
     window.scrollTo(0, 0);
