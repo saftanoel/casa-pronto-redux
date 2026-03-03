@@ -49,21 +49,25 @@ const Contact = () => {
 
             {/* Contact info cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {contactInfo.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="flex items-start gap-4 p-5 rounded-xl bg-muted/50 hover:bg-muted transition-colors group"
-                >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
-                    <item.icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{item.label}</p>
-                    <p className="font-medium text-foreground">{item.value}</p>
-                  </div>
-                </a>
-              ))}
+              {contactInfo.map((item) => {
+                const classes = "flex items-start gap-4 p-5 rounded-xl bg-muted/50 hover:bg-muted transition-colors group";
+                const content = (
+                  <>
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
+                      <item.icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">{item.label}</p>
+                      <p className="font-medium text-foreground">{item.value}</p>
+                    </div>
+                  </>
+                );
+                return item.href && item.href !== "#" ? (
+                  <a key={item.label} href={item.href} className={classes}>{content}</a>
+                ) : (
+                  <div key={item.label} className={classes}>{content}</div>
+                );
+              })}
             </div>
 
             {/* Map placeholder */}
