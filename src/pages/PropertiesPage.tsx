@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -148,13 +148,26 @@ const PropertyGrid = ({ property }: { property: Property }) => (
 );
 
 const PropertiesPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [zone, setZone] = useState(searchParams.get("zone") || "");
   const [category, setCategory] = useState(searchParams.get("category") || "");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+
+  // React to URL category changes (from footer links)
+  useEffect(() => {
+    const urlCategory = searchParams.get("category") || "";
+    setCategory(urlCategory);
+  }, [searchParams]);
+
+  const resetAllFilters = () => {
+    setActiveTab("toate");
+    setSearchQuery("");
+    setZone("");
+    setCategory("");
+  };
 
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "TOATE" },
@@ -210,7 +223,7 @@ const PropertiesPage = () => {
             <nav className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
               <Link to="/" className="hover:text-primary transition-colors">Casa Pronto</Link>
               <ChevronRight className="h-3.5 w-3.5" />
-              <Link to="/proprietati" className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
+              <Link to="/proprietati" onClick={resetAllFilters} className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
               {category && (
                 <>
                   <ChevronRight className="h-3.5 w-3.5" />
