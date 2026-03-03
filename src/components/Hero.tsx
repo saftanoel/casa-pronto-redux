@@ -99,13 +99,13 @@ const Hero = () => {
             style={{ animationDelay: "0.3s" }}
           >
             {/* Tabs */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={cn(
-                    "flex-1 sm:flex-none px-4 md:px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200",
+                    "flex-shrink-0 px-5 md:px-6 py-3 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]",
                     activeTab === tab.id
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "bg-muted text-foreground hover:text-primary hover:bg-primary/10"
