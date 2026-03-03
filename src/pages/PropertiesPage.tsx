@@ -149,6 +149,8 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
 
 const PropertiesPage = () => {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const currentSearch = location.search;
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [zone, setZone] = useState(searchParams.get("zone") || "");
