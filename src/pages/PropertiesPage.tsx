@@ -153,6 +153,9 @@ const PropertiesPage = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [zone, setZone] = useState(searchParams.get("zone") || "");
   const [category, setCategory] = useState(searchParams.get("category") || "");
+  const [rooms, setRooms] = useState(searchParams.get("rooms") || "");
+  const [area, setArea] = useState(searchParams.get("area") || "");
+  const [price, setPrice] = useState(searchParams.get("price") || "");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -160,10 +163,15 @@ const PropertiesPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // React to URL category changes (from footer links)
+  // React to URL param changes
   useEffect(() => {
-    const urlCategory = searchParams.get("category") || "";
-    setCategory(urlCategory);
+    setCategory(searchParams.get("category") || "");
+    setZone(searchParams.get("zone") || "");
+    setActiveTab((searchParams.get("tab") as FilterTab) || "toate");
+    setSearchQuery(searchParams.get("q") || "");
+    setRooms(searchParams.get("rooms") || "");
+    setArea(searchParams.get("area") || "");
+    setPrice(searchParams.get("price") || "");
   }, [searchParams]);
 
   const resetAllFilters = () => {
