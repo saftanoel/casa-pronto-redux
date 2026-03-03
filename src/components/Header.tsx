@@ -126,16 +126,21 @@ const Header = () => {
             onChange={(e) => handleSearchChange(e.target.value)}
             className="mb-2"
           />
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setIsMenuOpen(false)}
-              className="py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+          {navLinks.map((link) => {
+            const isRoute = link.href.startsWith("/") && !link.href.startsWith("/#");
+            const El = isRoute ? Link : "a";
+            const props = isRoute ? { to: link.href } : { href: link.href };
+            return (
+              <El
+                key={link.href}
+                {...(props as any)}
+                onClick={() => setIsMenuOpen(false)}
+                className="py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
+              >
+                {link.label}
+              </El>
+            );
+          })}
           <Button className="mt-2 w-full">Publică Anunț</Button>
         </nav>
       </div>
