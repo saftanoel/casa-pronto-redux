@@ -1,4 +1,4 @@
-import { Heart, MapPin, Bed, Bath, Square, ArrowRight } from "lucide-react";
+import { MapPin, Bed, Bath, Square, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
