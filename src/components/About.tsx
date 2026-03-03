@@ -1,5 +1,5 @@
 import { CheckCircle, Award, Users, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 
 const features = [
   {
@@ -93,7 +93,7 @@ const About = () => {
               ))}
             </div>
 
-            <Button size="lg">Află Mai Multe</Button>
+            
           </div>
         </div>
       </div>
