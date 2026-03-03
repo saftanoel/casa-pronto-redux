@@ -13,10 +13,10 @@ const Header = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const navLinks = [
-    { label: "Acasă", href: "#home" },
-    { label: "Proprietăți", href: "#properties" },
-    { label: "Despre Noi", href: "#about" },
-    { label: "Contact", href: "#contact" },
+    { label: "Acasă", href: "/" },
+    { label: "Proprietăți", href: "/proprietati" },
+    { label: "Despre Noi", href: "/#about" },
+    { label: "Contact", href: "/#contact" },
   ];
 
   const handleSearchToggle = () => {
