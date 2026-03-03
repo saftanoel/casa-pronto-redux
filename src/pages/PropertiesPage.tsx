@@ -179,6 +179,9 @@ const PropertiesPage = () => {
     setSearchQuery("");
     setZone("");
     setCategory("");
+    setRooms("");
+    setArea("");
+    setPrice("");
   };
 
   const tabs: { id: FilterTab; label: string }[] = [
@@ -193,6 +196,32 @@ const PropertiesPage = () => {
       if (!matchTab(p, activeTab)) return false;
       if (zone && p.zone !== zone) return false;
       if (category && p.propertyType !== category) return false;
+      if (rooms) {
+        if (rooms === "4+") { if (p.beds < 4) return false; }
+        else { if (p.beds !== parseInt(rooms)) return false; }
+      }
+      if (area) {
+        const a = p.area;
+        const areaRanges: Record<string, [number, number]> = {
+          "sub-1000": [0, 1000], "1000-2000": [1000, 2000], "2000-3000": [2000, 3000],
+          "3000-4000": [3000, 4000], "4000-5000": [4000, 5000], "5000-6000": [5000, 6000],
+          "6000-7000": [6000, 7000], "7000-8000": [7000, 8000], "peste-8000": [8000, Infinity],
+        };
+        const range = areaRanges[area];
+        if (range && (a < range[0] || a >= range[1])) return false;
+      }
+      if (price) {
+        const pv = p.priceValue;
+        const priceRanges: Record<string, [number, number]> = {
+          "sub-200": [0, 200], "200-300": [200, 300], "300-400": [300, 400],
+          "400-500": [400, 500], "500-700": [500, 700], "700-1000": [700, 1000], "peste-1000": [1000, Infinity],
+          "sub-25000": [0, 25000], "25000-50000": [25000, 50000], "50000-75000": [50000, 75000],
+          "75000-100000": [75000, 100000], "100000-150000": [100000, 150000],
+          "150000-200000": [150000, 200000], "200000-300000": [200000, 300000], "peste-300000": [300000, Infinity],
+        };
+        const range = priceRanges[price];
+        if (range && (pv < range[0] || pv >= range[1])) return false;
+      }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q) && !p.propertyType.toLowerCase().includes(q))
