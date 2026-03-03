@@ -182,24 +182,40 @@ const Hero = () => {
                 </Select>
               </div>
 
-              <div className="relative">
-                <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Select>
-                  <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
-                    <SelectValue placeholder="Preț" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sub-25000">Sub 25,000 €</SelectItem>
-                    <SelectItem value="25000-50000">25,000 - 50,000 €</SelectItem>
-                    <SelectItem value="50000-75000">50,000 - 75,000 €</SelectItem>
-                    <SelectItem value="75000-100000">75,000 - 100,000 €</SelectItem>
-                    <SelectItem value="100000-150000">100,000 - 150,000 €</SelectItem>
-                    <SelectItem value="150000-200000">150,000 - 200,000 €</SelectItem>
-                    <SelectItem value="200000-300000">200,000 - 300,000 €</SelectItem>
-                    <SelectItem value="peste-300000">Peste 300,000 €</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {activeTab !== "vandute" && (
+                <div className="relative">
+                  <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                  <Select>
+                    <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
+                      <SelectValue placeholder="Preț" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeTab === "inchiriere" ? (
+                        <>
+                          <SelectItem value="sub-200">Sub 200 €/lună</SelectItem>
+                          <SelectItem value="200-300">200 - 300 €/lună</SelectItem>
+                          <SelectItem value="300-400">300 - 400 €/lună</SelectItem>
+                          <SelectItem value="400-500">400 - 500 €/lună</SelectItem>
+                          <SelectItem value="500-700">500 - 700 €/lună</SelectItem>
+                          <SelectItem value="700-1000">700 - 1,000 €/lună</SelectItem>
+                          <SelectItem value="peste-1000">Peste 1,000 €/lună</SelectItem>
+                        </>
+                      ) : (
+                        <>
+                          <SelectItem value="sub-25000">Sub 25,000 €</SelectItem>
+                          <SelectItem value="25000-50000">25,000 - 50,000 €</SelectItem>
+                          <SelectItem value="50000-75000">50,000 - 75,000 €</SelectItem>
+                          <SelectItem value="75000-100000">75,000 - 100,000 €</SelectItem>
+                          <SelectItem value="100000-150000">100,000 - 150,000 €</SelectItem>
+                          <SelectItem value="150000-200000">150,000 - 200,000 €</SelectItem>
+                          <SelectItem value="200000-300000">200,000 - 300,000 €</SelectItem>
+                          <SelectItem value="peste-300000">Peste 300,000 €</SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div>
                 <Button className="h-12 w-full gap-2">
