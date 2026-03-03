@@ -217,7 +217,7 @@ const Hero = () => {
                 </div>
               )}
 
-              <div>
+              <div className={cn(activeTab === "vandute" && "lg:col-start-3")}>
                 <Button className="h-12 w-full gap-2">
                   <Search className="h-4 w-4" />
                   Caută Anunțuri
