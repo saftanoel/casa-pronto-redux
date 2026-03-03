@@ -1,10 +1,43 @@
-import { Search, MapPin, Home, Building2 } from "lucide-react";
+import { useState } from "react";
+import { Search, MapPin, Home, Building2, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import heroBg from "@/assets/hero-bg.jpg";
 
+const zones = [
+  "Aiud", "Alba-Micesti", "Ampoi", "Ampoi3", "Ampoita", "Barabant", "Blaj",
+  "Caroline", "Centru", "Cetate", "Cetate Alba Carolina", "Ciugud", "Cluj",
+  "Cluj Napoca", "Cugir", "Geoagiu", "Ighiu", "Micesti", "Oarda", "Oarda de Sus",
+  "Oiejdea", "Oradea", "Partos", "Periferie", "Piclisa", "Sard", "Schit",
+  "Sebes", "Seusa", "Spring", "Stadion", "Teius", "Tolstoi", "Valea Popii",
+  "Vint", "Vintu de Jos", "Zlatna", "Zona Stadion",
+];
+
+const suprafataOptions = [
+  { value: "sub-1000", label: "Sub 1,000" },
+  { value: "1000-2000", label: "1,000 - 2,000" },
+  { value: "2000-3000", label: "2,000 - 3,000" },
+  { value: "3000-4000", label: "3,000 - 4,000" },
+  { value: "4000-5000", label: "4,000 - 5,000" },
+  { value: "5000-6000", label: "5,000 - 6,000" },
+  { value: "6000-7000", label: "6,000 - 7,000" },
+  { value: "7000-8000", label: "7,000 - 8,000" },
+  { value: "peste-8000", label: "Peste 8,000" },
+];
+
+type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
+
 const Hero = () => {
+  const [activeTab, setActiveTab] = useState<FilterTab>("toate");
+
+  const tabs: { id: FilterTab; label: string }[] = [
+    { id: "toate", label: "Toate Proprietățile" },
+    { id: "cumparare", label: "Cumpărare" },
+    { id: "inchiriere", label: "Închiriere" },
+    { id: "vandute", label: "Vândute" },
+  ];
+
   return (
     <section
       id="home"
@@ -20,7 +53,7 @@ const Hero = () => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center text-background">
+        <div className="max-w-5xl mx-auto text-center text-background">
           <span className="inline-block px-4 py-2 rounded-full bg-primary/20 text-primary-foreground text-sm font-medium mb-6 animate-fade-up">
             Agenția Imobiliară #1 în Alba Iulia
           </span>
@@ -37,55 +70,70 @@ const Hero = () => {
 
           {/* Search Box */}
           <div 
-            className="bg-background/95 backdrop-blur-xl rounded-2xl p-4 md:p-6 shadow-2xl max-w-3xl mx-auto animate-fade-up"
+            className="bg-background/95 backdrop-blur-xl rounded-2xl p-4 md:p-6 shadow-2xl max-w-4xl mx-auto animate-fade-up"
             style={{ animationDelay: "0.3s" }}
           >
             {/* Tabs */}
-            <div className="flex gap-2 mb-6">
-              <button className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm transition-all">
-                Cumpărare
-              </button>
-              <button className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg bg-muted text-foreground font-medium text-sm hover:bg-muted/80 transition-all">
-                Închiriere
-              </button>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex-1 sm:flex-none px-4 md:px-6 py-2.5 rounded-lg font-medium text-sm transition-all",
+                    activeTab === tab.id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground hover:bg-muted/80"
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            {/* Search form */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Search form - Row 1 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Zonă" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="centru">Centru</SelectItem>
-                    <SelectItem value="ampoi">Ampoi</SelectItem>
-                    <SelectItem value="cetate">Cetate</SelectItem>
-                    <SelectItem value="partos">Partoș</SelectItem>
-                    <SelectItem value="stadion">Zona Stadion</SelectItem>
+                  <SelectContent className="max-h-60">
+                    {zones.map((zone) => (
+                      <SelectItem key={zone} value={zone.toLowerCase().replace(/\s+/g, "-")}>
+                        {zone}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="relative">
-                <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Tip proprietate" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="apartament">Apartament</SelectItem>
-                    <SelectItem value="casa">Casă</SelectItem>
-                    <SelectItem value="garsoniera">Garsonieră</SelectItem>
-                    <SelectItem value="vila">Vilă</SelectItem>
-                    <SelectItem value="teren">Teren</SelectItem>
+                    <SelectItem value="apartamente">Apartamente</SelectItem>
+                    <SelectItem value="birouri">Birouri</SelectItem>
+                    <SelectItem value="cabana">Cabană</SelectItem>
+                    <SelectItem value="case">Case</SelectItem>
+                    <SelectItem value="garsoniere">Garsoniere</SelectItem>
+                    <SelectItem value="hale">Hale</SelectItem>
+                    <SelectItem value="pensiune">Pensiune</SelectItem>
+                    <SelectItem value="proiecte-rezidentiale">Proiecte Rezidențiale</SelectItem>
+                    <SelectItem value="restaurant">Restaurant</SelectItem>
+                    <SelectItem value="spatii-comerciale">Spații Comerciale</SelectItem>
+                    <SelectItem value="terenuri">Terenuri</SelectItem>
+                    <SelectItem value="vile">Vile</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Select>
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Camere" />
@@ -98,11 +146,32 @@ const Hero = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              <Button className="h-12 gap-2">
-                <Search className="h-4 w-4" />
-                Caută
-              </Button>
+            {/* Search form - Row 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="relative">
+                <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                <Select>
+                  <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
+                    <SelectValue placeholder="Suprafață" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suprafataOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="lg:col-start-3">
+                <Button className="h-12 w-full gap-2">
+                  <Search className="h-4 w-4" />
+                  Caută Anunțuri
+                </Button>
+              </div>
             </div>
           </div>
 
