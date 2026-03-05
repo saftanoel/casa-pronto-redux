@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { ChevronRight, MapPin, Bed, Bath, Square, Phone, Mail, Heart, Share2, ArrowLeft } from "lucide-react";
+import { ChevronRight, MapPin, Bed, Bath, Square, Phone, Mail, Share2, ArrowLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -222,12 +222,25 @@ const PropertyDetailPage = () => {
               {/* Right Sidebar */}
               <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
                 {/* Actions */}
-                <div className="bg-card rounded-xl p-5 shadow-[var(--card-shadow)] border border-border flex gap-3">
-                  <Button variant="outline" className="flex-1 gap-2">
-                    <Heart className="h-4 w-4" />
-                    Salvează
-                  </Button>
-                  <Button variant="outline" className="flex-1 gap-2">
+                <div className="bg-card rounded-xl p-5 shadow-[var(--card-shadow)] border border-border">
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: property.title,
+                          text: `${property.title} - ${property.price}`,
+                          url: window.location.href,
+                        });
+                      } else {
+                        navigator.clipboard.writeText(window.location.href);
+                        import("sonner").then(({ toast }) => {
+                          toast.success("Link copiat în clipboard!");
+                        });
+                      }
+                    }}
+                  >
                     <Share2 className="h-4 w-4" />
                     Distribuie
                   </Button>
