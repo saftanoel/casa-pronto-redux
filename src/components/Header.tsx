@@ -10,14 +10,18 @@ import logo from "@/assets/logo3.jpg";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const { filters, setFilter, scrollToProperties } = useSearch();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
+    const handleScroll = () => {
+      // Gradually go from 0 to 1 over the first 200px of scroll
+      const progress = Math.min(window.scrollY / 200, 1);
+      setScrollProgress(progress);
+    };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -78,10 +82,12 @@ const Header = () => {
   };
 
   return (
-    <header className={cn(
-      "fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border transition-colors duration-500",
-      scrolled ? "bg-[hsl(0_65%_94%/0.95)]" : "bg-background/95"
-    )}>
+    <header
+      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border transition-[background-color] duration-150"
+      style={{
+        backgroundColor: `hsl(0 0% ${100 - scrollProgress * 78}% / 0.95)`,
+      }}
+    >
       {/* Top bar */}
       <div className="bg-foreground text-background py-2">
         <div className="container mx-auto px-4 flex justify-between items-center text-sm">
