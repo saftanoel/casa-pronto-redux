@@ -120,8 +120,8 @@ const Header = () => {
           <a href="/" onClick={handleLogoClick} className="flex items-center gap-3 cursor-pointer">
             <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-18 w-auto object-contain" />
             <div className="hidden sm:block">
-              <h1 className="font-serif font-bold text-lg leading-tight">Casa Pronto</h1>
-              <p className="text-xs text-muted-foreground">Imobiliare</p>
+              <h1 className="font-serif font-bold text-lg leading-tight" style={{ color: scrollProgress > 0.5 ? 'white' : undefined }}>Casa Pronto</h1>
+              <p className="text-xs" style={{ color: scrollProgress > 0.5 ? 'rgba(255,255,255,0.7)' : undefined }}>Imobiliare</p>
             </div>
           </a>
 
@@ -132,7 +132,8 @@ const Header = () => {
                 key={link.href}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
+                className="text-sm font-medium hover:text-primary transition-colors relative group"
+                style={{ color: scrollProgress > 0.5 ? 'rgba(255,255,255,0.85)' : undefined }}
               >
                 {link.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
@@ -154,7 +155,7 @@ const Header = () => {
                 className="h-9"
               />
             </div>
-            <Button variant="ghost" size="icon" className="text-foreground/70" onClick={handleSearchToggle}>
+            <Button variant="ghost" size="icon" style={{ color: scrollProgress > 0.5 ? 'rgba(255,255,255,0.7)' : undefined }} onClick={handleSearchToggle}>
               {isSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
             </Button>
           </div>
@@ -162,7 +163,8 @@ const Header = () => {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors"
+            className="lg:hidden p-2 hover:bg-muted/20 rounded-lg transition-colors"
+            style={{ color: scrollProgress > 0.5 ? 'white' : undefined }}
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
