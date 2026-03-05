@@ -10,14 +10,18 @@ import logo from "@/assets/logo3.jpg";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const { filters, setFilter, scrollToProperties } = useSearch();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
+    const handleScroll = () => {
+      // Gradually go from 0 to 1 over the first 200px of scroll
+      const progress = Math.min(window.scrollY / 200, 1);
+      setScrollProgress(progress);
+    };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -77,11 +81,21 @@ const Header = () => {
     }
   };
 
+  // Interpolate colors: white (100%) → dark gray (22%) over 200px scroll
+  const lightness = 100 - scrollProgress * 78;
+  const textColor = scrollProgress > 0.5
+    ? `hsl(0 0% ${100}%)`
+    : undefined;
+
   return (
-    <header className={cn(
-      "fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border transition-colors duration-500",
-      scrolled ? "bg-[hsl(0_65%_94%/0.95)]" : "bg-background/95"
-    )}>
+    <header
+      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border/20"
+      style={{
+        backgroundColor: `hsl(0 0% ${lightness}% / 0.95)`,
+        color: textColor,
+        transition: "background-color 150ms, color 150ms",
+      }}
+    >
       {/* Top bar */}
       <div className="bg-foreground text-background py-2">
         <div className="container mx-auto px-4 flex justify-between items-center text-sm">
@@ -106,8 +120,8 @@ const Header = () => {
           <a href="/" onClick={handleLogoClick} className="flex items-center gap-3 cursor-pointer">
             <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-18 w-auto object-contain" />
             <div className="hidden sm:block">
-              <h1 className="font-serif font-bold text-lg leading-tight">Casa Pronto</h1>
-              <p className="text-xs text-muted-foreground">Imobiliare</p>
+              <h1 className="font-serif font-bold text-lg leading-tight" style={{ color: scrollProgress > 0.5 ? 'white' : undefined }}>Casa Pronto</h1>
+              <p className="text-xs" style={{ color: scrollProgress > 0.5 ? 'rgba(255,255,255,0.7)' : undefined }}>Imobiliare</p>
             </div>
           </a>
 
@@ -118,7 +132,8 @@ const Header = () => {
                 key={link.href}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
+                className="text-sm font-medium hover:text-primary transition-colors relative group"
+                style={{ color: scrollProgress > 0.5 ? 'rgba(255,255,255,0.85)' : undefined }}
               >
                 {link.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
@@ -140,7 +155,7 @@ const Header = () => {
                 className="h-9"
               />
             </div>
-            <Button variant="ghost" size="icon" className="text-foreground/70" onClick={handleSearchToggle}>
+            <Button variant="ghost" size="icon" style={{ color: scrollProgress > 0.5 ? 'rgba(255,255,255,0.7)' : undefined }} onClick={handleSearchToggle}>
               {isSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
             </Button>
           </div>
@@ -148,7 +163,8 @@ const Header = () => {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors"
+            className="lg:hidden p-2 hover:bg-muted/20 rounded-lg transition-colors"
+            style={{ color: scrollProgress > 0.5 ? 'white' : undefined }}
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
