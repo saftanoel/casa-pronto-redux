@@ -81,11 +81,19 @@ const Header = () => {
     }
   };
 
+  // Interpolate colors: white (100%) → dark gray (22%) over 200px scroll
+  const lightness = 100 - scrollProgress * 78;
+  const textColor = scrollProgress > 0.5
+    ? `hsl(0 0% ${100}%)`
+    : undefined;
+
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border transition-[background-color] duration-150"
+      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border/20"
       style={{
-        backgroundColor: `hsl(0 0% ${100 - scrollProgress * 78}% / 0.95)`,
+        backgroundColor: `hsl(0 0% ${lightness}% / 0.95)`,
+        color: textColor,
+        transition: "background-color 150ms, color 150ms",
       }}
     >
       {/* Top bar */}
