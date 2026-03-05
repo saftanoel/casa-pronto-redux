@@ -71,11 +71,17 @@ const Contact = () => {
             </div>
 
             {/* Map placeholder */}
-            <div className="mt-8 rounded-xl overflow-hidden border border-border h-64 bg-muted flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>Alba Iulia, România</p>
-              </div>
+            <div className="mt-8 rounded-xl overflow-hidden border border-border h-64">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2504.7404845883398!2d23.5696261!3d46.074462399999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x474ea7d6d819e357%3A0xaad3b4a1251da7f1!2sAgen%C8%9Bia%20Imobiliar%C4%83%20Casa%20Pronto%20Alba%20Iulia!5e1!3m2!1sro!2sro!4v1772721606205!5m2!1sro!2sro"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Casa Pronto - Locație pe Google Maps"
+              />
             </div>
           </div>
 
