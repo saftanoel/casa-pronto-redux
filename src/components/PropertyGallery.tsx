@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -45,24 +45,46 @@ const PropertyGallery = ({ images, title, type, isNew }: PropertyGalleryProps) =
     setLightboxOpen(true);
   };
 
-  const lightboxPrev = () => setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
-  const lightboxNext = () => setLightboxIndex((prev) => (prev + 1) % images.length);
+  const lightboxPrev = useCallback(() => setLightboxIndex((prev) => (prev - 1 + images.length) % images.length), [images.length]);
+  const lightboxNext = useCallback(() => setLightboxIndex((prev) => (prev + 1) % images.length), [images.length]);
 
-  // Close on Escape, navigate with arrows
+  // Touch swipe for lightbox
+  const touchStartX = useRef(0);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) lightboxNext();
+      else lightboxPrev();
+    }
+  }, [lightboxNext, lightboxPrev]);
+
+  // Keyboard navigation + body scroll lock
   useEffect(() => {
     if (!lightboxOpen) return;
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setLightboxOpen(false);
       if (e.key === "ArrowLeft") lightboxPrev();
       if (e.key === "ArrowRight") lightboxNext();
     };
-    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKey);
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      window.scrollTo(0, scrollY);
       window.removeEventListener("keydown", handleKey);
     };
-  }, [lightboxOpen, images.length]);
+  }, [lightboxOpen, lightboxPrev, lightboxNext]);
 
   return (
     <>
@@ -166,6 +188,8 @@ const PropertyGallery = ({ images, title, type, isNew }: PropertyGalleryProps) =
         <div
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
           onClick={() => setLightboxOpen(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
           {/* Close button */}
           <button
