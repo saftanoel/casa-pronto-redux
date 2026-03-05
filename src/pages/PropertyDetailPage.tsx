@@ -90,12 +90,35 @@ const PropertyDetailPage = () => {
               {/* Left - Main Content */}
               <div className="flex-1 min-w-0">
                 {/* Image Gallery */}
-                <PropertyGallery
-                  images={property.images}
-                  title={property.title}
-                  type={property.type}
-                  isNew={property.isNew}
-                />
+                <div className="relative">
+                  <PropertyGallery
+                    images={property.images}
+                    title={property.title}
+                    type={property.type}
+                    isNew={property.isNew}
+                  />
+                  {/* Mobile share button overlaying gallery */}
+                  <button
+                    className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md lg:hidden"
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: property.title,
+                          text: `${property.title} - ${property.price}`,
+                          url: window.location.href,
+                        });
+                      } else {
+                        navigator.clipboard.writeText(window.location.href);
+                        import("sonner").then(({ toast }) => {
+                          toast.success("Link copiat în clipboard!");
+                        });
+                      }
+                    }}
+                    aria-label="Distribuie"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
+                </div>
 
                 {/* Property Details Card */}
                 <div className="bg-card rounded-xl border border-border p-6 mb-6">
@@ -221,8 +244,8 @@ const PropertyDetailPage = () => {
 
               {/* Right Sidebar */}
               <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
-                {/* Actions */}
-                <div className="bg-card rounded-xl p-5 shadow-[var(--card-shadow)] border border-border">
+                {/* Actions - hidden on mobile, share is on gallery */}
+                <div className="hidden lg:block bg-card rounded-xl p-5 shadow-[var(--card-shadow)] border border-border">
                   <Button
                     variant="outline"
                     className="w-full gap-2"
