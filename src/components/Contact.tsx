@@ -18,7 +18,7 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/xyzywzkr";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mdawnlwr";
 
 const contactInfo = [
   { icon: Phone, label: "Telefon", value: "0740 197 476", href: "tel:0740197476" },
