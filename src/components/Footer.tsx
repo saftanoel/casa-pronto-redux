@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Linkedin, Youtube, ArrowUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -24,12 +24,6 @@ const Footer = () => {
     ],
   };
 
-  const socials = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
-    { icon: Youtube, href: "#", label: "YouTube" },
-  ];
 
   return (
     <footer className="bg-foreground text-background">
@@ -101,18 +95,6 @@ const Footer = () => {
             © 2024 Casa Pronto Imobiliare. Toate drepturile rezervate.
           </p>
           
-          <div className="flex gap-3">
-            {socials.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                aria-label={social.label}
-                className="w-9 h-9 rounded-lg bg-background/10 hover:bg-primary flex items-center justify-center transition-colors"
-              >
-                <social.icon className="h-4 w-4" />
-              </a>
-            ))}
-          </div>
         </div>
       </div>
 
