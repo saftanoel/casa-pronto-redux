@@ -40,7 +40,16 @@ const Hero = () => {
   const activeTab = filters.tab;
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
+  const [currentBg, setCurrentBg] = useState(0);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBg((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleTabChange = (tab: FilterTab) => {
     setIsFilterLoading(true);
