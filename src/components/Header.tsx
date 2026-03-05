@@ -80,7 +80,7 @@ const Header = () => {
   return (
     <header className={cn(
       "fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border transition-colors duration-500",
-      scrolled ? "bg-[hsl(0_70%_97%/0.95)]" : "bg-background/95"
+      scrolled ? "bg-[hsl(0_65%_94%/0.95)]" : "bg-background/95"
     )}>
       {/* Top bar */}
       <div className="bg-foreground text-background py-2">
