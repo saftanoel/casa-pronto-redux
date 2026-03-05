@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo3.jpg";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -93,7 +93,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 md:h-20 relative">
           {/* Logo */}
           <a href="/" onClick={handleLogoClick} className="flex items-center gap-3 cursor-pointer">
-            <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-20 w-auto object-contain" />
+            <img src={logo} alt="Casa Pronto Logo" className="h-14 md:h-18 w-auto object-contain" />
             <div className="hidden sm:block">
               <h1 className="font-serif font-bold text-lg leading-tight">Casa Pronto</h1>
               <p className="text-xs text-muted-foreground">Imobiliare</p>
