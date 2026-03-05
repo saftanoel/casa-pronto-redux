@@ -168,7 +168,7 @@ const Header = () => {
               {link.label}
             </a>
           ))}
-          <Button className="mt-2 w-full">Publică Anunț</Button>
+          
         </nav>
       </div>
     </header>
