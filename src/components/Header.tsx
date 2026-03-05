@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Menu, X, Phone, Mail, Search } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,18 @@ import logo from "@/assets/logo3.jpg";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { filters, setFilter, scrollToProperties } = useSearch();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
     { label: "Acasă", href: "/" },
@@ -70,7 +78,10 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+    <header className={cn(
+      "fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border transition-colors duration-500",
+      scrolled ? "bg-[hsl(0_70%_97%/0.95)]" : "bg-background/95"
+    )}>
       {/* Top bar */}
       <div className="bg-foreground text-background py-2">
         <div className="container mx-auto px-4 flex justify-between items-center text-sm">
