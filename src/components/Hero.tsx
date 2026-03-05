@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, MapPin, Home, Building2, Ruler, Euro, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
 import heroBg from "@/assets/hero-bg.jpg";
+import heroBg2 from "@/assets/hero-bg-2.jpg";
+import heroBg3 from "@/assets/hero-bg-3.jpg";
+import heroBg4 from "@/assets/hero-bg-4.jpg";
+
+const heroImages = [heroBg, heroBg2, heroBg3, heroBg4];
 
 const zones = [
   "Aiud", "Alba-Micesti", "Ampoi", "Ampoi3", "Ampoita", "Barabant", "Blaj",
