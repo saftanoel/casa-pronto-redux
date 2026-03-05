@@ -82,13 +82,18 @@ const Hero = () => {
       id="home"
       className="relative min-h-screen flex items-center justify-center pt-32 pb-20"
     >
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-foreground/90 via-foreground/70 to-foreground/50" />
-      </div>
+      {/* Background Slideshow */}
+      {heroImages.map((img, index) => (
+        <div
+          key={index}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
+          style={{
+            backgroundImage: `url(${img})`,
+            opacity: currentBg === index ? 1 : 0,
+          }}
+        />
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-br from-foreground/90 via-foreground/70 to-foreground/50" />
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4">
