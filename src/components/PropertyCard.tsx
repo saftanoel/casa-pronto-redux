@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import PropertyImageCarousel from "@/components/PropertyImageCarousel";
 
 interface PropertyCardProps {
   id: number;
   image: string;
+  images?: string[];
   title: string;
   location: string;
   price: string;
@@ -22,6 +24,7 @@ interface PropertyCardProps {
 const PropertyCard = ({
   id,
   image,
+  images,
   title,
   location,
   price,
@@ -33,6 +36,7 @@ const PropertyCard = ({
   className,
   style,
 }: PropertyCardProps) => {
+  const allImages = images && images.length > 0 ? images : [image];
   return (
     <Link to={`/proprietate/${id}`} className="block">
       <article
@@ -42,16 +46,10 @@ const PropertyCard = ({
         )}
         style={style}
       >
-        {/* Image */}
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <img
-            src={image}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          
+        {/* Image Carousel */}
+        <PropertyImageCarousel images={allImages} alt={title} aspectClass="aspect-[4/3]">
           {/* Overlay badges */}
-          <div className="absolute top-4 left-4 flex gap-2">
+          <div className="absolute top-4 left-4 flex gap-2 pointer-events-none z-[5]">
             <Badge
               variant={type === "Vânzare" ? "default" : type === "Închiriere" ? "secondary" : "outline"}
               className={cn(
@@ -68,15 +66,14 @@ const PropertyCard = ({
             )}
           </div>
 
-
           {/* Price tag */}
-          <div className="absolute bottom-4 left-4">
+          <div className="absolute bottom-4 left-4 pointer-events-none z-[5]">
             <p className="text-background font-bold text-xl drop-shadow-lg">
               {price}
               {type === "Închiriere" && <span className="text-sm font-normal">/lună</span>}
             </p>
           </div>
-        </div>
+        </PropertyImageCarousel>
 
         {/* Content */}
         <div className="p-5">
