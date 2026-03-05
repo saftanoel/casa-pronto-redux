@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal } from "lucide-react";
+import PropertyImageCarousel from "@/components/PropertyImageCarousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -48,16 +49,20 @@ function matchTab(p: Property, tab: FilterTab): boolean {
 const PropertyRow = ({ property, search }: { property: Property; search: string }) => (
   <Link to={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 flex flex-col md:flex-row animate-fade-up">
-      <div className="relative md:w-80 aspect-[4/3] md:aspect-auto overflow-hidden flex-shrink-0">
-        <img src={property.image} alt={property.title} className="w-full h-full object-cover" />
-        <div className="absolute top-3 left-3 flex gap-2">
+      <PropertyImageCarousel
+        images={property.images?.length > 0 ? property.images : [property.image]}
+        alt={property.title}
+        className="md:w-80 flex-shrink-0"
+        aspectClass="aspect-[4/3] md:aspect-auto md:min-h-[200px]"
+      >
+        <div className="absolute top-3 left-3 flex gap-2 pointer-events-none z-[5]">
           <Badge variant={property.type === "Vânzare" ? "default" : property.type === "Închiriere" ? "secondary" : "outline"}
             className={cn("text-xs", property.type === "Vândut" && "bg-foreground/80 text-background")}>
             {property.type}
           </Badge>
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
-      </div>
+      </PropertyImageCarousel>
       <div className="flex-1 p-5 flex flex-col justify-between">
         <div>
           <div className="flex items-center gap-1.5 text-muted-foreground text-sm mb-1">
@@ -104,22 +109,25 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
 const PropertyGrid = ({ property, search }: { property: Property; search: string }) => (
   <Link to={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 animate-fade-up">
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <img src={property.image} alt={property.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
-        <div className="absolute top-3 left-3 flex gap-2">
+      <PropertyImageCarousel
+        images={property.images?.length > 0 ? property.images : [property.image]}
+        alt={property.title}
+        aspectClass="aspect-[4/3]"
+      >
+        <div className="absolute top-3 left-3 flex gap-2 pointer-events-none z-[5]">
           <Badge variant={property.type === "Vânzare" ? "default" : property.type === "Închiriere" ? "secondary" : "outline"}
             className={cn("text-xs", property.type === "Vândut" && "bg-foreground/80 text-background")}>
             {property.type}
           </Badge>
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
-        <div className="absolute bottom-3 left-3">
+        <div className="absolute bottom-3 left-3 pointer-events-none z-[5]">
           <p className="text-background font-bold text-xl drop-shadow-lg">
             {property.price}
             {property.type === "Închiriere" && <span className="text-sm font-normal">/lună</span>}
           </p>
         </div>
-      </div>
+      </PropertyImageCarousel>
       <div className="p-4">
         <h3 className="font-serif text-base font-semibold text-foreground line-clamp-1 hover:text-primary transition-colors">{property.title}</h3>
         <div className="flex items-center gap-1.5 text-muted-foreground mt-1.5">
