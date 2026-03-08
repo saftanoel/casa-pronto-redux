@@ -6,6 +6,7 @@ const PER_PAGE_LIST = 12;
 
 export interface WPPost {
   id: number;
+  slug?: string;
   date: string;
   title: { rendered: string };
   content: { rendered: string };
