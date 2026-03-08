@@ -276,7 +276,7 @@ const PropertiesPage = () => {
     }
 
     return result;
-  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy]);
+  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy, apiProperties]);
 
   const handleSearch = () => {
     // Already filtering in real-time via useMemo
@@ -291,7 +291,7 @@ const PropertiesPage = () => {
   };
 
   return (
-    <SearchProvider>
+    <SearchProvider properties={apiProperties} isLoading={isLoadingProperties}>
       <div className="min-h-screen flex flex-col">
         <Header />
         
