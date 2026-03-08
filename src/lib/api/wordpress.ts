@@ -120,7 +120,7 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
   const contentText = stripHtml(post.content.rendered);
   const type = extractType(title);
   const { location, zone } = extractLocation(title);
-  const featuredImage = getImageUrl(post, preferSmallImage);
+  const featuredImage = getImageUrl(post);
 
   // Use property_details for price & specs, with content-based fallbacks
   const details = post.property_details;
