@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { allProperties, type Property } from "@/data/properties";
+import { type Property } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
+import { useProperties } from "@/hooks/useProperties";
 
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
@@ -157,6 +158,7 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
 );
 
 const PropertiesPage = () => {
+  const { data: apiProperties = [], isLoading: isLoadingProperties } = useProperties();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
@@ -228,7 +230,7 @@ const PropertiesPage = () => {
   ];
 
   const filteredProperties = useMemo(() => {
-    let result = allProperties.filter((p) => {
+    let result = apiProperties.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
       if (zone && p.zone !== zone) return false;
       if (category && p.propertyType !== category) return false;
