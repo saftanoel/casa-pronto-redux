@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
@@ -186,7 +186,7 @@ const PropertiesPage = () => {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  
 
   useEffect(() => {
     window.scrollTo(0, 0);
