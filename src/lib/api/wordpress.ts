@@ -1,7 +1,7 @@
 import { type Property } from "@/data/properties";
 
 const WP_API_BASE = "https://casapronto.ro/wp-json/wp/v2";
-const FIELDS = "_fields=id,date,title,content,featured_media,_links,_embedded";
+const FIELDS = "_fields=id,date,slug,title,content,featured_media,gallery_urls,property_details,_links,_embedded";
 const PER_PAGE_LIST = 12;
 
 export interface WPPost {
@@ -11,6 +11,13 @@ export interface WPPost {
   title: { rendered: string };
   content: { rendered: string };
   featured_media: number;
+  gallery_urls?: string[];
+  property_details?: {
+    price?: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    area?: number;
+  };
   _embedded?: {
     "wp:featuredmedia"?: Array<{
       source_url: string;
@@ -44,23 +51,13 @@ function extractType(title: string): "Vânzare" | "Închiriere" | "Vândut" {
   return "Vânzare";
 }
 
-function extractPrice(title: string, content: string): { price: string; priceValue: number } {
-  const text = title + " " + content;
-  const priceMatch = text.match(/(?:pret|preț)[^0-9]*?([\d.,]+)\s*euro/i)
-    || text.match(/([\d.,]+)\s*euro/i);
-  
-  if (priceMatch) {
-    const raw = priceMatch[1].replace(/\./g, "").replace(",", ".");
-    const value = parseFloat(raw);
-    if (!isNaN(value)) {
-      const formatted = value.toLocaleString("ro-RO");
-      const suffix = text.toLowerCase().includes("euro/mp") ? " €/mp" 
-        : text.toLowerCase().includes("euro/luna") ? " €" 
-        : " €";
-      return { price: `${formatted}${suffix}`, priceValue: value };
-    }
-  }
-  return { price: "Preț la cerere", priceValue: 0 };
+function parsePrice(raw: string | undefined): { price: string; priceValue: number } {
+  if (!raw) return { price: "Preț la cerere", priceValue: 0 };
+  const cleaned = raw.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
+  const value = parseFloat(cleaned);
+  if (isNaN(value) || value === 0) return { price: "Preț la cerere", priceValue: 0 };
+  const formatted = value.toLocaleString("ro-RO");
+  return { price: `${formatted} €`, priceValue: value };
 }
 
 function extractLocation(title: string): { location: string; zone: string } {
@@ -80,26 +77,6 @@ function extractPropertyType(title: string): string {
   if (t.includes("birou") || t.includes("birouri")) return "birouri";
   if (t.includes("spatiu") || t.includes("spațiu") || t.includes("depozit") || t.includes("comercial")) return "spatii-comerciale";
   return "altele";
-}
-
-function extractNumber(text: string, patterns: RegExp[]): number {
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match) return parseInt(match[1]);
-  }
-  return 0;
-}
-
-function extractBeds(content: string, title: string): number {
-  return extractNumber(title + " " + content, [/(\d+)\s*camere/i, /(\d+)\s*dormitor/i]);
-}
-
-function extractBaths(content: string): number {
-  return extractNumber(content, [/(\d+)\s*b[aă]i/i, /(\d+)\s*baie/i]);
-}
-
-function extractArea(content: string): number {
-  return extractNumber(content, [/suprafat[aă][^0-9]*?(\d+)\s*mp/i, /(\d+)\s*mp/i, /(\d+)\s*m²/i]);
 }
 
 function extractFeatures(content: string): string[] {
@@ -155,23 +132,34 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
   const title = post.title.rendered;
   const contentText = stripHtml(post.content.rendered);
   const type = extractType(title);
-  const { price, priceValue } = extractPrice(title, contentText);
   const { location, zone } = extractLocation(title);
-  const imageUrl = getImageUrl(post, preferSmallImage);
+  const featuredImage = getImageUrl(post, preferSmallImage);
+
+  // Use property_details for price & specs, with content-based fallbacks
+  const details = post.property_details;
+  const { price, priceValue } = parsePrice(details?.price);
+  const beds = details?.bedrooms ?? 0;
+  const baths = details?.bathrooms ?? 0;
+  const area = details?.area ?? 0;
+
+  // Use gallery_urls for images, falling back to featured image
+  const galleryImages = post.gallery_urls && post.gallery_urls.length > 0
+    ? post.gallery_urls
+    : [featuredImage];
 
   return {
     id: post.id,
-    image: imageUrl,
-    images: [imageUrl],
+    image: featuredImage,
+    images: galleryImages,
     title,
     description: contentText.trim(),
     location,
     zone,
     price,
     priceValue,
-    beds: extractBeds(contentText, title),
-    baths: extractBaths(contentText),
-    area: extractArea(contentText),
+    beds,
+    baths,
+    area,
     type,
     propertyType: extractPropertyType(title),
     isNew: isNewProperty(post.date),
@@ -180,7 +168,7 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
   };
 }
 
-/** Paginated fetch — used for infinite scroll / load more */
+/** Paginated fetch — used for load more */
 export async function fetchPropertiesPaginated(page = 1, perPage = PER_PAGE_LIST): Promise<PaginatedResult> {
   const url = `${WP_API_BASE}/anunturi?_embed&${FIELDS}&per_page=${perPage}&page=${page}`;
   const response = await fetch(url);
@@ -230,67 +218,11 @@ export async function fetchAllProperties(): Promise<Property[]> {
   return allPosts.map(p => mapWPPostToProperty(p, true));
 }
 
-/** Extract gallery image URLs from the original WordPress property page HTML */
-async function scrapeGalleryImages(postSlug: string): Promise<string[]> {
-  try {
-    // The original site URL pattern: /anunturi-imobiliare/{slug}/
-    const pageUrl = `https://www.casapronto.ro/anunturi-imobiliare/${postSlug}/`;
-    const response = await fetch(pageUrl);
-    if (!response.ok) return [];
-    const html = await response.text();
-    
-    // Extract images from the bxslider2 gallery
-    const galleryMatch = html.match(/<ul class="bxslider2"[^>]*>([\s\S]*?)<\/ul>/);
-    if (!galleryMatch) return [];
-    
-    const imgRegex = /<img[^>]+src="([^"]+)"/g;
-    const images: string[] = [];
-    let match;
-    while ((match = imgRegex.exec(galleryMatch[1])) !== null) {
-      const url = match[1];
-      // Skip tiny thumbnails (150x150)
-      if (!url.includes("-150x150")) {
-        images.push(url);
-      }
-    }
-    return images;
-  } catch {
-    return [];
-  }
-}
-
+/** Fetch single property by ID — gallery comes from gallery_urls field */
 export async function fetchPropertyById(id: number): Promise<Property | null> {
-  const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}?_embed`);
+  const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}?_embed&${FIELDS}`);
   if (!postRes.ok) return null;
   
   const post: WPPost = await postRes.json();
-  const property = mapWPPostToProperty(post);
-
-  // Extract slug from the post link or guid
-  const slug = post.slug || String(id);
-  
-  // Try scraping the original page for gallery images first
-  const galleryImages = await scrapeGalleryImages(slug);
-  
-  if (galleryImages.length > 1) {
-    property.images = galleryImages;
-    property.image = galleryImages[0];
-  } else {
-    // Fallback: try the media endpoint
-    try {
-      const mediaRes = await fetch(`${WP_API_BASE}/media?parent=${id}&per_page=100`);
-      if (mediaRes.ok) {
-        const media: Array<{ source_url: string; media_details?: { sizes?: { large?: { source_url: string }; full?: { source_url: string } } } }> = await mediaRes.json();
-        const allImages = media
-          .map(m => m.media_details?.sizes?.large?.source_url || m.media_details?.sizes?.full?.source_url || m.source_url)
-          .filter(Boolean);
-        if (allImages.length > 0) {
-          property.images = allImages;
-          property.image = allImages[0];
-        }
-      }
-    } catch { /* keep featured image */ }
-  }
-
-  return property;
+  return mapWPPostToProperty(post);
 }
