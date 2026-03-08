@@ -205,8 +205,11 @@ export async function fetchAllProperties(): Promise<Property[]> {
   return allPosts.map(p => mapWPPostToProperty(p, true));
 }
 
-/** Fetch single property by ID — uses the list endpoint and finds by id */
+/** Fetch single property by ID — uses dedicated endpoint */
 export async function fetchPropertyById(id: number): Promise<Property | null> {
-  const all = await fetchAllProperties();
-  return all.find(p => p.id === id) ?? null;
+  const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}`);
+  if (!postRes.ok) return null;
+
+  const post: WPPost = await postRes.json();
+  return mapWPPostToProperty(post);
 }
