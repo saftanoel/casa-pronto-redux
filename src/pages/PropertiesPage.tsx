@@ -503,6 +503,7 @@ const PropertiesPage = () => {
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground mb-6">
                   {isLoadingProperties ? "Se încarcă..." : `${filteredProperties.length} din ${totalItems} proprietăți`}
+                  {isPending && <span className="ml-2 text-primary">Se actualizează...</span>}
                 </p>
 
                 {isLoadingProperties ? (
@@ -517,41 +518,59 @@ const PropertiesPage = () => {
                   )
                 ) : filteredProperties.length > 0 ? (
                   <>
-                    {viewMode === "list" ? (
-                      <div className="flex flex-col gap-6">
-                        {filteredProperties.map((property) => (
-                          <PropertyRow key={property.id} property={property} search={currentSearch} />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {filteredProperties.map((property) => (
-                          <PropertyGrid key={property.id} property={property} search={currentSearch} />
-                        ))}
-                      </div>
-                    )}
+                    {(() => {
+                      const visibleProperties = filteredProperties.slice(0, visibleCount);
+                      const hasMoreLocal = visibleCount < filteredProperties.length;
+                      return (
+                        <>
+                          {viewMode === "list" ? (
+                            <div className="flex flex-col gap-6">
+                              {visibleProperties.map((property) => (
+                                <PropertyRow key={property.id} property={property} search={currentSearch} />
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {visibleProperties.map((property) => (
+                                <PropertyGrid key={property.id} property={property} search={currentSearch} />
+                              ))}
+                            </div>
+                          )}
 
-                    {/* Load More Button */}
-                    <div className="flex justify-center py-8">
-                      {isFetchingNextPage ? (
-                        <Button variant="outline" size="lg" disabled className="gap-2 min-h-[44px]">
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Se încarcă...
-                        </Button>
-                      ) : hasNextPage ? (
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          onClick={() => fetchNextPage()}
-                          className="gap-2 min-h-[44px]"
-                        >
-                          Încarcă Mai Multe
-                          <ChevronRight className="h-4 w-4 rotate-90" />
-                        </Button>
-                      ) : allProperties.length > 0 ? (
-                        <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
-                      ) : null}
-                    </div>
+                          {/* Load More Button */}
+                          <div className="flex justify-center py-8">
+                            {hasMoreLocal ? (
+                              <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
+                                className="gap-2 min-h-[44px]"
+                              >
+                                Încarcă Mai Multe ({filteredProperties.length - visibleCount} rămase)
+                                <ChevronRight className="h-4 w-4 rotate-90" />
+                              </Button>
+                            ) : isFetchingNextPage ? (
+                              <Button variant="outline" size="lg" disabled className="gap-2 min-h-[44px]">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                Se încarcă...
+                              </Button>
+                            ) : hasNextPage ? (
+                              <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={() => fetchNextPage()}
+                                className="gap-2 min-h-[44px]"
+                              >
+                                Încarcă Mai Multe de pe Server
+                                <ChevronRight className="h-4 w-4 rotate-90" />
+                              </Button>
+                            ) : allProperties.length > 0 ? (
+                              <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
+                            ) : null}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </>
                 ) : (
                   <div className="text-center py-20 bg-muted/30 rounded-xl">
