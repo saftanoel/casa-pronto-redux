@@ -1,7 +1,7 @@
 import { type Property } from "@/data/properties";
 
 const WP_API_BASE = "https://casapronto.ro/wp-json/casapronto/v1";
-const FIELDS = "_fields=id,date,slug,title,content,featured_media,gallery_urls,property_details,_links,_embedded";
+// Custom endpoint returns flattened data — no _embed or _fields needed
 const PER_PAGE_LIST = 12;
 
 export interface WPPost {
@@ -170,7 +170,7 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
 
 /** Paginated fetch — used for load more */
 export async function fetchPropertiesPaginated(page = 1, perPage = PER_PAGE_LIST): Promise<PaginatedResult> {
-  const url = `${WP_API_BASE}/anunturi?_embed&${FIELDS}&per_page=${perPage}&page=${page}`;
+  const url = `${WP_API_BASE}/anunturi?per_page=${perPage}&page=${page}`;
   const response = await fetch(url);
   
   if (!response.ok) {
@@ -190,7 +190,7 @@ export async function fetchPropertiesPaginated(page = 1, perPage = PER_PAGE_LIST
 
 /** Fetch all properties — still needed for homepage featured + search context */
 export async function fetchAllProperties(): Promise<Property[]> {
-  const firstUrl = `${WP_API_BASE}/anunturi?_embed&${FIELDS}&per_page=100&page=1`;
+  const firstUrl = `${WP_API_BASE}/anunturi?per_page=100&page=1`;
   const firstResponse = await fetch(firstUrl);
   
   if (!firstResponse.ok) {
@@ -205,7 +205,7 @@ export async function fetchAllProperties(): Promise<Property[]> {
     const promises = [];
     for (let page = 2; page <= totalPages; page++) {
       promises.push(
-        fetch(`${WP_API_BASE}/anunturi?_embed&${FIELDS}&per_page=100&page=${page}`)
+        fetch(`${WP_API_BASE}/anunturi?per_page=100&page=${page}`)
           .then(r => r.json() as Promise<WPPost[]>)
       );
     }
@@ -220,7 +220,7 @@ export async function fetchAllProperties(): Promise<Property[]> {
 
 /** Fetch single property by ID — gallery comes from gallery_urls field */
 export async function fetchPropertyById(id: number): Promise<Property | null> {
-  const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}?_embed&${FIELDS}`);
+  const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}`);
   if (!postRes.ok) return null;
   
   const post: WPPost = await postRes.json();
