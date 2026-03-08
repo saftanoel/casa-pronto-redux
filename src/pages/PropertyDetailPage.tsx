@@ -4,12 +4,12 @@ import { ChevronRight, MapPin, Bed, Bath, Square, Phone, Mail, Share2, ArrowLeft
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { allProperties } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyGallery from "@/components/PropertyGallery";
 import { SearchProvider } from "@/context/SearchContext";
+import { useProperty, useProperties } from "@/hooks/useProperties";
 
 const PropertyDetailPage = () => {
   const { id } = useParams();
@@ -20,14 +20,17 @@ const PropertyDetailPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
-  const property = allProperties.find((p) => p.id === Number(id));
+
+  const propertyId = Number(id);
+  const { data: property, isLoading } = useProperty(propertyId);
+  const { data: allProps = [] } = useProperties();
 
   const similarProperties = useMemo(() => {
     if (!property) return [];
-    return allProperties
+    return allProps
       .filter((p) => p.id !== property.id && (p.propertyType === property.propertyType || p.type === property.type))
       .slice(0, 3);
-  }, [property]);
+  }, [property, allProps]);
 
   if (!property) {
     return (
