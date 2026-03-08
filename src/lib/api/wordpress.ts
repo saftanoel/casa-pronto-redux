@@ -224,11 +224,27 @@ export async function fetchAllProperties(): Promise<Property[]> {
 }
 
 export async function fetchPropertyById(id: number): Promise<Property | null> {
-  const url = `${WP_API_BASE}/anunturi/${id}?_embed`;
-  const response = await fetch(url);
+  const [postRes, mediaRes] = await Promise.all([
+    fetch(`${WP_API_BASE}/anunturi/${id}?_embed`),
+    fetch(`${WP_API_BASE}/media?parent=${id}&per_page=100`),
+  ]);
   
-  if (!response.ok) return null;
+  if (!postRes.ok) return null;
   
-  const post: WPPost = await response.json();
-  return mapWPPostToProperty(post);
+  const post: WPPost = await postRes.json();
+  const property = mapWPPostToProperty(post);
+
+  // Add all attached media images
+  if (mediaRes.ok) {
+    const media: Array<{ source_url: string; media_details?: { sizes?: { large?: { source_url: string }; full?: { source_url: string } } } }> = await mediaRes.json();
+    const allImages = media
+      .map(m => m.media_details?.sizes?.large?.source_url || m.media_details?.sizes?.full?.source_url || m.source_url)
+      .filter(Boolean);
+    if (allImages.length > 0) {
+      property.images = allImages;
+      property.image = allImages[0];
+    }
+  }
+
+  return property;
 }
