@@ -366,12 +366,14 @@ const PropertiesPage = () => {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => startTransition(() => setActiveTab(tab.id))}
+                    disabled={isPending}
                     className={cn(
                       "flex-shrink-0 whitespace-nowrap px-5 py-2.5 text-sm font-medium tracking-wider rounded-lg transition-all duration-200 font-serif min-h-[44px]",
                       activeTab === tab.id
                         ? "bg-primary text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/10",
+                      isPending && "opacity-70 cursor-wait"
                     )}
                   >
                     {tab.label}
