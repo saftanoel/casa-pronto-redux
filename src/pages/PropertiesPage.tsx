@@ -158,6 +158,8 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
   </Link>
 );
 
+const ITEMS_PER_PAGE = 6;
+
 const PropertiesPage = () => {
   const {
     data,
@@ -186,7 +188,8 @@ const PropertiesPage = () => {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     window.scrollTo(0, 0);
