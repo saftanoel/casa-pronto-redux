@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
-import logo from "@/assets/logo3.jpg";
+const logo = "https://www.casapronto.ro/wp-content/uploads/2026/03/logo3-D-qtkmdT.jpg";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

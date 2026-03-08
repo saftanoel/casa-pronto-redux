@@ -104,6 +104,7 @@ const PropertyGallery = ({ images, title, type, isNew }: PropertyGalleryProps) =
                     alt={`${title} - ${i + 1}`}
                     className="w-full h-full object-cover"
                     draggable={false}
+                    loading="lazy"
                   />
                 </div>
               ))}
@@ -160,7 +161,7 @@ const PropertyGallery = ({ images, title, type, isNew }: PropertyGalleryProps) =
                     activeIndex === i ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
                   )}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>

@@ -6,8 +6,10 @@ export function useProperties() {
   return useQuery<Property[]>({
     queryKey: ["properties"],
     queryFn: fetchAllProperties,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
 
@@ -30,6 +32,8 @@ export function useProperty(id: number | undefined) {
     queryKey: ["property", id],
     queryFn: () => (id ? fetchPropertyById(id) : Promise.resolve(null)),
     enabled: !!id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
