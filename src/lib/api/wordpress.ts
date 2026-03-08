@@ -104,22 +104,9 @@ function extractFeatures(content: string): string[] {
   return features;
 }
 
-/** Prefer medium > large > full for list views (smaller payload) */
-function getImageUrl(post: WPPost, preferSmall = false): string {
-  const media = post._embedded?.["wp:featuredmedia"]?.[0];
-  if (!media) return "/placeholder.svg";
-  const sizes = media.media_details?.sizes;
-  if (preferSmall) {
-    return sizes?.medium?.source_url
-      || sizes?.medium_large?.source_url
-      || sizes?.large?.source_url
-      || sizes?.full?.source_url
-      || media.source_url;
-  }
-  return sizes?.large?.source_url
-    || sizes?.medium_large?.source_url
-    || sizes?.full?.source_url
-    || media.source_url;
+/** Get featured image from gallery_urls or placeholder */
+function getImageUrl(post: WPPost): string {
+  return post.gallery_urls?.[0] || "/placeholder.svg";
 }
 
 function isNewProperty(dateStr: string): boolean {
