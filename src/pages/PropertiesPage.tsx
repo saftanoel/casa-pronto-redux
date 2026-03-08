@@ -214,20 +214,6 @@ const PropertiesPage = () => {
     setSearchParams(params, { replace: true });
   }, [activeTab, zone, category, rooms, area, price, searchQuery]);
 
-  // Infinite scroll observer
-  useEffect(() => {
-    if (!loadMoreRef.current || !hasNextPage) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1, rootMargin: "200px" }
-    );
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const currentSearch = useMemo(() => {
     const params = new URLSearchParams();
@@ -512,13 +498,13 @@ const PropertiesPage = () => {
                       </div>
                     )}
 
-                    {/* Infinite scroll trigger + Load More */}
-                    <div ref={loadMoreRef} className="flex justify-center py-8">
+                    {/* Load More Button */}
+                    <div className="flex justify-center py-8">
                       {isFetchingNextPage ? (
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                        <Button variant="outline" size="lg" disabled className="gap-2 min-h-[44px]">
                           <Loader2 className="h-5 w-5 animate-spin" />
-                          <span className="text-sm">Se încarcă mai multe...</span>
-                        </div>
+                          Se încarcă...
+                        </Button>
                       ) : hasNextPage ? (
                         <Button
                           variant="outline"
@@ -529,9 +515,9 @@ const PropertiesPage = () => {
                           Încarcă Mai Multe
                           <ChevronRight className="h-4 w-4 rotate-90" />
                         </Button>
-                      ) : (
+                      ) : allProperties.length > 0 ? (
                         <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
-                      )}
+                      ) : null}
                     </div>
                   </>
                 ) : (
