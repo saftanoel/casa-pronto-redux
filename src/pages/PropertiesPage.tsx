@@ -232,14 +232,22 @@ const PropertiesPage = () => {
   }, [activeTab, zone, category, rooms, area, price, searchQuery]);
 
   const resetAllFilters = () => {
-    setActiveTab("toate");
-    setSearchQuery("");
-    setZone("");
-    setCategory("");
-    setRooms("");
-    setArea("");
-    setPrice("");
+    startTransition(() => {
+      setActiveTab("toate");
+      setSearchQuery("");
+      setZone("");
+      setCategory("");
+      setRooms("");
+      setArea("");
+      setPrice("");
+      setVisibleCount(ITEMS_PER_PAGE);
+    });
   };
+
+  // Reset visible count when any filter changes
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy]);
 
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "TOATE" },
