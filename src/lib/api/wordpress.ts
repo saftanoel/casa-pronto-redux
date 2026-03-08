@@ -1,6 +1,6 @@
 import { type Property } from "@/data/properties";
 
-const WP_API_BASE = "https://casapronto.ro/wp-json/wp/v2";
+const WP_API_BASE = "https://casapronto.ro/wp-json/casapronto/v1";
 const FIELDS = "_fields=id,date,slug,title,content,featured_media,gallery_urls,property_details,_links,_embedded";
 const PER_PAGE_LIST = 12;
 
