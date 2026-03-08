@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
-import heroBg from "@/assets/hero-bg.jpg";
-import heroBg2 from "@/assets/hero-bg-2.jpg";
-import heroBg3 from "@/assets/hero-bg-3.jpg";
-import heroBg4 from "@/assets/hero-bg-4.jpg";
-
-const heroImages = [heroBg, heroBg2, heroBg3, heroBg4];
+const heroImages = [
+  "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-cCucqGh7.jpg",
+  "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-4-B0lpn2F7.jpg",
+  "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-3-C9kBEvwH.jpg",
+  "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-2-BEiqB60L.jpg",
+];
 
 const zones = [
   "Aiud", "Alba-Micesti", "Ampoi", "Ampoi3", "Ampoita", "Barabant", "Blaj",
