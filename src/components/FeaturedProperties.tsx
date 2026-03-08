@@ -5,7 +5,7 @@ import PropertyCard from "./PropertyCard";
 import { useSearch } from "@/context/SearchContext";
 
 const FeaturedProperties = () => {
-  const { filteredProperties } = useSearch();
+  const { filteredProperties, isLoading } = useSearch();
 
   // Show max 6 on homepage
   const displayProperties = filteredProperties.slice(0, 6);
@@ -27,7 +27,12 @@ const FeaturedProperties = () => {
         </div>
 
         {/* Properties grid */}
-        {displayProperties.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-16">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Se încarcă proprietățile...</p>
+          </div>
+        ) : displayProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {displayProperties.map((property, index) => (
               <PropertyCard
