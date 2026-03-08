@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
@@ -293,6 +293,26 @@ const PropertiesPage = () => {
 
     return result;
   }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy, allProperties]);
+
+  // Auto-fetch more pages if filters hide all newly loaded properties
+  const prevFilteredCountRef = useRef(filteredProperties.length);
+  useEffect(() => {
+    const prevCount = prevFilteredCountRef.current;
+    prevFilteredCountRef.current = filteredProperties.length;
+    
+    // If we have active filters, just loaded a page, but filtered count didn't grow, auto-fetch next
+    const hasActiveFilters = activeTab !== "toate" || zone || category || rooms || area || price || searchQuery;
+    if (
+      hasActiveFilters &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      filteredProperties.length === prevCount &&
+      allProperties.length > 0 &&
+      prevCount > 0
+    ) {
+      fetchNextPage();
+    }
+  }, [allProperties.length, filteredProperties.length, hasNextPage, isFetchingNextPage, fetchNextPage, activeTab, zone, category, rooms, area, price, searchQuery]);
 
   const handleSearch = () => {};
 
