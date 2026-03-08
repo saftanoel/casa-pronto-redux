@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useMemo, type ReactNode } from "react";
-import { allProperties, type Property } from "@/data/properties";
+import { type Property } from "@/data/properties";
 
 export type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
@@ -17,6 +17,8 @@ interface SearchContextType {
   filters: SearchFilters;
   setFilter: <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => void;
   filteredProperties: Property[];
+  allProperties: Property[];
+  isLoading: boolean;
   scrollToProperties: () => void;
 }
 
@@ -70,7 +72,13 @@ function matchesTab(property: Property, tab: FilterTab): boolean {
   }
 }
 
-export const SearchProvider = ({ children }: { children: ReactNode }) => {
+interface SearchProviderProps {
+  children: ReactNode;
+  properties?: Property[];
+  isLoading?: boolean;
+}
+
+export const SearchProvider = ({ children, properties = [], isLoading = false }: SearchProviderProps) => {
   const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
 
   const setFilter = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
@@ -78,7 +86,7 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const filteredProperties = useMemo(() => {
-    return allProperties.filter((p) => {
+    return properties.filter((p) => {
       if (!matchesTab(p, filters.tab)) return false;
       if (filters.zone && p.zone !== filters.zone) return false;
       if (filters.propertyType && p.propertyType !== filters.propertyType) return false;
@@ -95,14 +103,14 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
       }
       return true;
     });
-  }, [filters]);
+  }, [filters, properties]);
 
   const scrollToProperties = () => {
     document.getElementById("properties")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <SearchContext.Provider value={{ filters, setFilter, filteredProperties, scrollToProperties }}>
+    <SearchContext.Provider value={{ filters, setFilter, filteredProperties, allProperties: properties, isLoading, scrollToProperties }}>
       {children}
     </SearchContext.Provider>
   );
