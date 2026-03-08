@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
@@ -158,6 +158,8 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
   </Link>
 );
 
+const ITEMS_PER_PAGE = 6;
+
 const PropertiesPage = () => {
   const {
     data,
@@ -186,7 +188,8 @@ const PropertiesPage = () => {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -229,14 +232,22 @@ const PropertiesPage = () => {
   }, [activeTab, zone, category, rooms, area, price, searchQuery]);
 
   const resetAllFilters = () => {
-    setActiveTab("toate");
-    setSearchQuery("");
-    setZone("");
-    setCategory("");
-    setRooms("");
-    setArea("");
-    setPrice("");
+    startTransition(() => {
+      setActiveTab("toate");
+      setSearchQuery("");
+      setZone("");
+      setCategory("");
+      setRooms("");
+      setArea("");
+      setPrice("");
+      setVisibleCount(ITEMS_PER_PAGE);
+    });
   };
+
+  // Reset visible count when any filter changes
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy]);
 
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "TOATE" },
@@ -355,12 +366,14 @@ const PropertiesPage = () => {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => startTransition(() => setActiveTab(tab.id))}
+                    disabled={isPending}
                     className={cn(
                       "flex-shrink-0 whitespace-nowrap px-5 py-2.5 text-sm font-medium tracking-wider rounded-lg transition-all duration-200 font-serif min-h-[44px]",
                       activeTab === tab.id
                         ? "bg-primary text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/10",
+                      isPending && "opacity-70 cursor-wait"
                     )}
                   >
                     {tab.label}
@@ -490,6 +503,7 @@ const PropertiesPage = () => {
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground mb-6">
                   {isLoadingProperties ? "Se încarcă..." : `${filteredProperties.length} din ${totalItems} proprietăți`}
+                  {isPending && <span className="ml-2 text-primary">Se actualizează...</span>}
                 </p>
 
                 {isLoadingProperties ? (
@@ -504,41 +518,59 @@ const PropertiesPage = () => {
                   )
                 ) : filteredProperties.length > 0 ? (
                   <>
-                    {viewMode === "list" ? (
-                      <div className="flex flex-col gap-6">
-                        {filteredProperties.map((property) => (
-                          <PropertyRow key={property.id} property={property} search={currentSearch} />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {filteredProperties.map((property) => (
-                          <PropertyGrid key={property.id} property={property} search={currentSearch} />
-                        ))}
-                      </div>
-                    )}
+                    {(() => {
+                      const visibleProperties = filteredProperties.slice(0, visibleCount);
+                      const hasMoreLocal = visibleCount < filteredProperties.length;
+                      return (
+                        <>
+                          {viewMode === "list" ? (
+                            <div className="flex flex-col gap-6">
+                              {visibleProperties.map((property) => (
+                                <PropertyRow key={property.id} property={property} search={currentSearch} />
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {visibleProperties.map((property) => (
+                                <PropertyGrid key={property.id} property={property} search={currentSearch} />
+                              ))}
+                            </div>
+                          )}
 
-                    {/* Load More Button */}
-                    <div className="flex justify-center py-8">
-                      {isFetchingNextPage ? (
-                        <Button variant="outline" size="lg" disabled className="gap-2 min-h-[44px]">
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Se încarcă...
-                        </Button>
-                      ) : hasNextPage ? (
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          onClick={() => fetchNextPage()}
-                          className="gap-2 min-h-[44px]"
-                        >
-                          Încarcă Mai Multe
-                          <ChevronRight className="h-4 w-4 rotate-90" />
-                        </Button>
-                      ) : allProperties.length > 0 ? (
-                        <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
-                      ) : null}
-                    </div>
+                          {/* Load More Button */}
+                          <div className="flex justify-center py-8">
+                            {hasMoreLocal ? (
+                              <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
+                                className="gap-2 min-h-[44px]"
+                              >
+                                Încarcă Mai Multe ({filteredProperties.length - visibleCount} rămase)
+                                <ChevronRight className="h-4 w-4 rotate-90" />
+                              </Button>
+                            ) : isFetchingNextPage ? (
+                              <Button variant="outline" size="lg" disabled className="gap-2 min-h-[44px]">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                Se încarcă...
+                              </Button>
+                            ) : hasNextPage ? (
+                              <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={() => fetchNextPage()}
+                                className="gap-2 min-h-[44px]"
+                              >
+                                Încarcă Mai Multe de pe Server
+                                <ChevronRight className="h-4 w-4 rotate-90" />
+                              </Button>
+                            ) : allProperties.length > 0 ? (
+                              <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
+                            ) : null}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </>
                 ) : (
                   <div className="text-center py-20 bg-muted/30 rounded-xl">
