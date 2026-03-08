@@ -1,6 +1,8 @@
 import { type Property } from "@/data/properties";
 
 const WP_API_BASE = "https://casapronto.ro/wp-json/wp/v2";
+const FIELDS = "_fields=id,date,title,content,featured_media,_links,_embedded";
+const PER_PAGE_LIST = 12;
 
 export interface WPPost {
   id: number;
@@ -16,10 +18,17 @@ export interface WPPost {
           full?: { source_url: string };
           large?: { source_url: string };
           medium_large?: { source_url: string };
+          medium?: { source_url: string };
         };
       };
     }>;
   };
+}
+
+export interface PaginatedResult {
+  properties: Property[];
+  totalPages: number;
+  totalItems: number;
 }
 
 function stripHtml(html: string): string {
@@ -36,8 +45,6 @@ function extractType(title: string): "Vânzare" | "Închiriere" | "Vândut" {
 
 function extractPrice(title: string, content: string): { price: string; priceValue: number } {
   const text = title + " " + content;
-  
-  // Match patterns like "350 Euro/luna", "89.000 Euro", "5 Euro/mp"
   const priceMatch = text.match(/(?:pret|preț)[^0-9]*?([\d.,]+)\s*euro/i)
     || text.match(/([\d.,]+)\s*euro/i);
   
@@ -45,7 +52,6 @@ function extractPrice(title: string, content: string): { price: string; priceVal
     const raw = priceMatch[1].replace(/\./g, "").replace(",", ".");
     const value = parseFloat(raw);
     if (!isNaN(value)) {
-      // Format price
       const formatted = value.toLocaleString("ro-RO");
       const suffix = text.toLowerCase().includes("euro/mp") ? " €/mp" 
         : text.toLowerCase().includes("euro/luna") ? " €" 
@@ -84,32 +90,20 @@ function extractNumber(text: string, patterns: RegExp[]): number {
 }
 
 function extractBeds(content: string, title: string): number {
-  const text = title + " " + content;
-  return extractNumber(text, [
-    /(\d+)\s*camere/i,
-    /(\d+)\s*dormitor/i,
-  ]);
+  return extractNumber(title + " " + content, [/(\d+)\s*camere/i, /(\d+)\s*dormitor/i]);
 }
 
 function extractBaths(content: string): number {
-  return extractNumber(content, [
-    /(\d+)\s*b[aă]i/i,
-    /(\d+)\s*baie/i,
-  ]);
+  return extractNumber(content, [/(\d+)\s*b[aă]i/i, /(\d+)\s*baie/i]);
 }
 
 function extractArea(content: string): number {
-  return extractNumber(content, [
-    /suprafat[aă][^0-9]*?(\d+)\s*mp/i,
-    /(\d+)\s*mp/i,
-    /(\d+)\s*m²/i,
-  ]);
+  return extractNumber(content, [/suprafat[aă][^0-9]*?(\d+)\s*mp/i, /(\d+)\s*mp/i, /(\d+)\s*m²/i]);
 }
 
 function extractFeatures(content: string): string[] {
   const features: string[] = [];
   const text = content.toLowerCase();
-  
   const featureKeywords = [
     { keyword: "central", label: "Centrală termică" },
     { keyword: "balcon", label: "Balcon" },
@@ -126,38 +120,43 @@ function extractFeatures(content: string): string[] {
     { keyword: "aer conditionat", label: "Aer condiționat" },
     { keyword: "izolat", label: "Izolație termică" },
   ];
-  
   for (const { keyword, label } of featureKeywords) {
     if (text.includes(keyword)) features.push(label);
   }
-  
   return features;
 }
 
-function getImageUrl(post: WPPost): string {
+/** Prefer medium > large > full for list views (smaller payload) */
+function getImageUrl(post: WPPost, preferSmall = false): string {
   const media = post._embedded?.["wp:featuredmedia"]?.[0];
   if (!media) return "/placeholder.svg";
-  
-  // Prefer large size, fall back to full, then source_url
-  return media.media_details?.sizes?.large?.source_url
-    || media.media_details?.sizes?.full?.source_url
+  const sizes = media.media_details?.sizes;
+  if (preferSmall) {
+    return sizes?.medium?.source_url
+      || sizes?.medium_large?.source_url
+      || sizes?.large?.source_url
+      || sizes?.full?.source_url
+      || media.source_url;
+  }
+  return sizes?.large?.source_url
+    || sizes?.medium_large?.source_url
+    || sizes?.full?.source_url
     || media.source_url;
 }
 
 function isNewProperty(dateStr: string): boolean {
   const postDate = new Date(dateStr);
   const now = new Date();
-  const diffDays = (now.getTime() - postDate.getTime()) / (1000 * 60 * 60 * 24);
-  return diffDays <= 14;
+  return (now.getTime() - postDate.getTime()) / (1000 * 60 * 60 * 24) <= 14;
 }
 
-export function mapWPPostToProperty(post: WPPost): Property {
+export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Property {
   const title = post.title.rendered;
   const contentText = stripHtml(post.content.rendered);
   const type = extractType(title);
   const { price, priceValue } = extractPrice(title, contentText);
   const { location, zone } = extractLocation(title);
-  const imageUrl = getImageUrl(post);
+  const imageUrl = getImageUrl(post, preferSmallImage);
 
   return {
     id: post.id,
@@ -180,21 +179,29 @@ export function mapWPPostToProperty(post: WPPost): Property {
   };
 }
 
-export async function fetchProperties(page = 1, perPage = 100): Promise<Property[]> {
-  const url = `${WP_API_BASE}/anunturi?_embed&per_page=${perPage}&page=${page}`;
+/** Paginated fetch — used for infinite scroll / load more */
+export async function fetchPropertiesPaginated(page = 1, perPage = PER_PAGE_LIST): Promise<PaginatedResult> {
+  const url = `${WP_API_BASE}/anunturi?_embed&${FIELDS}&per_page=${perPage}&page=${page}`;
   const response = await fetch(url);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch properties: ${response.status}`);
   }
   
+  const totalPages = parseInt(response.headers.get("X-WP-TotalPages") || "1");
+  const totalItems = parseInt(response.headers.get("X-WP-Total") || "0");
   const posts: WPPost[] = await response.json();
-  return posts.map(mapWPPostToProperty);
+  
+  return {
+    properties: posts.map(p => mapWPPostToProperty(p, true)),
+    totalPages,
+    totalItems,
+  };
 }
 
+/** Fetch all properties — still needed for homepage featured + search context */
 export async function fetchAllProperties(): Promise<Property[]> {
-  // First request to get total pages
-  const firstUrl = `${WP_API_BASE}/anunturi?_embed&per_page=100&page=1`;
+  const firstUrl = `${WP_API_BASE}/anunturi?_embed&${FIELDS}&per_page=100&page=1`;
   const firstResponse = await fetch(firstUrl);
   
   if (!firstResponse.ok) {
@@ -205,12 +212,11 @@ export async function fetchAllProperties(): Promise<Property[]> {
   const firstBatch: WPPost[] = await firstResponse.json();
   let allPosts = [...firstBatch];
   
-  // Fetch remaining pages in parallel
   if (totalPages > 1) {
     const promises = [];
     for (let page = 2; page <= totalPages; page++) {
       promises.push(
-        fetch(`${WP_API_BASE}/anunturi?_embed&per_page=100&page=${page}`)
+        fetch(`${WP_API_BASE}/anunturi?_embed&${FIELDS}&per_page=100&page=${page}`)
           .then(r => r.json() as Promise<WPPost[]>)
       );
     }
@@ -220,7 +226,7 @@ export async function fetchAllProperties(): Promise<Property[]> {
     }
   }
   
-  return allPosts.map(mapWPPostToProperty);
+  return allPosts.map(p => mapWPPostToProperty(p, true));
 }
 
 export async function fetchPropertyById(id: number): Promise<Property | null> {
@@ -234,7 +240,6 @@ export async function fetchPropertyById(id: number): Promise<Property | null> {
   const post: WPPost = await postRes.json();
   const property = mapWPPostToProperty(post);
 
-  // Add all attached media images
   if (mediaRes.ok) {
     const media: Array<{ source_url: string; media_details?: { sizes?: { large?: { source_url: string }; full?: { source_url: string } } } }> = await mediaRes.json();
     const allImages = media
