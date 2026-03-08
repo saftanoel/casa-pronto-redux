@@ -32,6 +32,23 @@ const PropertyDetailPage = () => {
       .slice(0, 3);
   }, [property, allProps]);
 
+  if (isLoading) {
+    return (
+      <SearchProvider>
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <div className="flex-1 flex items-center justify-center pt-32">
+            <div className="text-center">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Se încarcă...</p>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      </SearchProvider>
+    );
+  }
+
   if (!property) {
     return (
       <SearchProvider>
