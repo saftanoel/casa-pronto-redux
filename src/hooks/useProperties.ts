@@ -1,12 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchAllProperties, fetchPropertyById } from "@/lib/api/wordpress";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { fetchAllProperties, fetchPropertyById, fetchPropertiesPaginated } from "@/lib/api/wordpress";
 import type { Property } from "@/data/properties";
 
 export function useProperties() {
   return useQuery<Property[]>({
     queryKey: ["properties"],
     queryFn: fetchAllProperties,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+export function useInfiniteProperties(perPage = 12) {
+  return useInfiniteQuery({
+    queryKey: ["properties-infinite", perPage],
+    queryFn: ({ pageParam = 1 }) => fetchPropertiesPaginated(pageParam, perPage),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+      if (lastPageParam < lastPage.totalPages) return lastPageParam + 1;
+      return undefined;
+    },
+    staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 }
