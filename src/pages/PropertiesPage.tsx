@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
-import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal } from "lucide-react";
+import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,8 @@ import { type Property } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
-import { useProperties } from "@/hooks/useProperties";
+import { useInfiniteProperties } from "@/hooks/useProperties";
+import { PropertyGridSkeletons, PropertyRowSkeletons } from "@/components/PropertyCardSkeleton";
 
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
@@ -158,7 +159,21 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
 );
 
 const PropertiesPage = () => {
-  const { data: apiProperties = [], isLoading: isLoadingProperties } = useProperties();
+  const {
+    data,
+    isLoading: isLoadingProperties,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteProperties(12);
+
+  const allProperties = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flatMap(page => page.properties);
+  }, [data]);
+
+  const totalItems = data?.pages[0]?.totalItems ?? 0;
+
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
@@ -171,11 +186,12 @@ const PropertiesPage = () => {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // React to URL param changes
   useEffect(() => {
     setCategory(searchParams.get("category") || "");
     setZone(searchParams.get("zone") || "");
@@ -186,7 +202,6 @@ const PropertiesPage = () => {
     setPrice(searchParams.get("price") || "");
   }, [searchParams]);
 
-  // Sync local filter state back to URL params
   useEffect(() => {
     const params = new URLSearchParams();
     if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
@@ -198,6 +213,21 @@ const PropertiesPage = () => {
     if (searchQuery) params.set("q", searchQuery);
     setSearchParams(params, { replace: true });
   }, [activeTab, zone, category, rooms, area, price, searchQuery]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1, rootMargin: "200px" }
+    );
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const currentSearch = useMemo(() => {
     const params = new URLSearchParams();
@@ -230,7 +260,7 @@ const PropertiesPage = () => {
   ];
 
   const filteredProperties = useMemo(() => {
-    let result = apiProperties.filter((p) => {
+    let result = allProperties.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
       if (zone && p.zone !== zone) return false;
       if (category && p.propertyType !== category) return false;
@@ -276,11 +306,9 @@ const PropertiesPage = () => {
     }
 
     return result;
-  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy, apiProperties]);
+  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy, allProperties]);
 
-  const handleSearch = () => {
-    // Already filtering in real-time via useMemo
-  };
+  const handleSearch = () => {};
 
   const getCategoryLabel = () => {
     if (category) {
@@ -291,7 +319,7 @@ const PropertiesPage = () => {
   };
 
   return (
-    <SearchProvider properties={apiProperties} isLoading={isLoadingProperties}>
+    <SearchProvider properties={allProperties} isLoading={isLoadingProperties}>
       <div className="min-h-screen flex flex-col">
         <Header />
         
@@ -455,22 +483,57 @@ const PropertiesPage = () => {
               {/* Property List */}
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground mb-6">
-                  {filteredProperties.length} proprietăți găsite
+                  {isLoadingProperties ? "Se încarcă..." : `${filteredProperties.length} din ${totalItems} proprietăți`}
                 </p>
-                {filteredProperties.length > 0 ? (
+
+                {isLoadingProperties ? (
                   viewMode === "list" ? (
                     <div className="flex flex-col gap-6">
-                      {filteredProperties.map((property) => (
-                        <PropertyRow key={property.id} property={property} search={currentSearch} />
-                      ))}
+                      <PropertyRowSkeletons count={4} />
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {filteredProperties.map((property) => (
-                        <PropertyGrid key={property.id} property={property} search={currentSearch} />
-                      ))}
+                      <PropertyGridSkeletons count={6} />
                     </div>
                   )
+                ) : filteredProperties.length > 0 ? (
+                  <>
+                    {viewMode === "list" ? (
+                      <div className="flex flex-col gap-6">
+                        {filteredProperties.map((property) => (
+                          <PropertyRow key={property.id} property={property} search={currentSearch} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {filteredProperties.map((property) => (
+                          <PropertyGrid key={property.id} property={property} search={currentSearch} />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Infinite scroll trigger + Load More */}
+                    <div ref={loadMoreRef} className="flex justify-center py-8">
+                      {isFetchingNextPage ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span className="text-sm">Se încarcă mai multe...</span>
+                        </div>
+                      ) : hasNextPage ? (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          onClick={() => fetchNextPage()}
+                          className="gap-2 min-h-[44px]"
+                        >
+                          Încarcă Mai Multe
+                          <ChevronRight className="h-4 w-4 rotate-90" />
+                        </Button>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
+                      )}
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center py-20 bg-muted/30 rounded-xl">
                     <p className="text-muted-foreground text-lg">Nu s-au găsit proprietăți cu filtrele selectate.</p>
