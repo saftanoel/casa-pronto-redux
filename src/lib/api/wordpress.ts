@@ -229,26 +229,66 @@ export async function fetchAllProperties(): Promise<Property[]> {
   return allPosts.map(p => mapWPPostToProperty(p, true));
 }
 
+/** Extract gallery image URLs from the original WordPress property page HTML */
+async function scrapeGalleryImages(postSlug: string): Promise<string[]> {
+  try {
+    // The original site URL pattern: /anunturi-imobiliare/{slug}/
+    const pageUrl = `https://www.casapronto.ro/anunturi-imobiliare/${postSlug}/`;
+    const response = await fetch(pageUrl);
+    if (!response.ok) return [];
+    const html = await response.text();
+    
+    // Extract images from the bxslider2 gallery
+    const galleryMatch = html.match(/<ul class="bxslider2"[^>]*>([\s\S]*?)<\/ul>/);
+    if (!galleryMatch) return [];
+    
+    const imgRegex = /<img[^>]+src="([^"]+)"/g;
+    const images: string[] = [];
+    let match;
+    while ((match = imgRegex.exec(galleryMatch[1])) !== null) {
+      const url = match[1];
+      // Skip tiny thumbnails (150x150)
+      if (!url.includes("-150x150")) {
+        images.push(url);
+      }
+    }
+    return images;
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchPropertyById(id: number): Promise<Property | null> {
-  const [postRes, mediaRes] = await Promise.all([
-    fetch(`${WP_API_BASE}/anunturi/${id}?_embed`),
-    fetch(`${WP_API_BASE}/media?parent=${id}&per_page=100`),
-  ]);
-  
+  const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}?_embed`);
   if (!postRes.ok) return null;
   
   const post: WPPost = await postRes.json();
   const property = mapWPPostToProperty(post);
 
-  if (mediaRes.ok) {
-    const media: Array<{ source_url: string; media_details?: { sizes?: { large?: { source_url: string }; full?: { source_url: string } } } }> = await mediaRes.json();
-    const allImages = media
-      .map(m => m.media_details?.sizes?.large?.source_url || m.media_details?.sizes?.full?.source_url || m.source_url)
-      .filter(Boolean);
-    if (allImages.length > 0) {
-      property.images = allImages;
-      property.image = allImages[0];
-    }
+  // Extract slug from the post link or guid
+  const slug = post.slug || String(id);
+  
+  // Try scraping the original page for gallery images first
+  const galleryImages = await scrapeGalleryImages(slug);
+  
+  if (galleryImages.length > 1) {
+    property.images = galleryImages;
+    property.image = galleryImages[0];
+  } else {
+    // Fallback: try the media endpoint
+    try {
+      const mediaRes = await fetch(`${WP_API_BASE}/media?parent=${id}&per_page=100`);
+      if (mediaRes.ok) {
+        const media: Array<{ source_url: string; media_details?: { sizes?: { large?: { source_url: string }; full?: { source_url: string } } } }> = await mediaRes.json();
+        const allImages = media
+          .map(m => m.media_details?.sizes?.large?.source_url || m.media_details?.sizes?.full?.source_url || m.source_url)
+          .filter(Boolean);
+        if (allImages.length > 0) {
+          property.images = allImages;
+          property.image = allImages[0];
+        }
+      }
+    } catch { /* keep featured image */ }
   }
 
   return property;
