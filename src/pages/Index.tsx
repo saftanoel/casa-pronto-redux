@@ -8,9 +8,11 @@ import Services from "@/components/Services";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
+import { useProperties } from "@/hooks/useProperties";
 
 const Index = () => {
   const location = useLocation();
+  const { data: properties = [], isLoading } = useProperties();
 
   useEffect(() => {
     if (location.hash) {
@@ -22,7 +24,7 @@ const Index = () => {
   }, [location]);
 
   return (
-    <SearchProvider>
+    <SearchProvider properties={properties} isLoading={isLoading}>
       <div className="min-h-screen">
         <Header />
         <main>
