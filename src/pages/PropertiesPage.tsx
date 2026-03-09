@@ -225,11 +225,14 @@ const PropertiesPage = () => {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isPending, startTransition] = useTransition();
 
-  // Track if user has applied any filter
+  // Track if user has applied any filter that requires taxonomy data (full dataset)
+  const hasTaxonomyFilter = !!(zone || category || activeTab !== "toate");
+  // Track if user has applied ANY filter at all
   const hasActiveFilter = !!(zone || category || rooms || area || price || debouncedSearch || activeTab !== "toate");
 
-  // "Eager user" state: user filtered before full data loaded
-  const isWaitingForFullData = hasActiveFilter && !hasFullData && !isLoadingInitial;
+  // "Eager user" state: user applied a taxonomy filter before full data loaded
+  // Only show overlay for taxonomy-dependent filters since initial 60 have empty taxonomies
+  const isWaitingForFullData = hasTaxonomyFilter && !hasFullData && !isLoadingInitial;
 
   useEffect(() => {
     window.scrollTo(0, 0);
