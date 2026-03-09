@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useMemo, type ReactNode } from "react";
 import { type Property } from "@/data/properties";
+import { matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
 
 export type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
