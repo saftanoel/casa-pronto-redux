@@ -5,6 +5,12 @@ import property4 from "@/assets/property-4.jpg";
 import property5 from "@/assets/property-5.jpg";
 import property6 from "@/assets/property-6.jpg";
 
+export interface PropertyTaxonomies {
+  property_type: string[];
+  property_status: string[];
+  property_city: string[];
+}
+
 export interface Property {
   id: number;
   image: string;
@@ -23,6 +29,7 @@ export interface Property {
   isNew: boolean;
   features: string[];
   agent: string;
+  taxonomies?: PropertyTaxonomies;
 }
 
 export const allProperties: Property[] = [

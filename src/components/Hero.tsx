@@ -5,20 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
+import { useTaxonomyOptions } from "@/hooks/useTaxonomyOptions";
+
 const heroImages = [
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-cCucqGh7.jpg",
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-4-B0lpn2F7.jpg",
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-3-C9kBEvwH.jpg",
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-2-BEiqB60L.jpg",
-];
-
-const zones = [
-  "Aiud", "Alba-Micesti", "Ampoi", "Ampoi3", "Ampoita", "Barabant", "Blaj",
-  "Caroline", "Centru", "Cetate", "Cetate Alba Carolina", "Ciugud", "Cluj",
-  "Cluj Napoca", "Cugir", "Geoagiu", "Ighiu", "Micesti", "Oarda", "Oarda de Sus",
-  "Oiejdea", "Oradea", "Partos", "Periferie", "Piclisa", "Sard", "Schit",
-  "Sebes", "Seusa", "Spring", "Stadion", "Teius", "Tolstoi", "Valea Popii",
-  "Vint", "Vintu de Jos", "Zlatna", "Zona Stadion",
 ];
 
 const suprafataOptions = [
@@ -36,7 +29,8 @@ const suprafataOptions = [
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
 const Hero = () => {
-  const { filters, setFilter, scrollToProperties } = useSearch();
+  const { filters, setFilter, scrollToProperties, allProperties } = useSearch();
+  const { zones, propertyTypes } = useTaxonomyOptions(allProperties);
   const activeTab = filters.tab;
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
@@ -152,11 +146,11 @@ const Hero = () => {
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Zonă" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-60">
+                  <SelectContent>
                     <SelectItem value="all">Toate Zonele</SelectItem>
-                    {zones.map((zone) => (
-                      <SelectItem key={zone} value={zone.toLowerCase().replace(/\s+/g, "-")}>
-                        {zone}
+                    {zones.map((z) => (
+                      <SelectItem key={z.value} value={z.value}>
+                        {z.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -171,18 +165,11 @@ const Hero = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Toate Tipurile</SelectItem>
-                    <SelectItem value="apartamente">Apartamente</SelectItem>
-                    <SelectItem value="birouri">Birouri</SelectItem>
-                    <SelectItem value="cabana">Cabană</SelectItem>
-                    <SelectItem value="case">Case</SelectItem>
-                    <SelectItem value="garsoniere">Garsoniere</SelectItem>
-                    <SelectItem value="hale">Hale</SelectItem>
-                    <SelectItem value="pensiune">Pensiune</SelectItem>
-                    <SelectItem value="proiecte-rezidentiale">Proiecte Rezidențiale</SelectItem>
-                    <SelectItem value="restaurant">Restaurant</SelectItem>
-                    <SelectItem value="spatii-comerciale">Spații Comerciale</SelectItem>
-                    <SelectItem value="terenuri">Terenuri</SelectItem>
-                    <SelectItem value="vile">Vile</SelectItem>
+                    {propertyTypes.map((pt) => (
+                      <SelectItem key={pt.value} value={pt.value}>
+                        {pt.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

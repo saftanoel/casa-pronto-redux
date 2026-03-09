@@ -14,36 +14,21 @@ import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
 import { useInfiniteProperties } from "@/hooks/useProperties";
 import { PropertyGridSkeletons, PropertyRowSkeletons } from "@/components/PropertyCardSkeleton";
+import { useTaxonomyOptions, matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
 
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
 type SortOption = "newest" | "oldest" | "price-high" | "price-low";
 
-const zones = [
-  { value: "ampoi", label: "Ampoi" },
-  { value: "centru", label: "Centru" },
-  { value: "cetate", label: "Cetate" },
-  { value: "ciugud", label: "Ciugud" },
-  { value: "oarda", label: "Oarda" },
-  { value: "partos", label: "Partoș" },
-  { value: "sebes", label: "Sebeș" },
-];
-
-const categories = [
-  { value: "apartamente", label: "Apartamente" },
-  { value: "birouri", label: "Birouri" },
-  { value: "case", label: "Case" },
-  { value: "garsoniere", label: "Garsoniere" },
-  { value: "spatii-comerciale", label: "Spații Comerciale" },
-  { value: "terenuri", label: "Terenuri" },
-  { value: "vile", label: "Vile" },
-];
-
 function matchTab(p: Property, tab: FilterTab): boolean {
+  if (tab === "toate") return true;
+  // Use taxonomy-based status matching
+  const statuses = p.taxonomies?.property_status ?? [];
+  const statusSlugs = statuses.map(s => s.toLowerCase());
   switch (tab) {
-    case "cumparare": return p.type === "Vânzare";
-    case "inchiriere": return p.type === "Închiriere";
-    case "vandute": return p.type === "Vândut";
+    case "cumparare": return statusSlugs.some(s => s.includes("cumpar") || s.includes("vanzar") || s.includes("vânzar"));
+    case "inchiriere": return statusSlugs.some(s => s.includes("inchiri") || s.includes("închiri"));
+    case "vandute": return statusSlugs.some(s => s.includes("vandu") || s.includes("vându") || s.includes("vandut") || s.includes("vândut"));
     default: return true;
   }
 }
@@ -174,6 +159,8 @@ const PropertiesPage = () => {
     return data.pages.flatMap(page => page.properties);
   }, [data]);
 
+  const { zones, propertyTypes } = useTaxonomyOptions(allProperties);
+
   const totalItems = data?.pages[0]?.totalItems ?? 0;
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -259,8 +246,8 @@ const PropertiesPage = () => {
   const filteredProperties = useMemo(() => {
     let result = allProperties.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
-      if (zone && p.zone !== zone) return false;
-      if (category && p.propertyType !== category) return false;
+      if (zone && !matchesTaxonomy(p, "property_city", zone)) return false;
+      if (category && !matchesTaxonomy(p, "property_type", category)) return false;
       if (rooms) {
         if (rooms === "4+") { if (p.beds < 4) return false; }
         else { if (p.beds !== parseInt(rooms)) return false; }
@@ -289,7 +276,7 @@ const PropertiesPage = () => {
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q) && !p.propertyType.toLowerCase().includes(q))
+        if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q))
           return false;
       }
       return true;
@@ -329,7 +316,7 @@ const PropertiesPage = () => {
 
   const getCategoryLabel = () => {
     if (category) {
-      const cat = categories.find(c => c.value === category);
+      const cat = propertyTypes.find(c => c.value === category);
       return cat?.label || "Anunțuri Imobiliare";
     }
     return "Anunțuri Imobiliare";
@@ -446,7 +433,7 @@ const PropertiesPage = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">Toate</SelectItem>
-                          {categories.map((c) => (
+                          {propertyTypes.map((c) => (
                             <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                           ))}
                         </SelectContent>
@@ -598,7 +585,7 @@ const PropertiesPage = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Toate</SelectItem>
-                        {categories.map((c) => (
+                        {propertyTypes.map((c) => (
                           <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                         ))}
                       </SelectContent>

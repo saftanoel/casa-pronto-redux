@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useMemo, type ReactNode } from "react";
 import { type Property } from "@/data/properties";
+import { matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
 
 export type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
@@ -64,10 +65,13 @@ function matchesRooms(property: Property, roomsFilter: string): boolean {
 }
 
 function matchesTab(property: Property, tab: FilterTab): boolean {
+  if (tab === "toate") return true;
+  const statuses = property.taxonomies?.property_status ?? [];
+  const slugs = statuses.map(s => s.toLowerCase());
   switch (tab) {
-    case "cumparare": return property.type === "Vânzare";
-    case "inchiriere": return property.type === "Închiriere";
-    case "vandute": return property.type === "Vândut";
+    case "cumparare": return slugs.some(s => s.includes("cumpar") || s.includes("vanzar") || s.includes("vânzar"));
+    case "inchiriere": return slugs.some(s => s.includes("inchiri") || s.includes("închiri"));
+    case "vandute": return slugs.some(s => s.includes("vandu") || s.includes("vându") || s.includes("vandut") || s.includes("vândut"));
     default: return true;
   }
 }
@@ -88,8 +92,8 @@ export const SearchProvider = ({ children, properties = [], isLoading = false }:
   const filteredProperties = useMemo(() => {
     return properties.filter((p) => {
       if (!matchesTab(p, filters.tab)) return false;
-      if (filters.zone && p.zone !== filters.zone) return false;
-      if (filters.propertyType && p.propertyType !== filters.propertyType) return false;
+      if (filters.zone && !matchesTaxonomy(p, "property_city", filters.zone)) return false;
+      if (filters.propertyType && !matchesTaxonomy(p, "property_type", filters.propertyType)) return false;
       if (!matchesRooms(p, filters.rooms)) return false;
       if (!matchesArea(p, filters.area)) return false;
       if (filters.searchQuery) {
