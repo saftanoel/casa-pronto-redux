@@ -2,7 +2,6 @@ import { useMemo, useEffect, useCallback, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { ChevronRight, ChevronLeft, MapPin, Bed, Bath, Square, Phone, Mail, Share2, ArrowLeft } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,7 +19,7 @@ const SimilarPropertiesCarousel = ({ properties }: { properties: Property[] }) =
     slidesToScroll: 1,
     containScroll: "trimSnaps",
     loop: true,
-  }, [Autoplay({ delay: 3000, stopOnInteraction: true, stopOnMouseEnter: true })]);
+  });
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
 
@@ -34,6 +33,27 @@ const SimilarPropertiesCarousel = ({ properties }: { properties: Property[] }) =
     emblaApi.on("reInit", onSelect);
     onSelect();
     return () => { emblaApi.off("select", onSelect); emblaApi.off("reInit", onSelect); };
+  }, [emblaApi]);
+
+  // Manual autoplay with pause on hover/interaction
+  useEffect(() => {
+    if (!emblaApi) return;
+    let interval: ReturnType<typeof setInterval>;
+    const start = () => { interval = setInterval(() => emblaApi.scrollNext(), 3000); };
+    const stop = () => clearInterval(interval);
+    start();
+    emblaApi.on("pointerDown", stop);
+    emblaApi.on("pointerUp", start);
+    const root = emblaApi.rootNode();
+    root.addEventListener("mouseenter", stop);
+    root.addEventListener("mouseleave", start);
+    return () => {
+      stop();
+      emblaApi.off("pointerDown", stop);
+      emblaApi.off("pointerUp", start);
+      root.removeEventListener("mouseenter", stop);
+      root.removeEventListener("mouseleave", start);
+    };
   }, [emblaApi]);
 
   return (
