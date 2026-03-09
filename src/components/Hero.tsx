@@ -146,11 +146,11 @@ const Hero = () => {
                   <SelectTrigger className="pl-10 h-12 bg-muted border-0 text-foreground">
                     <SelectValue placeholder="Zonă" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-60">
+                  <SelectContent>
                     <SelectItem value="all">Toate Zonele</SelectItem>
-                    {zones.map((zone) => (
-                      <SelectItem key={zone} value={zone.toLowerCase().replace(/\s+/g, "-")}>
-                        {zone}
+                    {zones.map((z) => (
+                      <SelectItem key={z.value} value={z.value}>
+                        {z.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
