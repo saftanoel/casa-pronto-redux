@@ -280,11 +280,12 @@ const PropertiesPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Sync filters from URL params (but NOT searchQuery — that's controlled by the input directly
+  // to avoid a circular loop: type → debounce → setSearchParams → setSearchQuery → reset keyboard)
   useEffect(() => {
     setCategory(searchParams.get("category") || "");
     setZone(searchParams.get("zone") || "");
     setActiveTab((searchParams.get("tab") as FilterTab) || "toate");
-    setSearchQuery(searchParams.get("q") || "");
     setRooms(searchParams.get("rooms") || "");
     setArea(searchParams.get("area") || "");
     setPrice(searchParams.get("price") || "");
