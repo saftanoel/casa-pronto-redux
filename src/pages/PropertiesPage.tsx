@@ -12,7 +12,7 @@ import { type Property } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
-import { useInitialProperties, useAllProperties } from "@/hooks/useProperties";
+import { useInitialProperties, useAllProperties, useTaxonomies } from "@/hooks/useProperties";
 import { PropertyGridSkeletons, PropertyRowSkeletons } from "@/components/PropertyCardSkeleton";
 import { matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -157,22 +157,21 @@ const ITEMS_PER_PAGE = 12;
 const PropertiesPage = () => {
   // Fetch 1: Initial 60 properties (instant)
   const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
-  // Fetch 2: All ~5000 properties (background)
+  // Fetch 2: Taxonomies — independent, instant, populates dropdowns immediately
+  const { data: taxonomyData } = useTaxonomies();
   // Fetch 3: All ~5000 properties (background)
   const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
 
   // Determine which dataset to use for filtering
-  // IMPORTANT: initial 60 from /anunturi?limit=60 have empty taxonomies ([]),
-  // so we can only filter by taxonomy on the full dataset
   const hasFullData = isAllFetched && !!allPropertiesFull;
   const allProperties = hasFullData ? allPropertiesFull : initialProperties;
 
   // Debug logs
   useEffect(() => {
-    if (allPropertiesFull) {
-      console.log('Background fetch complete, total items:', allPropertiesFull.length);
+    if (taxonomyData) {
+      console.log('Taxonomies loaded:', taxonomyData);
     }
-  }, [allPropertiesFull]);
+  }, [taxonomyData]);
 
   useEffect(() => {
     if (allPropertiesFull) {
@@ -180,37 +179,18 @@ const PropertiesPage = () => {
     }
   }, [allPropertiesFull]);
 
-  useEffect(() => {
-    if (initialProperties.length > 0) {
-      console.log('Initial properties loaded:', initialProperties.length);
-    }
-  }, [initialProperties]);
-
-  // Extract filter options directly from properties (foolproof — no dependency on /taxonomii)
-  const filterOptions = useMemo(() => {
-    const source = allPropertiesFull ?? initialProperties;
-    console.log("Extracting filters from", source.length, "properties...");
-    
-    const cities = [...new Set(source.flatMap(p => p.taxonomies?.property_city || []))].filter(Boolean);
-    const types = [...new Set(source.flatMap(p => p.taxonomies?.property_type || []))].filter(Boolean);
-    const statuses = [...new Set(source.flatMap(p => p.taxonomies?.property_status || []))].filter(Boolean);
-    
-    console.log("Extracted Options:", { cities, types, statuses });
-    
-    return { cities, types, statuses };
-  }, [allPropertiesFull, initialProperties]);
-
+  // Dropdown options — populated INSTANTLY from /taxonomii endpoint, independent of properties
   const zones = useMemo(() =>
-    filterOptions.cities.map(label => ({ value: toSlug(label), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
-    [filterOptions.cities]
+    (taxonomyData?.property_city ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
+    [taxonomyData]
   );
   const propertyTypes = useMemo(() =>
-    filterOptions.types.map(label => ({ value: toSlug(label), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
-    [filterOptions.types]
+    (taxonomyData?.property_type ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
+    [taxonomyData]
   );
   const statuses = useMemo(() =>
-    filterOptions.statuses.map(label => ({ value: toSlug(label), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
-    [filterOptions.statuses]
+    (taxonomyData?.property_status ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
+    [taxonomyData]
   );
 
   const [searchParams, setSearchParams] = useSearchParams();

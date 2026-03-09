@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
+import { useTaxonomies } from "@/hooks/useProperties";
 
 const heroImages = [
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-cCucqGh7.jpg",
@@ -12,6 +13,10 @@ const heroImages = [
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-3-C9kBEvwH.jpg",
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-2-BEiqB60L.jpg",
 ];
+
+function toSlug(str: string): string {
+  return str.toLowerCase().replace(/ă/g,"a").replace(/â/g,"a").replace(/î/g,"i").replace(/ș/g,"s").replace(/ț/g,"t").replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"");
+}
 
 const suprafataOptions = [
   { value: "sub-1000", label: "Sub 1,000 m²" },
@@ -30,22 +35,15 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 const Hero = () => {
   const { filters, setFilter, scrollToProperties, allProperties } = useSearch();
 
-  // Extract filter options directly from properties (same logic as PropertiesPage)
-  const filterOptions = useMemo(() => {
-    console.log("Hero: Extracting filters from", allProperties.length, "properties...");
-    const cities = [...new Set(allProperties.flatMap(p => p.taxonomies?.property_city || []))].filter(Boolean);
-    const types = [...new Set(allProperties.flatMap(p => p.taxonomies?.property_type || []))].filter(Boolean);
-    console.log("Hero Extracted Options:", { cities: cities.length, types: types.length });
-    return { cities, types };
-  }, [allProperties]);
-
+  // Fetch taxonomies independently — populates dropdowns INSTANTLY, no dependency on properties
+  const { data: taxonomyData } = useTaxonomies();
   const zones = useMemo(() =>
-    filterOptions.cities.map(label => ({ value: label.toLowerCase().replace(/ă/g,"a").replace(/â/g,"a").replace(/î/g,"i").replace(/ș/g,"s").replace(/ț/g,"t").replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,""), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
-    [filterOptions.cities]
+    (taxonomyData?.property_city ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
+    [taxonomyData]
   );
   const propertyTypes = useMemo(() =>
-    filterOptions.types.map(label => ({ value: label.toLowerCase().replace(/ă/g,"a").replace(/â/g,"a").replace(/î/g,"i").replace(/ș/g,"s").replace(/ț/g,"t").replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,""), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
-    [filterOptions.types]
+    (taxonomyData?.property_type ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
+    [taxonomyData]
   );
   const activeTab = filters.tab;
   const [isFilterLoading, setIsFilterLoading] = useState(false);
