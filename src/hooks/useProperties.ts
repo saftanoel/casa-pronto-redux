@@ -1,11 +1,13 @@
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { fetchAllProperties, fetchPropertyById, fetchPropertiesPaginated } from "@/lib/api/wordpress";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAllProperties, fetchPropertyById, fetchInitialProperties, fetchTaxonomies } from "@/lib/api/wordpress";
 import type { Property } from "@/data/properties";
+import type { TaxonomyResponse } from "@/lib/api/wordpress";
 
-export function useProperties() {
+/** Fetch initial 60 properties (instant first paint) */
+export function useInitialProperties(limit = 60) {
   return useQuery<Property[]>({
-    queryKey: ["properties"],
-    queryFn: fetchAllProperties,
+    queryKey: ["properties-initial", limit],
+    queryFn: () => fetchInitialProperties(limit),
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -13,18 +15,34 @@ export function useProperties() {
   });
 }
 
-export function useInfiniteProperties(perPage = 12) {
-  return useInfiniteQuery({
-    queryKey: ["properties-infinite", perPage],
-    queryFn: ({ pageParam = 1 }) => fetchPropertiesPaginated(pageParam, perPage),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
-      if (lastPageParam < lastPage.totalPages) return lastPageParam + 1;
-      return undefined;
-    },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+/** Fetch all ~5000 properties (background, for global filtering) */
+export function useAllProperties(enabled = true) {
+  return useQuery<Property[]>({
+    queryKey: ["properties"],
+    queryFn: fetchAllProperties,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    enabled,
   });
+}
+
+/** Fetch taxonomy options from the fast dedicated endpoint */
+export function useTaxonomies() {
+  return useQuery<TaxonomyResponse>({
+    queryKey: ["taxonomies"],
+    queryFn: fetchTaxonomies,
+    staleTime: 60 * 60 * 1000,
+    gcTime: 120 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+}
+
+/** Legacy: fetch all properties (used by homepage) */
+export function useProperties() {
+  return useInitialProperties(60);
 }
 
 export function useProperty(id: number | undefined) {
