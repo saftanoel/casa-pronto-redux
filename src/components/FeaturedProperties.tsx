@@ -16,12 +16,12 @@ const FeaturedProperties = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <span className="text-primary font-medium text-sm">Proprietăți Recomandate</span>
+            <span className="text-primary font-medium text-sm">Ultimele Anunțuri</span>
             <h2 className="font-serif text-3xl md:text-4xl font-bold mt-2">
-              Descoperă Cele Mai Bune Oferte
+              Cele Mai Noi Proprietăți
             </h2>
             <p className="text-muted-foreground mt-3 max-w-lg">
-              Selecție de proprietăți premium din Alba Iulia, alese cu grijă pentru tine.
+              Cele mai recente anunțuri imobiliare din Alba Iulia, adăugate de curând.
             </p>
           </div>
         </div>

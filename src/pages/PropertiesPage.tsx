@@ -612,6 +612,20 @@ const PropertiesPage = () => {
                       <Input placeholder="Caută anunțuri..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-11" />
                     </div>
                   </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">Sortează</label>
+                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Nou → Vechi</SelectItem>
+                        <SelectItem value="oldest">Vechi → Nou</SelectItem>
+                        <SelectItem value="price-high">Preț (Mare - Mic)</SelectItem>
+                        <SelectItem value="price-low">Preț (Mic - Mare)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="flex gap-3 pt-2">
                     <Button variant="outline" className="flex-1" onClick={() => { resetAllFilters(); setIsFilterDrawerOpen(false); }}>
                       Resetează
