@@ -29,7 +29,8 @@ const suprafataOptions = [
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
 const Hero = () => {
-  const { filters, setFilter, scrollToProperties } = useSearch();
+  const { filters, setFilter, scrollToProperties, allProperties } = useSearch();
+  const { zones, propertyTypes } = useTaxonomyOptions(allProperties);
   const activeTab = filters.tab;
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
