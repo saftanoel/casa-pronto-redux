@@ -165,18 +165,11 @@ const Hero = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Toate Tipurile</SelectItem>
-                    <SelectItem value="apartamente">Apartamente</SelectItem>
-                    <SelectItem value="birouri">Birouri</SelectItem>
-                    <SelectItem value="cabana">Cabană</SelectItem>
-                    <SelectItem value="case">Case</SelectItem>
-                    <SelectItem value="garsoniere">Garsoniere</SelectItem>
-                    <SelectItem value="hale">Hale</SelectItem>
-                    <SelectItem value="pensiune">Pensiune</SelectItem>
-                    <SelectItem value="proiecte-rezidentiale">Proiecte Rezidențiale</SelectItem>
-                    <SelectItem value="restaurant">Restaurant</SelectItem>
-                    <SelectItem value="spatii-comerciale">Spații Comerciale</SelectItem>
-                    <SelectItem value="terenuri">Terenuri</SelectItem>
-                    <SelectItem value="vile">Vile</SelectItem>
+                    {propertyTypes.map((pt) => (
+                      <SelectItem key={pt.value} value={pt.value}>
+                        {pt.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
