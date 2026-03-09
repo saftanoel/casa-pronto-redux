@@ -153,8 +153,9 @@ const Header = () => {
               <Input
                 ref={searchInputRef}
                 placeholder="Caută proprietăți..."
-                value={filters.searchQuery}
+                value={localSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 className="h-9"
               />
             </div>
