@@ -285,8 +285,8 @@ const PropertiesPage = () => {
     switch (sortBy) {
       case "price-high": result.sort((a, b) => b.priceValue - a.priceValue); break;
       case "price-low": result.sort((a, b) => a.priceValue - b.priceValue); break;
-      case "oldest": result.sort((a, b) => a.id - b.id); break;
-      default: result.sort((a, b) => b.id - a.id); break;
+      case "oldest": result.sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()); break;
+      default: result.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()); break;
     }
 
     return result;
