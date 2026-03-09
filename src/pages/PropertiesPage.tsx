@@ -285,8 +285,8 @@ const PropertiesPage = () => {
     switch (sortBy) {
       case "price-high": result.sort((a, b) => b.priceValue - a.priceValue); break;
       case "price-low": result.sort((a, b) => a.priceValue - b.priceValue); break;
-      case "oldest": result.sort((a, b) => a.id - b.id); break;
-      default: result.sort((a, b) => b.id - a.id); break;
+      case "oldest": result.sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()); break;
+      default: result.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()); break;
     }
 
     return result;
@@ -611,6 +611,20 @@ const PropertiesPage = () => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input placeholder="Caută anunțuri..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-11" />
                     </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">Sortează</label>
+                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Nou → Vechi</SelectItem>
+                        <SelectItem value="oldest">Vechi → Nou</SelectItem>
+                        <SelectItem value="price-high">Preț (Mare - Mic)</SelectItem>
+                        <SelectItem value="price-low">Preț (Mic - Mare)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex gap-3 pt-2">
                     <Button variant="outline" className="flex-1" onClick={() => { resetAllFilters(); setIsFilterDrawerOpen(false); }}>

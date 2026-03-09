@@ -161,6 +161,7 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
     isNew: isNewProperty(post.date),
     features: extractFeatures(contentText),
     agent: "Baba Elena",
+    date: post.date,
     taxonomies,
   };
 }

@@ -29,6 +29,7 @@ export interface Property {
   isNew: boolean;
   features: string[];
   agent: string;
+  date?: string;
   taxonomies?: PropertyTaxonomies;
 }
 
