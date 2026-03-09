@@ -29,7 +29,7 @@ export interface Property {
   isNew: boolean;
   features: string[];
   agent: string;
-  taxonomies: PropertyTaxonomies;
+  taxonomies?: PropertyTaxonomies;
 }
 
 export const allProperties: Property[] = [
