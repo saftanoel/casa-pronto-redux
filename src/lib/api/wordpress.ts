@@ -56,6 +56,18 @@ function extractType(title: string): "Vânzare" | "Închiriere" | "Vândut" {
   return "Vânzare";
 }
 
+function extractTypeWithTaxonomy(title: string, statuses?: string[]): "Vânzare" | "Închiriere" | "Vândut" {
+  // Check taxonomies first — they are the source of truth
+  if (statuses && statuses.length > 0) {
+    const slugs = statuses.map(s => s.toLowerCase());
+    if (slugs.some(s => s.includes("vandu") || s.includes("vându") || s.includes("vandut") || s.includes("vândut"))) return "Vândut";
+    if (slugs.some(s => s.includes("inchiri") || s.includes("închiri"))) return "Închiriere";
+    if (slugs.some(s => s.includes("cumpar") || s.includes("vanzar") || s.includes("vânzar"))) return "Vânzare";
+  }
+  // Fallback to title-based detection
+  return extractType(title);
+}
+
 function parsePrice(raw: string | undefined): { price: string; priceValue: number } {
   if (!raw) return { price: "Preț la cerere", priceValue: 0 };
   const cleaned = raw.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
