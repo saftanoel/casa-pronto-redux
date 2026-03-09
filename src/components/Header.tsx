@@ -184,8 +184,9 @@ const Header = () => {
         <nav className="container mx-auto px-4 py-4 flex flex-col gap-2">
           <Input
             placeholder="Caută proprietăți..."
-            value={filters.searchQuery}
+            value={localSearch}
             onChange={(e) => handleSearchChange(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
             className="mb-2"
           />
           {navLinks.map((link) => (
