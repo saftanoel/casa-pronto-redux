@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useCallback } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { ChevronRight, MapPin, Bed, Bath, Square, Phone, Mail, Share2, ArrowLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
