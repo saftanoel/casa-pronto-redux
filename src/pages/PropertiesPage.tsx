@@ -12,7 +12,7 @@ import { type Property } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
-import { useInitialProperties, useAllProperties, useTaxonomies } from "@/hooks/useProperties";
+import { useInitialProperties, useAllProperties } from "@/hooks/useProperties";
 import { PropertyGridSkeletons, PropertyRowSkeletons } from "@/components/PropertyCardSkeleton";
 import { matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -157,8 +157,7 @@ const ITEMS_PER_PAGE = 12;
 const PropertiesPage = () => {
   // Fetch 1: Initial 60 properties (instant)
   const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
-  // Fetch 2: Taxonomies (instant, tiny payload)
-  const { data: taxonomyData, isSuccess: taxonomiesLoaded } = useTaxonomies();
+  // Fetch 2: All ~5000 properties (background)
   // Fetch 3: All ~5000 properties (background)
   const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
 
@@ -170,11 +169,10 @@ const PropertiesPage = () => {
 
   // Debug logs
   useEffect(() => {
-    if (taxonomyData) {
-      console.log('Taxonomies loaded:', taxonomyData);
-      console.log('Cities:', taxonomyData.property_city?.length, 'Types:', taxonomyData.property_type?.length, 'Statuses:', taxonomyData.property_status?.length);
+    if (allPropertiesFull) {
+      console.log('Background fetch complete, total items:', allPropertiesFull.length);
     }
-  }, [taxonomyData]);
+  }, [allPropertiesFull]);
 
   useEffect(() => {
     if (allPropertiesFull) {
@@ -188,69 +186,32 @@ const PropertiesPage = () => {
     }
   }, [initialProperties]);
 
-  // Extract taxonomy options from properties (foolproof — ignores empty /taxonomii endpoint)
-  // Prefer taxonomyData if non-empty, otherwise extract from loaded properties
-  const zones = useMemo(() => {
-    // Try taxonomy endpoint first
-    if (taxonomyData?.property_city?.length) {
-      return taxonomyData.property_city
-        .map((label: string) => ({ value: toSlug(label), label }))
-        .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
-    }
-    // Fallback: extract from properties
+  // Extract filter options directly from properties (foolproof — no dependency on /taxonomii)
+  const filterOptions = useMemo(() => {
     const source = allPropertiesFull ?? initialProperties;
-    const seen = new Map<string, string>();
-    for (const p of source) {
-      for (const term of (p.taxonomies?.property_city ?? [])) {
-        const slug = toSlug(term);
-        if (!seen.has(slug)) seen.set(slug, term);
-      }
-    }
-    console.log('Zones extracted from properties:', seen.size);
-    return Array.from(seen.entries())
-      .map(([value, label]) => ({ value, label }))
-      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
-  }, [taxonomyData, allPropertiesFull, initialProperties]);
+    console.log("Extracting filters from", source.length, "properties...");
+    
+    const cities = [...new Set(source.flatMap(p => p.taxonomies?.property_city || []))].filter(Boolean);
+    const types = [...new Set(source.flatMap(p => p.taxonomies?.property_type || []))].filter(Boolean);
+    const statuses = [...new Set(source.flatMap(p => p.taxonomies?.property_status || []))].filter(Boolean);
+    
+    console.log("Extracted Options:", { cities, types, statuses });
+    
+    return { cities, types, statuses };
+  }, [allPropertiesFull, initialProperties]);
 
-  const propertyTypes = useMemo(() => {
-    if (taxonomyData?.property_type?.length) {
-      return taxonomyData.property_type
-        .map((label: string) => ({ value: toSlug(label), label }))
-        .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
-    }
-    const source = allPropertiesFull ?? initialProperties;
-    const seen = new Map<string, string>();
-    for (const p of source) {
-      for (const term of (p.taxonomies?.property_type ?? [])) {
-        const slug = toSlug(term);
-        if (!seen.has(slug)) seen.set(slug, term);
-      }
-    }
-    console.log('Property types extracted from properties:', seen.size);
-    return Array.from(seen.entries())
-      .map(([value, label]) => ({ value, label }))
-      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
-  }, [taxonomyData, allPropertiesFull, initialProperties]);
-
-  const statuses = useMemo(() => {
-    if (taxonomyData?.property_status?.length) {
-      return taxonomyData.property_status
-        .map((label: string) => ({ value: toSlug(label), label }))
-        .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
-    }
-    const source = allPropertiesFull ?? initialProperties;
-    const seen = new Map<string, string>();
-    for (const p of source) {
-      for (const term of (p.taxonomies?.property_status ?? [])) {
-        const slug = toSlug(term);
-        if (!seen.has(slug)) seen.set(slug, term);
-      }
-    }
-    console.log('Statuses extracted from properties:', seen.size);
-    return Array.from(seen.entries())
-      .map(([value, label]) => ({ value, label }))
-      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
-  }, [taxonomyData, allPropertiesFull, initialProperties]);
+  const zones = useMemo(() =>
+    filterOptions.cities.map(label => ({ value: toSlug(label), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
+    [filterOptions.cities]
+  );
+  const propertyTypes = useMemo(() =>
+    filterOptions.types.map(label => ({ value: toSlug(label), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
+    [filterOptions.types]
+  );
+  const statuses = useMemo(() =>
+    filterOptions.statuses.map(label => ({ value: toSlug(label), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
+    [filterOptions.statuses]
+  );
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");

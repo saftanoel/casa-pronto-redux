@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Search, MapPin, Home, Building2, Ruler, Euro, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
-import { useTaxonomyOptions } from "@/hooks/useTaxonomyOptions";
 
 const heroImages = [
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-cCucqGh7.jpg",
@@ -30,7 +29,24 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
 const Hero = () => {
   const { filters, setFilter, scrollToProperties, allProperties } = useSearch();
-  const { zones, propertyTypes } = useTaxonomyOptions(allProperties);
+
+  // Extract filter options directly from properties (same logic as PropertiesPage)
+  const filterOptions = useMemo(() => {
+    console.log("Hero: Extracting filters from", allProperties.length, "properties...");
+    const cities = [...new Set(allProperties.flatMap(p => p.taxonomies?.property_city || []))].filter(Boolean);
+    const types = [...new Set(allProperties.flatMap(p => p.taxonomies?.property_type || []))].filter(Boolean);
+    console.log("Hero Extracted Options:", { cities: cities.length, types: types.length });
+    return { cities, types };
+  }, [allProperties]);
+
+  const zones = useMemo(() =>
+    filterOptions.cities.map(label => ({ value: label.toLowerCase().replace(/ă/g,"a").replace(/â/g,"a").replace(/î/g,"i").replace(/ș/g,"s").replace(/ț/g,"t").replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,""), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
+    [filterOptions.cities]
+  );
+  const propertyTypes = useMemo(() =>
+    filterOptions.types.map(label => ({ value: label.toLowerCase().replace(/ă/g,"a").replace(/â/g,"a").replace(/î/g,"i").replace(/ș/g,"s").replace(/ț/g,"t").replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,""), label })).sort((a, b) => a.label.localeCompare(b.label, "ro")),
+    [filterOptions.types]
+  );
   const activeTab = filters.tab;
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
