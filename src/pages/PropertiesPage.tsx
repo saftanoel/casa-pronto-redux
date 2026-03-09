@@ -12,7 +12,7 @@ import { type Property } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
-import { useInitialProperties, useAllProperties, useTaxonomies } from "@/hooks/useProperties";
+import { useInitialProperties, useAllProperties } from "@/hooks/useProperties";
 import { PropertyGridSkeletons, PropertyRowSkeletons } from "@/components/PropertyCardSkeleton";
 import { matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
 import { useDebounce } from "@/hooks/useDebounce";
