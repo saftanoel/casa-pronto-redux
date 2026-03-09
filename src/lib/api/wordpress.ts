@@ -123,7 +123,7 @@ function isNewProperty(dateStr: string): boolean {
 export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Property {
   const title = post.title.rendered;
   const contentText = stripHtml(post.content.rendered);
-  const type = extractType(title);
+  const type = extractTypeWithTaxonomy(title, post.taxonomies?.property_status);
   const { location, zone } = extractLocation(title);
   const featuredImage = getImageUrl(post);
 
