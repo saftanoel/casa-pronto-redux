@@ -572,11 +572,11 @@ const PropertiesPage = () => {
 
             {/* Mobile Filter Drawer */}
             <Drawer open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
-              <DrawerContent className="max-h-[85vh]">
-                <DrawerHeader className="text-left">
+              <DrawerContent className="max-h-[70vh]">
+                <DrawerHeader className="text-left flex-shrink-0">
                   <DrawerTitle className="font-serif text-lg">Filtre</DrawerTitle>
                 </DrawerHeader>
-                <div className="px-4 pb-6 overflow-y-auto space-y-4">
+                <div className="px-4 pb-6 overflow-y-auto space-y-4 flex-1">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Categorie</label>
                     <Select value={category || "all"} onValueChange={(v) => setCategory(v === "all" ? "" : v)}>
@@ -609,7 +609,13 @@ const PropertiesPage = () => {
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Caută</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="Caută anunțuri..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-11" />
+                      <Input
+                        placeholder="Caută anunțuri..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300)}
+                        className="pl-10 h-11"
+                      />
                     </div>
                   </div>
                   <div>
