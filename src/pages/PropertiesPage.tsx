@@ -169,11 +169,10 @@ const PropertiesPage = () => {
 
   // Debug logs
   useEffect(() => {
-    if (taxonomyData) {
-      console.log('Taxonomies loaded:', taxonomyData);
-      console.log('Cities:', taxonomyData.property_city?.length, 'Types:', taxonomyData.property_type?.length, 'Statuses:', taxonomyData.property_status?.length);
+    if (allPropertiesFull) {
+      console.log('Background fetch complete, total items:', allPropertiesFull.length);
     }
-  }, [taxonomyData]);
+  }, [allPropertiesFull]);
 
   useEffect(() => {
     if (allPropertiesFull) {
