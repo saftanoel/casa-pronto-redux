@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,9 +8,12 @@ import { PropertyGridSkeletons } from "./PropertyCardSkeleton";
 
 const FeaturedProperties = () => {
   const { allProperties, isLoading } = useSearch();
-  const displayProperties = [...allProperties]
-    .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-    .slice(0, 6);
+  const displayProperties = useMemo(() => 
+    [...allProperties]
+      .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+      .slice(0, 6),
+    [allProperties]
+  );
 
   return (
     <section id="properties" className="py-20 md:py-28 bg-muted/50">
