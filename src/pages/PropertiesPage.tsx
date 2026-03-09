@@ -433,7 +433,7 @@ const PropertiesPage = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">Toate</SelectItem>
-                          {categories.map((c) => (
+                          {propertyTypes.map((c) => (
                             <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                           ))}
                         </SelectContent>
