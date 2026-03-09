@@ -316,7 +316,7 @@ const PropertiesPage = () => {
 
   const getCategoryLabel = () => {
     if (category) {
-      const cat = categories.find(c => c.value === category);
+      const cat = propertyTypes.find(c => c.value === category);
       return cat?.label || "Anunțuri Imobiliare";
     }
     return "Anunțuri Imobiliare";
