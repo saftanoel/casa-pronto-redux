@@ -42,8 +42,19 @@ const Header = () => {
   };
 
   const handleSearchChange = (value: string) => {
-    setFilter("searchQuery", value);
-    scrollToProperties();
+    setLocalSearch(value);
+  };
+
+  const handleSearchSubmit = useCallback(() => {
+    if (localSearch.trim()) {
+      navigate(`/proprietati?q=${encodeURIComponent(localSearch.trim())}`);
+      setIsSearchOpen(false);
+      setIsMenuOpen(false);
+    }
+  }, [localSearch, navigate]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSearchSubmit();
   };
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
