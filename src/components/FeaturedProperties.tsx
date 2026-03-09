@@ -6,8 +6,10 @@ import { useSearch } from "@/context/SearchContext";
 import { PropertyGridSkeletons } from "./PropertyCardSkeleton";
 
 const FeaturedProperties = () => {
-  const { filteredProperties, isLoading } = useSearch();
-  const displayProperties = filteredProperties.slice(0, 6);
+  const { allProperties, isLoading } = useSearch();
+  const displayProperties = [...allProperties]
+    .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+    .slice(0, 6);
 
   return (
     <section id="properties" className="py-20 md:py-28 bg-muted/50">
