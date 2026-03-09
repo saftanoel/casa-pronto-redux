@@ -14,36 +14,21 @@ import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
 import { useInfiniteProperties } from "@/hooks/useProperties";
 import { PropertyGridSkeletons, PropertyRowSkeletons } from "@/components/PropertyCardSkeleton";
+import { useTaxonomyOptions, matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
 
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
 type SortOption = "newest" | "oldest" | "price-high" | "price-low";
 
-const zones = [
-  { value: "ampoi", label: "Ampoi" },
-  { value: "centru", label: "Centru" },
-  { value: "cetate", label: "Cetate" },
-  { value: "ciugud", label: "Ciugud" },
-  { value: "oarda", label: "Oarda" },
-  { value: "partos", label: "Partoș" },
-  { value: "sebes", label: "Sebeș" },
-];
-
-const categories = [
-  { value: "apartamente", label: "Apartamente" },
-  { value: "birouri", label: "Birouri" },
-  { value: "case", label: "Case" },
-  { value: "garsoniere", label: "Garsoniere" },
-  { value: "spatii-comerciale", label: "Spații Comerciale" },
-  { value: "terenuri", label: "Terenuri" },
-  { value: "vile", label: "Vile" },
-];
-
 function matchTab(p: Property, tab: FilterTab): boolean {
+  if (tab === "toate") return true;
+  // Use taxonomy-based status matching
+  const statuses = p.taxonomies?.property_status ?? [];
+  const statusSlugs = statuses.map(s => s.toLowerCase());
   switch (tab) {
-    case "cumparare": return p.type === "Vânzare";
-    case "inchiriere": return p.type === "Închiriere";
-    case "vandute": return p.type === "Vândut";
+    case "cumparare": return statusSlugs.some(s => s.includes("cumpar") || s.includes("vanzar") || s.includes("vânzar"));
+    case "inchiriere": return statusSlugs.some(s => s.includes("inchiri") || s.includes("închiri"));
+    case "vandute": return statusSlugs.some(s => s.includes("vandu") || s.includes("vându") || s.includes("vandut") || s.includes("vândut"));
     default: return true;
   }
 }
