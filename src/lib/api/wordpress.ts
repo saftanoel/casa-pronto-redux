@@ -12,6 +12,11 @@ export interface WPPost {
   content: { rendered: string };
   featured_media: number;
   gallery_urls?: string[];
+  taxonomies?: {
+    property_type?: string[];
+    property_status?: string[];
+    property_city?: string[];
+  };
   property_details?: {
     price?: string;
     bedrooms?: number;
