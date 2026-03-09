@@ -92,8 +92,8 @@ export const SearchProvider = ({ children, properties = [], isLoading = false }:
   const filteredProperties = useMemo(() => {
     return properties.filter((p) => {
       if (!matchesTab(p, filters.tab)) return false;
-      if (filters.zone && p.zone !== filters.zone) return false;
-      if (filters.propertyType && p.propertyType !== filters.propertyType) return false;
+      if (filters.zone && !matchesTaxonomy(p, "property_city", filters.zone)) return false;
+      if (filters.propertyType && !matchesTaxonomy(p, "property_type", filters.propertyType)) return false;
       if (!matchesRooms(p, filters.rooms)) return false;
       if (!matchesArea(p, filters.area)) return false;
       if (filters.searchQuery) {
