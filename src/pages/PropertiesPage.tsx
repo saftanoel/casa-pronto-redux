@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from "react";
+import { useState, useMemo, useEffect, useCallback, useTransition } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
@@ -12,9 +12,10 @@ import { type Property } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
-import { useInfiniteProperties } from "@/hooks/useProperties";
+import { useProperties } from "@/hooks/useProperties";
 import { PropertyGridSkeletons, PropertyRowSkeletons } from "@/components/PropertyCardSkeleton";
 import { useTaxonomyOptions, matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
+import { useDebounce } from "@/hooks/useDebounce";
 
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
@@ -22,7 +23,6 @@ type SortOption = "newest" | "oldest" | "price-high" | "price-low";
 
 function matchTab(p: Property, tab: FilterTab): boolean {
   if (tab === "toate") return true;
-  // Use taxonomy-based status matching
   const statuses = p.taxonomies?.property_status ?? [];
   const statusSlugs = statuses.map(s => s.toLowerCase());
   switch (tab) {
@@ -143,30 +143,17 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
   </Link>
 );
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 12;
 
 const PropertiesPage = () => {
-  const {
-    data,
-    isLoading: isLoadingProperties,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteProperties(12);
-
-  const allProperties = useMemo(() => {
-    if (!data) return [];
-    return data.pages.flatMap(page => page.properties);
-  }, [data]);
-
+  const { data: allProperties = [], isLoading: isLoadingProperties } = useProperties();
   const { zones, propertyTypes } = useTaxonomyOptions(allProperties);
-
-  const totalItems = data?.pages[0]?.totalItems ?? 0;
 
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [zone, setZone] = useState(searchParams.get("zone") || "");
   const [category, setCategory] = useState(searchParams.get("category") || "");
   const [rooms, setRooms] = useState(searchParams.get("rooms") || "");
@@ -200,10 +187,9 @@ const PropertiesPage = () => {
     if (rooms) params.set("rooms", rooms);
     if (area) params.set("area", area);
     if (price) params.set("price", price);
-    if (searchQuery) params.set("q", searchQuery);
+    if (debouncedSearch) params.set("q", debouncedSearch);
     setSearchParams(params, { replace: true });
-  }, [activeTab, zone, category, rooms, area, price, searchQuery]);
-
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch]);
 
   const currentSearch = useMemo(() => {
     const params = new URLSearchParams();
@@ -213,10 +199,10 @@ const PropertiesPage = () => {
     if (rooms) params.set("rooms", rooms);
     if (area) params.set("area", area);
     if (price) params.set("price", price);
-    if (searchQuery) params.set("q", searchQuery);
+    if (debouncedSearch) params.set("q", debouncedSearch);
     const qs = params.toString();
     return qs ? `?${qs}` : "";
-  }, [activeTab, zone, category, rooms, area, price, searchQuery]);
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch]);
 
   const resetAllFilters = () => {
     startTransition(() => {
@@ -234,7 +220,7 @@ const PropertiesPage = () => {
   // Reset visible count when any filter changes
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy]);
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy]);
 
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "TOATE" },
@@ -274,8 +260,8 @@ const PropertiesPage = () => {
         const range = priceRanges[price];
         if (range && (pv < range[0] || pv >= range[1])) return false;
       }
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+      if (debouncedSearch) {
+        const q = debouncedSearch.toLowerCase();
         if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q))
           return false;
       }
@@ -290,27 +276,7 @@ const PropertiesPage = () => {
     }
 
     return result;
-  }, [activeTab, zone, category, rooms, area, price, searchQuery, sortBy, allProperties]);
-
-  // Auto-fetch more pages if filters hide all newly loaded properties
-  const prevFilteredCountRef = useRef(filteredProperties.length);
-  useEffect(() => {
-    const prevCount = prevFilteredCountRef.current;
-    prevFilteredCountRef.current = filteredProperties.length;
-    
-    // If we have active filters, just loaded a page, but filtered count didn't grow, auto-fetch next
-    const hasActiveFilters = activeTab !== "toate" || zone || category || rooms || area || price || searchQuery;
-    if (
-      hasActiveFilters &&
-      hasNextPage &&
-      !isFetchingNextPage &&
-      filteredProperties.length === prevCount &&
-      allProperties.length > 0 &&
-      prevCount > 0
-    ) {
-      fetchNextPage();
-    }
-  }, [allProperties.length, filteredProperties.length, hasNextPage, isFetchingNextPage, fetchNextPage, activeTab, zone, category, rooms, area, price, searchQuery]);
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allProperties]);
 
   const handleSearch = () => {};
 
@@ -321,6 +287,12 @@ const PropertiesPage = () => {
     }
     return "Anunțuri Imobiliare";
   };
+
+  const visibleProperties = useMemo(
+    () => filteredProperties.slice(0, visibleCount),
+    [filteredProperties, visibleCount]
+  );
+  const hasMoreLocal = visibleCount < filteredProperties.length;
 
   return (
     <SearchProvider properties={allProperties} isLoading={isLoadingProperties}>
@@ -411,9 +383,9 @@ const PropertiesPage = () => {
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 Filtrează
-                {(category || zone || searchQuery) && (
+                {(category || zone || debouncedSearch) && (
                   <Badge variant="secondary" className="ml-auto text-xs">
-                    {[category, zone, searchQuery].filter(Boolean).length}
+                    {[category, zone, debouncedSearch].filter(Boolean).length}
                   </Badge>
                 )}
               </Button>
@@ -489,7 +461,7 @@ const PropertiesPage = () => {
               {/* Property List */}
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground mb-6">
-                  {isLoadingProperties ? "Se încarcă..." : `${filteredProperties.length} din ${totalItems} proprietăți`}
+                  {isLoadingProperties ? "Se încarcă..." : `${filteredProperties.length} din ${allProperties.length} proprietăți`}
                   {isPending && <span className="ml-2 text-primary">Se actualizează...</span>}
                 </p>
 
@@ -505,59 +477,36 @@ const PropertiesPage = () => {
                   )
                 ) : filteredProperties.length > 0 ? (
                   <>
-                    {(() => {
-                      const visibleProperties = filteredProperties.slice(0, visibleCount);
-                      const hasMoreLocal = visibleCount < filteredProperties.length;
-                      return (
-                        <>
-                          {viewMode === "list" ? (
-                            <div className="flex flex-col gap-6">
-                              {visibleProperties.map((property) => (
-                                <PropertyRow key={property.id} property={property} search={currentSearch} />
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              {visibleProperties.map((property) => (
-                                <PropertyGrid key={property.id} property={property} search={currentSearch} />
-                              ))}
-                            </div>
-                          )}
+                    {viewMode === "list" ? (
+                      <div className="flex flex-col gap-6">
+                        {visibleProperties.map((property) => (
+                          <PropertyRow key={property.id} property={property} search={currentSearch} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {visibleProperties.map((property) => (
+                          <PropertyGrid key={property.id} property={property} search={currentSearch} />
+                        ))}
+                      </div>
+                    )}
 
-                          {/* Load More Button */}
-                          <div className="flex justify-center py-8">
-                            {hasMoreLocal ? (
-                              <Button
-                                variant="outline"
-                                size="lg"
-                                onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
-                                className="gap-2 min-h-[44px]"
-                              >
-                                Încarcă Mai Multe ({filteredProperties.length - visibleCount} rămase)
-                                <ChevronRight className="h-4 w-4 rotate-90" />
-                              </Button>
-                            ) : isFetchingNextPage ? (
-                              <Button variant="outline" size="lg" disabled className="gap-2 min-h-[44px]">
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                                Se încarcă...
-                              </Button>
-                            ) : hasNextPage ? (
-                              <Button
-                                variant="outline"
-                                size="lg"
-                                onClick={() => fetchNextPage()}
-                                className="gap-2 min-h-[44px]"
-                              >
-                                Încarcă Mai Multe de pe Server
-                                <ChevronRight className="h-4 w-4 rotate-90" />
-                              </Button>
-                            ) : allProperties.length > 0 ? (
-                              <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
-                            ) : null}
-                          </div>
-                        </>
-                      );
-                    })()}
+                    {/* Load More Button */}
+                    <div className="flex justify-center py-8">
+                      {hasMoreLocal ? (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
+                          className="gap-2 min-h-[44px]"
+                        >
+                          Încarcă Mai Multe ({filteredProperties.length - visibleCount} rămase)
+                          <ChevronRight className="h-4 w-4 rotate-90" />
+                        </Button>
+                      ) : allProperties.length > 0 ? (
+                        <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
+                      ) : null}
+                    </div>
                   </>
                 ) : (
                   <div className="text-center py-20 bg-muted/30 rounded-xl">
