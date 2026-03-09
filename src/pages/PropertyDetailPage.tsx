@@ -249,16 +249,9 @@ const PropertyDetailPage = () => {
                   </div>
                 </div>
 
-                {/* Similar Properties */}
+                {/* Similar Properties Carousel */}
                 {similarProperties.length > 0 && (
-                  <div>
-                    <h3 className="font-serif text-xl font-semibold mb-6">Proprietăți Asemănătoare</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {similarProperties.map((p) => (
-                        <PropertyCard key={p.id} {...p} />
-                      ))}
-                    </div>
-                  </div>
+                  <SimilarPropertiesCarousel properties={similarProperties} />
                 )}
               </div>
 
