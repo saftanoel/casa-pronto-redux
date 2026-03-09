@@ -29,7 +29,7 @@ const PropertyDetailPage = () => {
     if (!property) return [];
     return allProps
       .filter((p) => p.id !== property.id && (p.propertyType === property.propertyType || p.type === property.type))
-      .slice(0, 3);
+      .slice(0, 8);
   }, [property, allProps]);
 
   if (isLoading) {
