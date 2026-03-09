@@ -1,17 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Menu, X, Phone, Mail, Search } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useSearch } from "@/context/SearchContext";
+
 const logo = "https://www.casapronto.ro/wp-content/uploads/2026/03/logo3-D-qtkmdT.jpg";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const { filters, setFilter, scrollToProperties } = useSearch();
+  const [localSearch, setLocalSearch] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,8 +42,19 @@ const Header = () => {
   };
 
   const handleSearchChange = (value: string) => {
-    setFilter("searchQuery", value);
-    scrollToProperties();
+    setLocalSearch(value);
+  };
+
+  const handleSearchSubmit = useCallback(() => {
+    if (localSearch.trim()) {
+      navigate(`/proprietati?q=${encodeURIComponent(localSearch.trim())}`);
+      setIsSearchOpen(false);
+      setIsMenuOpen(false);
+    }
+  }, [localSearch, navigate]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSearchSubmit();
   };
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
@@ -142,8 +153,9 @@ const Header = () => {
               <Input
                 ref={searchInputRef}
                 placeholder="Caută proprietăți..."
-                value={filters.searchQuery}
+                value={localSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 className="h-9"
               />
             </div>
@@ -172,8 +184,9 @@ const Header = () => {
         <nav className="container mx-auto px-4 py-4 flex flex-col gap-2">
           <Input
             placeholder="Caută proprietăți..."
-            value={filters.searchQuery}
+            value={localSearch}
             onChange={(e) => handleSearchChange(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
             className="mb-2"
           />
           {navLinks.map((link) => (
