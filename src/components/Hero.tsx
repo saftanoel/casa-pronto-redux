@@ -5,20 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
+import { useTaxonomyOptions } from "@/hooks/useTaxonomyOptions";
+
 const heroImages = [
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-cCucqGh7.jpg",
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-4-B0lpn2F7.jpg",
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-3-C9kBEvwH.jpg",
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-2-BEiqB60L.jpg",
-];
-
-const zones = [
-  "Aiud", "Alba-Micesti", "Ampoi", "Ampoi3", "Ampoita", "Barabant", "Blaj",
-  "Caroline", "Centru", "Cetate", "Cetate Alba Carolina", "Ciugud", "Cluj",
-  "Cluj Napoca", "Cugir", "Geoagiu", "Ighiu", "Micesti", "Oarda", "Oarda de Sus",
-  "Oiejdea", "Oradea", "Partos", "Periferie", "Piclisa", "Sard", "Schit",
-  "Sebes", "Seusa", "Spring", "Stadion", "Teius", "Tolstoi", "Valea Popii",
-  "Vint", "Vintu de Jos", "Zlatna", "Zona Stadion",
 ];
 
 const suprafataOptions = [
