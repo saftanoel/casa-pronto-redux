@@ -246,8 +246,8 @@ const PropertiesPage = () => {
   const filteredProperties = useMemo(() => {
     let result = allProperties.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
-      if (zone && p.zone !== zone) return false;
-      if (category && p.propertyType !== category) return false;
+      if (zone && !matchesTaxonomy(p, "property_city", zone)) return false;
+      if (category && !matchesTaxonomy(p, "property_type", category)) return false;
       if (rooms) {
         if (rooms === "4+") { if (p.beds < 4) return false; }
         else { if (p.beds !== parseInt(rooms)) return false; }
@@ -276,7 +276,7 @@ const PropertiesPage = () => {
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q) && !p.propertyType.toLowerCase().includes(q))
+        if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q))
           return false;
       }
       return true;
