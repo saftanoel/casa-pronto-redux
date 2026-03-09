@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect, useCallback, useTransition } from "react";
-import { useSearchParams, Link, useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect, useTransition } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
 import { Button } from "@/components/ui/button";
@@ -12,14 +12,23 @@ import { type Property } from "@/data/properties";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
-import { useProperties } from "@/hooks/useProperties";
+import { useInitialProperties, useAllProperties, useTaxonomies } from "@/hooks/useProperties";
 import { PropertyGridSkeletons, PropertyRowSkeletons } from "@/components/PropertyCardSkeleton";
-import { useTaxonomyOptions, matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
+import { matchesTaxonomy } from "@/hooks/useTaxonomyOptions";
 import { useDebounce } from "@/hooks/useDebounce";
 
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
 type SortOption = "newest" | "oldest" | "price-high" | "price-low";
+
+function toSlug(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/ă/g, "a").replace(/â/g, "a").replace(/î/g, "i")
+    .replace(/ș/g, "s").replace(/ț/g, "t")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
 
 function matchTab(p: Property, tab: FilterTab): boolean {
   if (tab === "toate") return true;
@@ -146,11 +155,33 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
 const ITEMS_PER_PAGE = 12;
 
 const PropertiesPage = () => {
-  const { data: allProperties = [], isLoading: isLoadingProperties } = useProperties();
-  const { zones, propertyTypes } = useTaxonomyOptions(allProperties);
+  // Fetch 1: Initial 60 properties (instant)
+  const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
+  // Fetch 2: Taxonomies (instant, tiny payload)
+  const { data: taxonomyData } = useTaxonomies();
+  // Fetch 3: All ~5000 properties (background)
+  const { data: allPropertiesFull, isLoading: isLoadingAll, isFetched: isAllFetched } = useAllProperties(true);
+
+  // Determine which dataset to use for filtering
+  const allProperties = allPropertiesFull ?? initialProperties;
+  const hasFullData = isAllFetched && !!allPropertiesFull;
+
+  // Build taxonomy options from the dedicated endpoint
+  const zones = useMemo(() => {
+    if (!taxonomyData?.property_city) return [];
+    return taxonomyData.property_city
+      .map(label => ({ value: toSlug(label), label }))
+      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData]);
+
+  const propertyTypes = useMemo(() => {
+    if (!taxonomyData?.property_type) return [];
+    return taxonomyData.property_type
+      .map(label => ({ value: toSlug(label), label }))
+      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData]);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -164,6 +195,12 @@ const PropertiesPage = () => {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isPending, startTransition] = useTransition();
+
+  // Track if user has applied any filter
+  const hasActiveFilter = !!(zone || category || rooms || area || price || debouncedSearch || activeTab !== "toate");
+
+  // "Eager user" state: user filtered before full data loaded
+  const isWaitingForFullData = hasActiveFilter && !hasFullData && !isLoadingInitial;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -217,7 +254,6 @@ const PropertiesPage = () => {
     });
   };
 
-  // Reset visible count when any filter changes
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
   }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy]);
@@ -230,7 +266,10 @@ const PropertiesPage = () => {
   ];
 
   const filteredProperties = useMemo(() => {
-    let result = allProperties.filter((p) => {
+    // If no filters active, show initial properties (no need to wait for full data)
+    const sourceData = hasActiveFilter ? allProperties : (allPropertiesFull ?? initialProperties);
+
+    let result = sourceData.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
       if (zone && !matchesTaxonomy(p, "property_city", zone)) return false;
       if (category && !matchesTaxonomy(p, "property_type", category)) return false;
@@ -276,9 +315,7 @@ const PropertiesPage = () => {
     }
 
     return result;
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allProperties]);
-
-  const handleSearch = () => {};
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allProperties, initialProperties, allPropertiesFull, hasActiveFilter]);
 
   const getCategoryLabel = () => {
     if (category) {
@@ -294,11 +331,60 @@ const PropertiesPage = () => {
   );
   const hasMoreLocal = visibleCount < filteredProperties.length;
 
+  const FilterSelects = ({ mobile = false }: { mobile?: boolean }) => {
+    const h = mobile ? "h-11" : "h-10";
+    return (
+      <>
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Categorie</label>
+          <Select value={category || "all"} onValueChange={(v) => setCategory(v === "all" ? "" : v)}>
+            <SelectTrigger className={h}>
+              <SelectValue placeholder="Toate" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toate</SelectItem>
+              {propertyTypes.map((c) => (
+                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Zonă</label>
+          <Select value={zone || "all"} onValueChange={(v) => setZone(v === "all" ? "" : v)}>
+            <SelectTrigger className={h}>
+              <SelectValue placeholder="Toate" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toate</SelectItem>
+              {zones.map((z) => (
+                <SelectItem key={z.value} value={z.value}>{z.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Caută</label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Caută anunțuri..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={mobile ? (e) => setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300) : undefined}
+              className={cn("pl-10", h)}
+            />
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
-    <SearchProvider properties={allProperties} isLoading={isLoadingProperties}>
+    <SearchProvider properties={initialProperties} isLoading={isLoadingInitial}>
       <div className="min-h-screen flex flex-col">
         <Header />
-        
+
         {/* Page Header */}
         <div className="bg-muted/50 pt-36 pb-8 border-b border-border">
           <div className="container mx-auto px-4">
@@ -397,42 +483,8 @@ const PropertiesPage = () => {
                 <div className="bg-card rounded-xl p-6 shadow-[var(--card-shadow)] border border-border">
                   <h3 className="font-serif font-semibold text-lg mb-5">Filtre</h3>
                   <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">Categorie</label>
-                      <Select value={category || "all"} onValueChange={(v) => setCategory(v === "all" ? "" : v)}>
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Toate" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Toate</SelectItem>
-                          {propertyTypes.map((c) => (
-                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">Zonă</label>
-                      <Select value={zone || "all"} onValueChange={(v) => setZone(v === "all" ? "" : v)}>
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Toate" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Toate</SelectItem>
-                          {zones.map((z) => (
-                            <SelectItem key={z.value} value={z.value}>{z.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-1.5 block">Caută</label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Caută anunțuri..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-10" />
-                      </div>
-                    </div>
-                    <Button className="w-full gap-2" onClick={handleSearch}>
+                    <FilterSelects />
+                    <Button className="w-full gap-2" onClick={() => {}}>
                       <Search className="h-4 w-4" />
                       CAUTĂ ANUNȚURI
                     </Button>
@@ -459,13 +511,28 @@ const PropertiesPage = () => {
               </aside>
 
               {/* Property List */}
-              <div className="flex-1">
+              <div className="flex-1 relative">
                 <p className="text-sm text-muted-foreground mb-6">
-                  {isLoadingProperties ? "Se încarcă..." : `${filteredProperties.length} din ${allProperties.length} proprietăți`}
+                  {isLoadingInitial ? "Se încarcă..." : (
+                    <>
+                      {filteredProperties.length} proprietăți
+                      {!hasFullData && hasActiveFilter && <span className="ml-1 text-primary">(se încarcă toate...)</span>}
+                      {hasFullData && ` din ${allPropertiesFull!.length}`}
+                    </>
+                  )}
                   {isPending && <span className="ml-2 text-primary">Se actualizează...</span>}
                 </p>
 
-                {isLoadingProperties ? (
+                {/* Eager User Loading Overlay */}
+                {isWaitingForFullData && (
+                  <div className="absolute inset-0 z-20 bg-background/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-4 min-h-[400px]">
+                    <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                    <p className="text-lg font-serif font-medium text-foreground">Căutăm prin toate ofertele...</p>
+                    <p className="text-sm text-muted-foreground">Încărcăm toate cele ~5000 proprietăți pentru a filtra global</p>
+                  </div>
+                )}
+
+                {isLoadingInitial ? (
                   viewMode === "list" ? (
                     <div className="flex flex-col gap-6">
                       <PropertyRowSkeletons count={4} />
@@ -526,47 +593,7 @@ const PropertiesPage = () => {
                   <DrawerTitle className="font-serif text-lg">Filtre</DrawerTitle>
                 </DrawerHeader>
                 <div className="px-4 pb-6 overflow-y-auto space-y-4 flex-1">
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">Categorie</label>
-                    <Select value={category || "all"} onValueChange={(v) => setCategory(v === "all" ? "" : v)}>
-                      <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Toate" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Toate</SelectItem>
-                        {propertyTypes.map((c) => (
-                          <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">Zonă</label>
-                    <Select value={zone || "all"} onValueChange={(v) => setZone(v === "all" ? "" : v)}>
-                      <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Toate" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Toate</SelectItem>
-                        {zones.map((z) => (
-                          <SelectItem key={z.value} value={z.value}>{z.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">Caută</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Caută anunțuri..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300)}
-                        className="pl-10 h-11"
-                      />
-                    </div>
-                  </div>
+                  <FilterSelects mobile />
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Sortează</label>
                     <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>

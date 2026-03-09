@@ -262,9 +262,4 @@ export async function fetchPropertyById(id: number): Promise<Property | null> {
   const post: WPPost = await postRes.json();
   return mapWPPostToProperty(post);
 }
-  const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}`);
-  if (!postRes.ok) return null;
 
-  const post: WPPost = await postRes.json();
-  return mapWPPostToProperty(post);
-}
