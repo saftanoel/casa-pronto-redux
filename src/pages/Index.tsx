@@ -8,11 +8,16 @@ import Services from "@/components/Services";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
-import { useProperties } from "@/hooks/useProperties";
+import { useProperties, useAllProperties } from "@/hooks/useProperties";
 
 const Index = () => {
   const location = useLocation();
-  const { data: properties = [], isLoading } = useProperties();
+  const { data: initialProperties = [], isLoading } = useProperties();
+  // Also load all properties in background so Hero dropdowns populate from real taxonomy data
+  const { data: allPropertiesFull } = useAllProperties(true);
+
+  // Use full dataset when available, otherwise initial 60
+  const properties = allPropertiesFull ?? initialProperties;
 
   useEffect(() => {
     if (location.hash) {
