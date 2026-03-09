@@ -159,6 +159,8 @@ const PropertiesPage = () => {
     return data.pages.flatMap(page => page.properties);
   }, [data]);
 
+  const { zones, propertyTypes } = useTaxonomyOptions(allProperties);
+
   const totalItems = data?.pages[0]?.totalItems ?? 0;
 
   const [searchParams, setSearchParams] = useSearchParams();
