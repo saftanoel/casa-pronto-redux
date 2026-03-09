@@ -157,8 +157,7 @@ const ITEMS_PER_PAGE = 12;
 const PropertiesPage = () => {
   // Fetch 1: Initial 60 properties (instant)
   const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
-  // Fetch 2: Taxonomies (instant, tiny payload)
-  const { data: taxonomyData, isSuccess: taxonomiesLoaded } = useTaxonomies();
+  // Fetch 2: All ~5000 properties (background)
   // Fetch 3: All ~5000 properties (background)
   const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
 
