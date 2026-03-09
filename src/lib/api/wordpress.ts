@@ -228,8 +228,40 @@ export async function fetchAllProperties(): Promise<Property[]> {
   return allPosts.map(p => mapWPPostToProperty(p, true));
 }
 
+/** Fetch taxonomy options from the dedicated fast endpoint */
+export interface TaxonomyResponse {
+  property_city: string[];
+  property_type: string[];
+  property_status: string[];
+}
+
+export async function fetchTaxonomies(): Promise<TaxonomyResponse> {
+  const response = await fetch(`${WP_API_BASE}/taxonomii`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch taxonomies: ${response.status}`);
+  }
+  return response.json();
+}
+
+/** Fetch initial batch of properties (fast first paint) */
+export async function fetchInitialProperties(limit = 60): Promise<Property[]> {
+  const url = `${WP_API_BASE}/anunturi?limit=${limit}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch initial properties: ${response.status}`);
+  }
+  const posts: WPPost[] = await response.json();
+  return posts.map(p => mapWPPostToProperty(p, true));
+}
+
 /** Fetch single property by ID — uses dedicated endpoint */
 export async function fetchPropertyById(id: number): Promise<Property | null> {
+  const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}`);
+  if (!postRes.ok) return null;
+
+  const post: WPPost = await postRes.json();
+  return mapWPPostToProperty(post);
+}
   const postRes = await fetch(`${WP_API_BASE}/anunturi/${id}`);
   if (!postRes.ok) return null;
 
