@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Search, MapPin, Home, Building2, Ruler, Euro, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
-import { useTaxonomyOptions } from "@/hooks/useTaxonomyOptions";
 
 const heroImages = [
   "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-cCucqGh7.jpg",
