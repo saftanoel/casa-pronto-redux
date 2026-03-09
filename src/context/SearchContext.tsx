@@ -65,10 +65,13 @@ function matchesRooms(property: Property, roomsFilter: string): boolean {
 }
 
 function matchesTab(property: Property, tab: FilterTab): boolean {
+  if (tab === "toate") return true;
+  const statuses = property.taxonomies?.property_status ?? [];
+  const slugs = statuses.map(s => s.toLowerCase());
   switch (tab) {
-    case "cumparare": return property.type === "Vânzare";
-    case "inchiriere": return property.type === "Închiriere";
-    case "vandute": return property.type === "Vândut";
+    case "cumparare": return slugs.some(s => s.includes("cumpar") || s.includes("vanzar") || s.includes("vânzar"));
+    case "inchiriere": return slugs.some(s => s.includes("inchiri") || s.includes("închiri"));
+    case "vandute": return slugs.some(s => s.includes("vandu") || s.includes("vându") || s.includes("vandut") || s.includes("vândut"));
     default: return true;
   }
 }
