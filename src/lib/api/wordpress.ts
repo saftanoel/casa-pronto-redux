@@ -127,17 +127,21 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
   const { location, zone } = extractLocation(title);
   const featuredImage = getImageUrl(post);
 
-  // Use property_details for price & specs, with content-based fallbacks
   const details = post.property_details;
   const { price, priceValue } = parsePrice(details?.price);
   const beds = details?.bedrooms ?? 0;
   const baths = details?.bathrooms ?? 0;
   const area = details?.area ?? 0;
 
-  // Use gallery_urls for images, falling back to featured image
   const galleryImages = post.gallery_urls && post.gallery_urls.length > 0
     ? post.gallery_urls
     : [featuredImage];
+
+  const taxonomies = {
+    property_type: post.taxonomies?.property_type ?? [],
+    property_status: post.taxonomies?.property_status ?? [],
+    property_city: post.taxonomies?.property_city ?? [],
+  };
 
   return {
     id: post.id,
@@ -157,6 +161,7 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
     isNew: isNewProperty(post.date),
     features: extractFeatures(contentText),
     agent: "Baba Elena",
+    taxonomies,
   };
 }
 
