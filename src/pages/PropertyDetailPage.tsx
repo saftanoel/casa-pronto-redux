@@ -1,6 +1,7 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useCallback, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { ChevronRight, MapPin, Bed, Bath, Square, Phone, Mail, Share2, ArrowLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, MapPin, Bed, Bath, Square, Phone, Mail, Share2, ArrowLeft } from "lucide-react";
+import useEmblaCarousel from "embla-carousel-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,63 @@ import PropertyCard from "@/components/PropertyCard";
 import PropertyGallery from "@/components/PropertyGallery";
 import { SearchProvider } from "@/context/SearchContext";
 import { useProperty, useProperties } from "@/hooks/useProperties";
+import { type Property } from "@/data/properties";
+
+const SimilarPropertiesCarousel = ({ properties }: { properties: Property[] }) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    slidesToScroll: 1,
+    containScroll: "trimSnaps",
+    loop: false,
+  });
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    const onSelect = () => {
+      setCanPrev(emblaApi.canScrollPrev());
+      setCanNext(emblaApi.canScrollNext());
+    };
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+    onSelect();
+    return () => { emblaApi.off("select", onSelect); emblaApi.off("reInit", onSelect); };
+  }, [emblaApi]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-serif text-xl font-semibold">Proprietăți Asemănătoare</h3>
+        <div className="hidden md:flex gap-2">
+          <button
+            onClick={() => emblaApi?.scrollPrev()}
+            disabled={!canPrev}
+            className={cn("p-2 rounded-full border border-border transition-colors", canPrev ? "hover:bg-muted" : "opacity-30 cursor-default")}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => emblaApi?.scrollNext()}
+            disabled={!canNext}
+            className={cn("p-2 rounded-full border border-border transition-colors", canNext ? "hover:bg-muted" : "opacity-30 cursor-default")}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex gap-5">
+          {properties.map((p) => (
+            <div key={p.id} className="flex-[0_0_85%] min-w-0 sm:flex-[0_0_48%] lg:flex-[0_0_32%]">
+              <PropertyCard {...p} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PropertyDetailPage = () => {
   const { id } = useParams();
@@ -29,7 +87,7 @@ const PropertyDetailPage = () => {
     if (!property) return [];
     return allProps
       .filter((p) => p.id !== property.id && (p.propertyType === property.propertyType || p.type === property.type))
-      .slice(0, 3);
+      .slice(0, 8);
   }, [property, allProps]);
 
   if (isLoading) {
@@ -249,16 +307,9 @@ const PropertyDetailPage = () => {
                   </div>
                 </div>
 
-                {/* Similar Properties */}
+                {/* Similar Properties Carousel */}
                 {similarProperties.length > 0 && (
-                  <div>
-                    <h3 className="font-serif text-xl font-semibold mb-6">Proprietăți Asemănătoare</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {similarProperties.map((p) => (
-                        <PropertyCard key={p.id} {...p} />
-                      ))}
-                    </div>
-                  </div>
+                  <SimilarPropertiesCarousel properties={similarProperties} />
                 )}
               </div>
 
