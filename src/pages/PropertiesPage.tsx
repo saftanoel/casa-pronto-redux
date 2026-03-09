@@ -298,8 +298,9 @@ const PropertiesPage = () => {
   ];
 
   const filteredProperties = useMemo(() => {
-    // If no filters active, show initial properties (no need to wait for full data)
-    const sourceData = hasActiveFilter ? allProperties : (allPropertiesFull ?? initialProperties);
+    // Use full data when available; otherwise use initial 60
+    // Note: initial 60 have empty taxonomies, so taxonomy filters won't match them
+    const sourceData = allPropertiesFull ?? initialProperties;
 
     let result = sourceData.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
