@@ -158,27 +158,56 @@ const PropertiesPage = () => {
   // Fetch 1: Initial 60 properties (instant)
   const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
   // Fetch 2: Taxonomies (instant, tiny payload)
-  const { data: taxonomyData } = useTaxonomies();
+  const { data: taxonomyData, isSuccess: taxonomiesLoaded } = useTaxonomies();
   // Fetch 3: All ~5000 properties (background)
-  const { data: allPropertiesFull, isLoading: isLoadingAll, isFetched: isAllFetched } = useAllProperties(true);
+  const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
 
   // Determine which dataset to use for filtering
-  const allProperties = allPropertiesFull ?? initialProperties;
+  // IMPORTANT: initial 60 from /anunturi?limit=60 have empty taxonomies ([]),
+  // so we can only filter by taxonomy on the full dataset
   const hasFullData = isAllFetched && !!allPropertiesFull;
+  const allProperties = hasFullData ? allPropertiesFull : initialProperties;
+
+  // Debug logs
+  useEffect(() => {
+    if (taxonomyData) {
+      console.log('Taxonomies loaded:', taxonomyData);
+      console.log('Cities:', taxonomyData.property_city?.length, 'Types:', taxonomyData.property_type?.length, 'Statuses:', taxonomyData.property_status?.length);
+    }
+  }, [taxonomyData]);
+
+  useEffect(() => {
+    if (allPropertiesFull) {
+      console.log('Background fetch complete, total items:', allPropertiesFull.length);
+    }
+  }, [allPropertiesFull]);
+
+  useEffect(() => {
+    if (initialProperties.length > 0) {
+      console.log('Initial properties loaded:', initialProperties.length);
+    }
+  }, [initialProperties]);
 
   // Build taxonomy options from the dedicated endpoint
   const zones = useMemo(() => {
     if (!taxonomyData?.property_city) return [];
     return taxonomyData.property_city
-      .map(label => ({ value: toSlug(label), label }))
-      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
+      .map((label: string) => ({ value: toSlug(label), label }))
+      .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
 
   const propertyTypes = useMemo(() => {
     if (!taxonomyData?.property_type) return [];
     return taxonomyData.property_type
-      .map(label => ({ value: toSlug(label), label }))
-      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
+      .map((label: string) => ({ value: toSlug(label), label }))
+      .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData]);
+
+  const statuses = useMemo(() => {
+    if (!taxonomyData?.property_status) return [];
+    return taxonomyData.property_status
+      .map((label: string) => ({ value: toSlug(label), label }))
+      .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -196,11 +225,14 @@ const PropertiesPage = () => {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isPending, startTransition] = useTransition();
 
-  // Track if user has applied any filter
+  // Track if user has applied any filter that requires taxonomy data (full dataset)
+  const hasTaxonomyFilter = !!(zone || category || activeTab !== "toate");
+  // Track if user has applied ANY filter at all
   const hasActiveFilter = !!(zone || category || rooms || area || price || debouncedSearch || activeTab !== "toate");
 
-  // "Eager user" state: user filtered before full data loaded
-  const isWaitingForFullData = hasActiveFilter && !hasFullData && !isLoadingInitial;
+  // "Eager user" state: user applied a taxonomy filter before full data loaded
+  // Only show overlay for taxonomy-dependent filters since initial 60 have empty taxonomies
+  const isWaitingForFullData = hasTaxonomyFilter && !hasFullData && !isLoadingInitial;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -266,8 +298,9 @@ const PropertiesPage = () => {
   ];
 
   const filteredProperties = useMemo(() => {
-    // If no filters active, show initial properties (no need to wait for full data)
-    const sourceData = hasActiveFilter ? allProperties : (allPropertiesFull ?? initialProperties);
+    // Use full data when available; otherwise use initial 60
+    // Note: initial 60 have empty taxonomies, so taxonomy filters won't match them
+    const sourceData = allPropertiesFull ?? initialProperties;
 
     let result = sourceData.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
