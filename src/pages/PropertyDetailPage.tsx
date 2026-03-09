@@ -2,6 +2,7 @@ import { useMemo, useEffect, useCallback, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { ChevronRight, ChevronLeft, MapPin, Bed, Bath, Square, Phone, Mail, Share2, ArrowLeft } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -18,8 +19,8 @@ const SimilarPropertiesCarousel = ({ properties }: { properties: Property[] }) =
     align: "start",
     slidesToScroll: 1,
     containScroll: "trimSnaps",
-    loop: false,
-  });
+    loop: true,
+  }, [Autoplay({ delay: 3000, stopOnInteraction: true, stopOnMouseEnter: true })]);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
 
