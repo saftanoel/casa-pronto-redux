@@ -188,27 +188,69 @@ const PropertiesPage = () => {
     }
   }, [initialProperties]);
 
-  // Build taxonomy options from the dedicated endpoint
+  // Extract taxonomy options from properties (foolproof — ignores empty /taxonomii endpoint)
+  // Prefer taxonomyData if non-empty, otherwise extract from loaded properties
   const zones = useMemo(() => {
-    if (!taxonomyData?.property_city) return [];
-    return taxonomyData.property_city
-      .map((label: string) => ({ value: toSlug(label), label }))
-      .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
-  }, [taxonomyData]);
+    // Try taxonomy endpoint first
+    if (taxonomyData?.property_city?.length) {
+      return taxonomyData.property_city
+        .map((label: string) => ({ value: toSlug(label), label }))
+        .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
+    }
+    // Fallback: extract from properties
+    const source = allPropertiesFull ?? initialProperties;
+    const seen = new Map<string, string>();
+    for (const p of source) {
+      for (const term of (p.taxonomies?.property_city ?? [])) {
+        const slug = toSlug(term);
+        if (!seen.has(slug)) seen.set(slug, term);
+      }
+    }
+    console.log('Zones extracted from properties:', seen.size);
+    return Array.from(seen.entries())
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData, allPropertiesFull, initialProperties]);
 
   const propertyTypes = useMemo(() => {
-    if (!taxonomyData?.property_type) return [];
-    return taxonomyData.property_type
-      .map((label: string) => ({ value: toSlug(label), label }))
-      .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
-  }, [taxonomyData]);
+    if (taxonomyData?.property_type?.length) {
+      return taxonomyData.property_type
+        .map((label: string) => ({ value: toSlug(label), label }))
+        .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
+    }
+    const source = allPropertiesFull ?? initialProperties;
+    const seen = new Map<string, string>();
+    for (const p of source) {
+      for (const term of (p.taxonomies?.property_type ?? [])) {
+        const slug = toSlug(term);
+        if (!seen.has(slug)) seen.set(slug, term);
+      }
+    }
+    console.log('Property types extracted from properties:', seen.size);
+    return Array.from(seen.entries())
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData, allPropertiesFull, initialProperties]);
 
   const statuses = useMemo(() => {
-    if (!taxonomyData?.property_status) return [];
-    return taxonomyData.property_status
-      .map((label: string) => ({ value: toSlug(label), label }))
-      .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
-  }, [taxonomyData]);
+    if (taxonomyData?.property_status?.length) {
+      return taxonomyData.property_status
+        .map((label: string) => ({ value: toSlug(label), label }))
+        .sort((a: {value: string; label: string}, b: {value: string; label: string}) => a.label.localeCompare(b.label, "ro"));
+    }
+    const source = allPropertiesFull ?? initialProperties;
+    const seen = new Map<string, string>();
+    for (const p of source) {
+      for (const term of (p.taxonomies?.property_status ?? [])) {
+        const slug = toSlug(term);
+        if (!seen.has(slug)) seen.set(slug, term);
+      }
+    }
+    console.log('Statuses extracted from properties:', seen.size);
+    return Array.from(seen.entries())
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData, allPropertiesFull, initialProperties]);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
