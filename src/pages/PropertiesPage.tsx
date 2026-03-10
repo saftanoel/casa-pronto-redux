@@ -348,54 +348,8 @@ const PropertiesPage = () => {
   );
   const hasMoreLocal = visibleCount < filteredProperties.length;
 
-  const FilterSelects = ({ mobile = false }: { mobile?: boolean }) => {
-    const h = mobile ? "h-11" : "h-10";
-    return (
-      <>
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Categorie</label>
-          <Select value={category || "all"} onValueChange={(v) => setCategory(v === "all" ? "" : v)}>
-            <SelectTrigger className={h}>
-              <SelectValue placeholder="Toate" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toate</SelectItem>
-              {propertyTypes.map((c) => (
-                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Zonă</label>
-          <Select value={zone || "all"} onValueChange={(v) => setZone(v === "all" ? "" : v)}>
-            <SelectTrigger className={h}>
-              <SelectValue placeholder="Toate" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toate</SelectItem>
-              {zones.map((z) => (
-                <SelectItem key={z.value} value={z.value}>{z.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Caută</label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Caută anunțuri..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={mobile ? (e) => setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300) : undefined}
-              className={cn("pl-10", h)}
-            />
-          </div>
-        </div>
-      </>
-    );
-  };
+  const filterSelectsProps = { category, setCategory, propertyTypes, zone, setZone, zones, searchQuery, setSearchQuery };
+
 
   return (
     <SearchProvider properties={initialProperties} isLoading={isLoadingInitial}>
