@@ -9,16 +9,24 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 const contactSchema = z.object({
-  name: z.string().trim().min(1, "Numele este obligatoriu").max(100),
-  phone: z.string().trim().min(1, "Telefonul este obligatoriu").regex(/^[\d\s\+\-\(\)]{7,20}$/, "Număr de telefon invalid"),
-  email: z.string().trim().email("Adresă de email invalidă").max(255),
-  subject: z.string().trim().min(1, "Subiectul este obligatoriu").max(200),
-  message: z.string().trim().min(10, "Mesajul trebuie să aibă minim 10 caractere").max(2000),
+  name: z.string().trim().min(1, "Numele este obligatoriu"),
+  phone: z.string().trim().min(7, "Telefon prea scurt"),
+  email: z.string()
+    .trim()
+    .email("Adresă de email invalidă")
+    .refine((val) => {
+      const invalidDomains = ["gmai.com", "gmal.com", "yaho.com", "yaho.ro", "hotmai.com"];
+      const domain = val.split('@')[1]?.toLowerCase();
+      return !invalidDomains.includes(domain);
+    }, {
+      message: "Ai scris greșit domeniul mail-ului..."
+    }),
+  subject: z.string().min(1, "Subiect obligatoriu"),
+  message: z.string().min(10, "Mesaj prea scurt"),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/mdawnlwr";
 
 const contactInfo = [
   { icon: Phone, label: "Telefon", value: "0740 197 476", href: "tel:0740197476" },
