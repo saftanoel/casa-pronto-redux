@@ -41,24 +41,36 @@ const Contact = () => {
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
+    
+    const WP_API_URL = "https://casapronto.ro/wp-json/casa-pronto/v1/contact";
+
     try {
-      const res = await fetch(FORMSPREE_ENDPOINT, {
+      console.log("Trimitere date către WordPress...", data);
+
+      const res = await fetch(WP_API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          name: data.name,
-          phone: data.phone,
-          email: data.email,
-          subject: data.subject,
-          message: data.message,
-          _replyto: data.email,
-        }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed");
+
+      // Verificăm dacă răspunsul este OK
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Răspuns server (eroare):", errorText);
+        throw new Error("Serverul WordPress a raportat o eroare.");
+      }
+
+      const result = await res.json();
+      console.log("Succes server:", result);
+
       toast.success("Mesajul a fost trimis cu succes! Te vom contacta în cel mai scurt timp.");
-      reset();
-    } catch {
-      toast.error("A apărut o eroare. Te rugăm să încerci din nou.");
+      reset(); // Resetează câmpurile formularului
+    } catch (error: any) {
+      console.error("Eroare la trimitere formular:", error);
+      toast.error("A apărut o eroare. Te rugăm să încerci din nou sau să ne suni direct.");
     } finally {
       setIsSubmitting(false);
     }
