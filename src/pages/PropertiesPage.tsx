@@ -262,15 +262,31 @@ const PropertiesPage = () => {
     }
   }, [allPropertiesFull]);
 
-  // Dropdown options — populated INSTANTLY from /taxonomii endpoint, independent of properties
-  const zones = useMemo(() =>
-    (taxonomyData?.property_city ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
-    [taxonomyData]
-  );
-  const propertyTypes = useMemo(() =>
-    (taxonomyData?.property_type ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
-    [taxonomyData]
-  );
+const zones = useMemo(() => {
+    // Verificăm dacă avem date, dacă nu, returnăm listă goală
+    const rawZones = taxonomyData?.property_city || [];
+    return rawZones.map((z: any) => {
+      // Dacă WordPress trimite obiect {name, slug}, luăm .name. Dacă trimite string, luăm direct z.
+      const label = z?.name || (typeof z === 'string' ? z : "");
+      return { 
+        value: z?.slug || toSlug(label), 
+        label: label 
+      };
+    }).filter((item: any) => item.label !== "") // Scoatem intrările goale
+      .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData]);
+
+  const propertyTypes = useMemo(() => {
+    const rawTypes = taxonomyData?.property_type || [];
+    return rawTypes.map((t: any) => {
+      const label = t?.name || (typeof t === 'string' ? t : "");
+      return { 
+        value: t?.slug || toSlug(label), 
+        label: label 
+      };
+    }).filter((item: any) => item.label !== "")
+      .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData]);
   const statuses = useMemo(() =>
     (taxonomyData?.property_status ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
     [taxonomyData]
