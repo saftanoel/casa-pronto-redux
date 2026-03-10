@@ -625,7 +625,7 @@ const PropertiesPage = () => {
                   <DrawerTitle className="font-serif text-lg">Filtre</DrawerTitle>
                 </DrawerHeader>
                 <div className="px-4 pb-6 overflow-y-auto space-y-4 flex-1">
-                  <FilterSelects mobile />
+                  <FilterSelects mobile {...filterSelectsProps} />
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Sortează</label>
                     <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
