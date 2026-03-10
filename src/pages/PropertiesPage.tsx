@@ -515,7 +515,7 @@ const PropertiesPage = () => {
                 <div className="bg-card rounded-xl p-6 shadow-[var(--card-shadow)] border border-border">
                   <h3 className="font-serif font-semibold text-lg mb-5">Filtre</h3>
                   <div className="space-y-4">
-                    <FilterSelects />
+                    <FilterSelects {...filterSelectsProps} />
                     <Button className="w-full gap-2" onClick={() => {}}>
                       <Search className="h-4 w-4" />
                       CAUTĂ ANUNȚURI
