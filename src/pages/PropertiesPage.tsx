@@ -545,7 +545,7 @@ const PropertiesPage = () => {
                   <div className="absolute inset-0 z-20 bg-background/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-4 min-h-[400px]">
                     <Loader2 className="h-10 w-10 text-primary animate-spin" />
                     <p className="text-lg font-serif font-medium text-foreground">Căutăm prin toate ofertele...</p>
-                    <p className="text-sm text-muted-foreground">Încărcăm toate cele ~5000 proprietăți pentru a filtra global</p>
+                    
                   </div>
                 )}
 
