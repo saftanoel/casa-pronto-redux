@@ -96,15 +96,27 @@ export const SearchProvider = ({ children, properties = [], isLoading = false }:
       if (filters.propertyType && !matchesTaxonomy(p, "property_type", filters.propertyType)) return false;
       if (!matchesRooms(p, filters.rooms)) return false;
       if (!matchesArea(p, filters.area)) return false;
+      
       if (filters.searchQuery) {
-        const q = filters.searchQuery.toLowerCase();
-        if (
-          !p.title.toLowerCase().includes(q) &&
-          !p.location.toLowerCase().includes(q) &&
-          !p.propertyType.toLowerCase().includes(q)
-        )
-          return false;
-      }
+  const q = filters.searchQuery.toLowerCase();
+  
+  // Curățăm textele pentru a evita "Casa Pronto"
+  const cleanTitle = (p.title || "").toLowerCase().replace(/casa pronto/g, "");
+  const cleanLoc = (p.location || "").toLowerCase();
+  const cleanPropType = (p.propertyType || "").toLowerCase().replace(/casa pronto/g, "");
+  
+  // Includem și prețul în căutare (convertim în string să fim siguri)
+  const priceStr = (p.price || "").toLowerCase();
+
+  if (
+    !cleanTitle.includes(q) &&
+    !cleanLoc.includes(q) &&
+    !cleanPropType.includes(q) &&
+    !priceStr.includes(q) // Acum caută și în preț (ex: dacă scrii "450")
+  ) {
+    return false;
+  }
+}
       return true;
     });
   }, [filters, properties]);

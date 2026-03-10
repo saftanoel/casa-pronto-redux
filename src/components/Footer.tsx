@@ -103,7 +103,7 @@ const Footer = () => {
         onClick={scrollToTop}
         variant="default"
         size="icon"
-        className="fixed bottom-6 right-6 rounded-full shadow-lg z-50"
+        className="fixed bottom-6 right-6 rounded-full shadow-lg z-40"
       >
         <ArrowUp className="h-5 w-5" />
       </Button>

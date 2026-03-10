@@ -59,43 +59,56 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
       </PropertyImageCarousel>
-      <div className="flex-1 p-5 flex flex-col justify-between">
+      <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
         <div>
           <div className="flex items-center gap-1.5 text-muted-foreground text-sm mb-1">
             <MapPin className="h-3.5 w-3.5" />
-            <span>{property.location}</span>
+            <span className="truncate">{property.location}</span>
           </div>
-          <h3 className="font-serif text-lg font-semibold text-foreground hover:text-primary transition-colors">
+          <h3 className="font-serif text-lg font-semibold text-foreground hover:text-primary transition-colors line-clamp-1">
             {property.title}
           </h3>
           <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
             Agentia Imobiliară Casa Pronto oferă spre {property.type === "Închiriere" ? "închiriere" : "vânzare"} {property.title.toLowerCase()}, zona {property.location.split(",")[0]}. Suprafața imobilului este de {property.area} mp.
           </p>
         </div>
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        
+        {/* Footer-ul cardului ajustat pentru a preveni ruperea pretului */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border gap-2">
+          <div className="flex items-center gap-3 sm:gap-5 overflow-hidden">
+            <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
               <Square className="h-4 w-4" />
               <span>{property.area} m²</span>
             </div>
             {property.beds > 0 && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
                 <Bed className="h-4 w-4" />
-                <span>{property.beds} Camere</span>
+                <span>{property.beds} Cam.</span>
               </div>
             )}
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Bath className="h-4 w-4" />
-              <span>{property.baths} Băi</span>
-            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-xl text-primary">
-              {property.price}
-              {property.type === "Închiriere" && <span className="text-sm font-normal text-muted-foreground">/lună</span>}
-            </span>
-            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          {property.baths > 0 && (
+          <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
+            <Bath className="h-4 w-4" />
+            <span>{property.baths} {property.baths === 1 ? 'Baie' : 'Băi'}</span>
           </div>
+        )}
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+  <div className="flex items-baseline gap-1 whitespace-nowrap">
+    <span className="font-bold text-lg sm:text-xl text-primary leading-none">
+      {/* Scoatem € din string-ul original pentru a nu se repeta */}
+      {property.price.replace("€", "").trim()}
+    </span>
+    <span className="text-[11px] sm:text-xs font-semibold text-primary">€</span>
+    {property.type === "Închiriere" && (
+      <span className="text-[10px] sm:text-xs font-normal text-muted-foreground leading-none">
+        /lună
+      </span>
+    )}
+  </div>
+  <ArrowRight className="h-4 w-4 text-muted-foreground hidden sm:block" />
+</div>
         </div>
       </div>
     </article>
@@ -117,18 +130,25 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
           </Badge>
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
-        <div className="absolute bottom-3 left-3 pointer-events-none z-[5]">
-          <p className="text-background font-bold text-xl drop-shadow-lg">
-            {property.price}
-            {property.type === "Închiriere" && <span className="text-sm font-normal">/lună</span>}
-          </p>
-        </div>
+        
+        {/* Aici este modificarea pentru pretul peste imagine */}
+        <div className="absolute bottom-3 left-3 pointer-events-none z-[5] bg-black/40 backdrop-blur-[4px] px-2 py-1 rounded-md border border-white/10">
+  <p className="text-white font-bold text-lg md:text-xl drop-shadow-lg whitespace-nowrap flex items-baseline gap-0.5">
+    {/* Scoatem € din string-ul original */}
+    {property.price.replace("€", "").trim()}
+    <span className="text-sm">€</span>
+    {property.type === "Închiriere" && (
+      <span className="text-xs font-normal opacity-90">/lună</span>
+    )}
+  </p>
+</div>
       </PropertyImageCarousel>
+
       <div className="p-4">
         <h3 className="font-serif text-base font-semibold text-foreground line-clamp-1 hover:text-primary transition-colors">{property.title}</h3>
         <div className="flex items-center gap-1.5 text-muted-foreground mt-1.5">
           <MapPin className="h-3.5 w-3.5" />
-          <span className="text-sm">{property.location}</span>
+          <span className="text-sm truncate">{property.location}</span>
         </div>
         <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
           {property.beds > 0 && (
@@ -143,7 +163,7 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
           </div>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Square className="h-3.5 w-3.5" />
-            <span>{property.area} mp</span>
+            <span className="whitespace-nowrap">{property.area} mp</span>
           </div>
           <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
         </div>
@@ -204,8 +224,10 @@ const FilterSelects = ({ mobile = false, category, setCategory, propertyTypes, z
             placeholder="Caută anunțuri..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={mobile ? (e) => setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300) : undefined}
-            className={cn("pl-10 text-base md:text-sm w-full max-w-full box-border", h)}
+            className={cn("pl-10 text-[16px] md:text-sm w-full box-border", h)}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
           />
         </div>
       </div>
@@ -379,8 +401,19 @@ const PropertiesPage = () => {
       }
       if (debouncedSearch) {
         const q = debouncedSearch.toLowerCase();
-        if (!p.title.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q))
+        
+        // "Ascundem" numele agenției și diacriticele din textul analizat ca să nu strice căutarea
+        const cleanDesc = p.description?.toLowerCase().replace(/casa pronto/g, "") || "";
+        const cleanTitle = p.title?.toLowerCase().replace(/casa pronto/g, "") || "";
+        const cleanLoc = p.location?.toLowerCase() || "";
+        
+        if (
+          !cleanTitle.includes(q) && 
+          !cleanLoc.includes(q) && 
+          !cleanDesc.includes(q)
+        ) {
           return false;
+        }
       }
       return true;
     });
@@ -618,18 +651,31 @@ const PropertiesPage = () => {
               </div>
             </div>
 
-            {/* Mobile Filter Drawer */}
-            <Drawer open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
-              <DrawerContent className="max-h-[70vh]">
-                <DrawerHeader className="text-left flex-shrink-0">
-                  <DrawerTitle className="font-serif text-lg">Filtre</DrawerTitle>
-                </DrawerHeader>
-                <div className="px-4 pb-6 overflow-y-auto space-y-4 flex-1">
+            {/* Mobile Filter Fullscreen Overlay (Replaces Drawer) */}
+            {isFilterDrawerOpen && (
+              <div className="fixed inset-0 z-50 bg-background flex flex-col lg:hidden animate-in slide-in-from-bottom-full duration-300">
+                
+                {/* Antetul meniului cu titlu și buton de închidere */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/95 backdrop-blur-sm flex-shrink-0">
+                  <h2 className="font-serif text-xl font-bold tracking-tight">Filtre</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setIsFilterDrawerOpen(false)} 
+                    className="rounded-full h-10 w-10 hover:bg-muted"
+                  >
+                    <span className="text-2xl leading-none font-light mb-1">&times;</span>
+                  </Button>
+                </div>
+
+                {/* Zona de conținut (unde dai scroll) */}
+                <div className="px-4 py-6 overflow-y-auto flex-1 overscroll-contain space-y-6">
                   <FilterSelects mobile {...filterSelectsProps} />
+                  
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Sortează</label>
                     <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                      <SelectTrigger className="h-11">
+                      <SelectTrigger className="h-11 text-[16px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -640,20 +686,31 @@ const PropertiesPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex gap-3 pt-2">
-                    <Button variant="outline" className="flex-1" onClick={() => { resetAllFilters(); setIsFilterDrawerOpen(false); }}>
-                      Resetează
-                    </Button>
-                    <DrawerClose asChild>
-                      <Button className="flex-1 gap-2">
-                        <Search className="h-4 w-4" />
-                        Aplică Filtre
-                      </Button>
-                    </DrawerClose>
-                  </div>
                 </div>
-              </DrawerContent>
-            </Drawer>
+
+                {/* Butoanele de acțiune lipite de partea de jos */}
+                <div 
+                  className="p-4 border-t border-border bg-background flex gap-3 flex-shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]" 
+                  style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+                >
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 h-12 text-base font-medium" 
+                    onClick={() => { resetAllFilters(); setIsFilterDrawerOpen(false); }}
+                  >
+                    Resetează
+                  </Button>
+                  <Button 
+                    className="flex-1 gap-2 h-12 text-base font-medium shadow-md" 
+                    onClick={() => setIsFilterDrawerOpen(false)}
+                  >
+                    <Search className="h-4 w-4" />
+                    Aplică Filtre
+                  </Button>
+                </div>
+
+              </div>
+            )}
           </div>
         </div>
 
