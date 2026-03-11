@@ -390,9 +390,12 @@ const zones = useMemo(() => {
       if (zone && !matchesTaxonomy(p, "property_city", zone)) return false;
       if (category && !matchesTaxonomy(p, "property_type", category)) return false;
       if (rooms) {
-        if (rooms === "4+") { if (p.beds < 4) return false; }
-        else { if (p.beds !== parseInt(rooms)) return false; }
+      if (rooms === "4+") { 
+        if (Number(p.beds) < 4) return false; 
+      } else { 
+        if (Number(p.beds) !== Number(rooms)) return false; 
       }
+    }
       if (area) {
         const a = p.area;
         const areaRanges: Record<string, [number, number]> = {
