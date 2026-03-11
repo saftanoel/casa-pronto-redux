@@ -244,7 +244,7 @@ export async function fetchTaxonomies(): Promise<TaxonomyResponse> {
 }
 
 /** Fetch initial batch of properties (fast first paint) */
-export async function fetchInitialProperties(limit = 60): Promise<Property[]> {
+export async function fetchInitialProperties(limit = 9): Promise<Property[]> {
   const url = `${WP_API_BASE}/anunturi?limit=${limit}`;
   const response = await fetch(url);
   if (!response.ok) {
