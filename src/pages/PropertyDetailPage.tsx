@@ -104,6 +104,15 @@ const PropertyDetailPage = () => {
   const { data: property, isLoading } = useProperty(propertyId);
   const { data: allProps = [] } = useProperties();
 
+  // Schimbam automat titlul tab-ului cu numele proprietatii
+  useEffect(() => {
+    if (property && property.title) {
+      document.title = `${property.title} - Casa Pronto`;
+    } else {
+      document.title = "Detalii Proprietate - Casa Pronto";
+    }
+  }, [property]);
+
   const similarProperties = useMemo(() => {
     if (!property) return [];
     return allProps
