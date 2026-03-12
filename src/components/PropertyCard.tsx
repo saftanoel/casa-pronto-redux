@@ -1,7 +1,6 @@
 import { MapPin, Bed, Bath, Square, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
 
@@ -48,7 +47,7 @@ const PropertyCard = ({
       >
         {/* Image Carousel */}
         <PropertyImageCarousel images={allImages} alt={title} aspectClass="aspect-[4/3]">
-          {/* Overlay badges */}
+          {/* Overlay badges (Stânga Sus) */}
           <div className="absolute top-4 left-4 flex gap-2 pointer-events-none z-[5]">
             <Badge
               variant={type === "Vânzare" ? "default" : type === "Închiriere" ? "secondary" : "outline"}
@@ -66,12 +65,13 @@ const PropertyCard = ({
             )}
           </div>
 
-          {/* Price tag */}
-          <div className="absolute bottom-4 left-4 pointer-events-none z-[5]">
-            <p className="text-background font-bold text-xl drop-shadow-lg">
-              {price}
-              {type === "Închiriere" && <span className="text-sm font-normal">/lună</span>}
-            </p>
+          {/* NOU: Badge-ul de Preț PREMIUM (Glassmorphism) - Jos Stânga */}
+          <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg font-bold text-sm md:text-base z-[5] pointer-events-none flex items-baseline gap-1">
+            <span>{price.replace("€", "").trim()}</span>
+            <span className="text-xs font-semibold">€</span>
+            {type === "Închiriere" && (
+              <span className="text-[10px] font-normal opacity-90 ml-0.5">/lună</span>
+            )}
           </div>
         </PropertyImageCarousel>
 
@@ -80,7 +80,7 @@ const PropertyCard = ({
           <h3 className="font-serif text-lg font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
             {title}
           </h3>
-          
+
           <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
             <MapPin className="h-4 w-4 flex-shrink-0" />
             <span className="text-sm line-clamp-1">{location}</span>

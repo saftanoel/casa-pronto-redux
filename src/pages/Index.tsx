@@ -14,7 +14,7 @@ const Index = () => {
   const location = useLocation();
   const { data: initialProperties = [], isLoading } = useProperties();
   // Also load all properties in background so Hero dropdowns populate from real taxonomy data
-  const { data: allPropertiesFull } = useAllProperties(false);
+  const { data: allPropertiesFull } = useAllProperties();
 
   // Use full dataset when available, otherwise initial 60
   const properties = allPropertiesFull ?? initialProperties;

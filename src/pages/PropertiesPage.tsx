@@ -49,9 +49,10 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
       <PropertyImageCarousel
         images={property.images?.length > 0 ? property.images : [property.image]}
         alt={property.title}
-        className="md:w-80 flex-shrink-0"
+        className="md:w-80 flex-shrink-0 relative"
         aspectClass="aspect-[4/3] md:aspect-auto md:min-h-[200px]"
       >
+        {/* Badges (Vânzare, Nou, etc.) */}
         <div className="absolute top-3 left-3 flex gap-2 pointer-events-none z-[5]">
           <Badge variant={property.type === "Vânzare" ? "default" : property.type === "Închiriere" ? "secondary" : "outline"}
             className={cn("text-xs", property.type === "Vândut" && "bg-foreground/80 text-background")}>
@@ -59,7 +60,17 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
           </Badge>
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
+
+        {/* PREȚUL PE POZĂ (Glassmorphism) - Jos Stânga */}
+        <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg font-bold text-sm md:text-base z-[5] pointer-events-none flex items-baseline gap-1">
+          <span>{property.price.replace("€", "").trim()}</span>
+          <span className="text-xs">€</span>
+          {property.type === "Închiriere" && (
+            <span className="text-[10px] font-normal opacity-90 ml-0.5">/lună</span>
+          )}
+        </div>
       </PropertyImageCarousel>
+
       <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
         <div>
           <div className="flex items-center gap-1.5 text-muted-foreground text-sm mb-1">
@@ -74,7 +85,7 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
           </p>
         </div>
 
-        {/* Footer-ul cardului ajustat pentru a preveni ruperea pretului */}
+        {/* FOOTER: Mp, Camere, Băi + PREȚUL ROȘU ÎN DREAPTA */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border gap-2">
           <div className="flex items-center gap-3 sm:gap-5 overflow-hidden">
             <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
@@ -87,18 +98,18 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
                 <span>{property.beds} Cam.</span>
               </div>
             )}
+            {property.baths > 0 && (
+              <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
+                <Bath className="h-4 w-4" />
+                <span>{property.baths} {property.baths === 1 ? 'Baie' : 'Băi'}</span>
+              </div>
+            )}
           </div>
-          {property.baths > 0 && (
-            <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
-              <Bath className="h-4 w-4" />
-              <span>{property.baths} {property.baths === 1 ? 'Baie' : 'Băi'}</span>
-            </div>
-          )}
 
+          {/* PREȚUL ROȘU (Lângă Săgeată) */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <div className="flex items-baseline gap-1 whitespace-nowrap">
               <span className="font-bold text-lg sm:text-xl text-primary leading-none">
-                {/* Scoatem € din string-ul original pentru a nu se repeta */}
                 {property.price.replace("€", "").trim()}
               </span>
               <span className="text-[11px] sm:text-xs font-semibold text-primary">€</span>
@@ -132,16 +143,13 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
 
-        {/* Aici este modificarea pentru pretul peste imagine */}
-        <div className="absolute bottom-3 left-3 pointer-events-none z-[5] bg-black/40 backdrop-blur-[4px] px-2 py-1 rounded-md border border-white/10">
-          <p className="text-white font-bold text-lg md:text-xl drop-shadow-lg whitespace-nowrap flex items-baseline gap-0.5">
-            {/* Scoatem € din string-ul original */}
-            {property.price.replace("€", "").trim()}
-            <span className="text-sm">€</span>
-            {property.type === "Închiriere" && (
-              <span className="text-xs font-normal opacity-90">/lună</span>
-            )}
-          </p>
+        {/* PREȚUL PE POZĂ (Glassmorphism) - Jos Stânga */}
+        <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg font-bold text-sm md:text-base z-[5] pointer-events-none flex items-baseline gap-1">
+          <span>{property.price.replace("€", "").trim()}</span>
+          <span className="text-xs font-semibold">€</span>
+          {property.type === "Închiriere" && (
+            <span className="text-[10px] font-normal opacity-90 ml-0.5">/lună</span>
+          )}
         </div>
       </PropertyImageCarousel>
 
@@ -151,22 +159,39 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
           <MapPin className="h-3.5 w-3.5" />
           <span className="text-sm truncate">{property.location}</span>
         </div>
-        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
+
+        {/* FOOTER: Camere, Băi, Mp + PREȚUL ÎN DREAPTA JOS */}
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border overflow-hidden">
           {property.beds > 0 && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
               <Bed className="h-3.5 w-3.5" />
               <span>{property.beds}</span>
             </div>
           )}
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
             <Bath className="h-3.5 w-3.5" />
             <span>{property.baths}</span>
           </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
             <Square className="h-3.5 w-3.5" />
             <span className="whitespace-nowrap">{property.area} mp</span>
           </div>
-          <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+
+          {/* PREȚUL ROȘU (Lângă Săgeată) */}
+          <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
+            <div className="items-baseline gap-0.5 whitespace-nowrap hidden sm:flex">
+              <span className="font-bold text-sm text-primary leading-none">
+                {property.price.replace("€", "").trim()}
+              </span>
+              <span className="text-[10px] font-semibold text-primary">€</span>
+              {property.type === "Închiriere" && (
+                <span className="text-[9px] font-normal text-muted-foreground leading-none">
+                  /lună
+                </span>
+              )}
+            </div>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
         </div>
       </div>
     </article>

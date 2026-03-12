@@ -8,7 +8,7 @@ import { PropertyGridSkeletons } from "./PropertyCardSkeleton";
 
 const FeaturedProperties = () => {
   const { allProperties, isLoading } = useSearch();
-  const displayProperties = useMemo(() => 
+  const displayProperties = useMemo(() =>
     [...allProperties]
       .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
       .slice(0, 6),
