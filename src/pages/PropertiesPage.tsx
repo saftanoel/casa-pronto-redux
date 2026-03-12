@@ -73,7 +73,7 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
             Agentia Imobiliară Casa Pronto oferă spre {property.type === "Închiriere" ? "închiriere" : "vânzare"} {property.title.toLowerCase()}, zona {property.location.split(",")[0]}. Suprafața imobilului este de {property.area} mp.
           </p>
         </div>
-        
+
         {/* Footer-ul cardului ajustat pentru a preveni ruperea pretului */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border gap-2">
           <div className="flex items-center gap-3 sm:gap-5 overflow-hidden">
@@ -89,27 +89,27 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
             )}
           </div>
           {property.baths > 0 && (
-          <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
-            <Bath className="h-4 w-4" />
-            <span>{property.baths} {property.baths === 1 ? 'Baie' : 'Băi'}</span>
-          </div>
-        )}
+            <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
+              <Bath className="h-4 w-4" />
+              <span>{property.baths} {property.baths === 1 ? 'Baie' : 'Băi'}</span>
+            </div>
+          )}
 
           <div className="flex items-center gap-2 flex-shrink-0">
-  <div className="flex items-baseline gap-1 whitespace-nowrap">
-    <span className="font-bold text-lg sm:text-xl text-primary leading-none">
-      {/* Scoatem € din string-ul original pentru a nu se repeta */}
-      {property.price.replace("€", "").trim()}
-    </span>
-    <span className="text-[11px] sm:text-xs font-semibold text-primary">€</span>
-    {property.type === "Închiriere" && (
-      <span className="text-[10px] sm:text-xs font-normal text-muted-foreground leading-none">
-        /lună
-      </span>
-    )}
-  </div>
-  <ArrowRight className="h-4 w-4 text-muted-foreground hidden sm:block" />
-</div>
+            <div className="flex items-baseline gap-1 whitespace-nowrap">
+              <span className="font-bold text-lg sm:text-xl text-primary leading-none">
+                {/* Scoatem € din string-ul original pentru a nu se repeta */}
+                {property.price.replace("€", "").trim()}
+              </span>
+              <span className="text-[11px] sm:text-xs font-semibold text-primary">€</span>
+              {property.type === "Închiriere" && (
+                <span className="text-[10px] sm:text-xs font-normal text-muted-foreground leading-none">
+                  /lună
+                </span>
+              )}
+            </div>
+            <ArrowRight className="h-4 w-4 text-muted-foreground hidden sm:block" />
+          </div>
         </div>
       </div>
     </article>
@@ -131,18 +131,18 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
           </Badge>
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
-        
+
         {/* Aici este modificarea pentru pretul peste imagine */}
         <div className="absolute bottom-3 left-3 pointer-events-none z-[5] bg-black/40 backdrop-blur-[4px] px-2 py-1 rounded-md border border-white/10">
-  <p className="text-white font-bold text-lg md:text-xl drop-shadow-lg whitespace-nowrap flex items-baseline gap-0.5">
-    {/* Scoatem € din string-ul original */}
-    {property.price.replace("€", "").trim()}
-    <span className="text-sm">€</span>
-    {property.type === "Închiriere" && (
-      <span className="text-xs font-normal opacity-90">/lună</span>
-    )}
-  </p>
-</div>
+          <p className="text-white font-bold text-lg md:text-xl drop-shadow-lg whitespace-nowrap flex items-baseline gap-0.5">
+            {/* Scoatem € din string-ul original */}
+            {property.price.replace("€", "").trim()}
+            <span className="text-sm">€</span>
+            {property.type === "Închiriere" && (
+              <span className="text-xs font-normal opacity-90">/lună</span>
+            )}
+          </p>
+        </div>
       </PropertyImageCarousel>
 
       <div className="p-4">
@@ -263,15 +263,15 @@ const PropertiesPage = () => {
     }
   }, [allPropertiesFull]);
 
-const zones = useMemo(() => {
+  const zones = useMemo(() => {
     // Verificăm dacă avem date, dacă nu, returnăm listă goală
     const rawZones = taxonomyData?.property_city || [];
     return rawZones.map((z: any) => {
       // Dacă WordPress trimite obiect {name, slug}, luăm .name. Dacă trimite string, luăm direct z.
       const label = z?.name || (typeof z === 'string' ? z : "");
-      return { 
-        value: z?.slug || toSlug(label), 
-        label: label 
+      return {
+        value: z?.slug || toSlug(label),
+        label: label
       };
     }).filter((item: any) => item.label !== "") // Scoatem intrările goale
       .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
@@ -281,15 +281,15 @@ const zones = useMemo(() => {
     const rawTypes = taxonomyData?.property_type || [];
     return rawTypes.map((t: any) => {
       const label = t?.name || (typeof t === 'string' ? t : "");
-      return { 
-        value: t?.slug || toSlug(label), 
-        label: label 
+      return {
+        value: t?.slug || toSlug(label),
+        label: label
       };
     }).filter((item: any) => item.label !== "")
       .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
   const statuses = useMemo(() =>
-    (taxonomyData?.property_status ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
+    (taxonomyData?.property_status ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label, "ro")),
     [taxonomyData]
   );
 
@@ -303,7 +303,20 @@ const zones = useMemo(() => {
   const [area, setArea] = useState(searchParams.get("area") || "");
   const [price, setPrice] = useState(searchParams.get("price") || "");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  // viewmode inteligent 
+  const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = localStorage.getItem("preferintaViewCasaPronto");
+      if (savedMode === "grid" || savedMode === "list") return savedMode;
+      return window.innerWidth < 768 ? "grid" : "list";
+    }
+    return "grid"; // Fallback 
+  });
+
+  // De fiecare dată când utilizatorul dă click pe un buton, salvăm în memorie
+  useEffect(() => {
+    localStorage.setItem("preferintaViewCasaPronto", viewMode);
+  }, [viewMode]);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isPending, startTransition] = useTransition();
@@ -391,12 +404,12 @@ const zones = useMemo(() => {
       if (zone && !matchesTaxonomy(p, "property_city", zone)) return false;
       if (category && !matchesTaxonomy(p, "property_type", category)) return false;
       if (rooms) {
-      if (rooms === "4+") { 
-        if (Number(p.beds) < 4) return false; 
-      } else { 
-        if (Number(p.beds) !== Number(rooms)) return false; 
+        if (rooms === "4+") {
+          if (Number(p.beds) < 4) return false;
+        } else {
+          if (Number(p.beds) !== Number(rooms)) return false;
+        }
       }
-    }
       if (area) {
         const a = p.area;
         const areaRanges: Record<string, [number, number]> = {
@@ -421,15 +434,15 @@ const zones = useMemo(() => {
       }
       if (debouncedSearch) {
         const q = debouncedSearch.toLowerCase();
-        
+
         // "Ascundem" numele agenției și diacriticele din textul analizat ca să nu strice căutarea
         const cleanDesc = p.description?.toLowerCase().replace(/casa pronto/g, "") || "";
         const cleanTitle = p.title?.toLowerCase().replace(/casa pronto/g, "") || "";
         const cleanLoc = p.location?.toLowerCase() || "";
-        
+
         if (
-          !cleanTitle.includes(q) && 
-          !cleanLoc.includes(q) && 
+          !cleanTitle.includes(q) &&
+          !cleanLoc.includes(q) &&
           !cleanDesc.includes(q)
         ) {
           return false;
@@ -448,29 +461,22 @@ const zones = useMemo(() => {
     return result;
   }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allProperties, initialProperties, allPropertiesFull, hasActiveFilter]);
 
-// 1. STATE PENTRU PAGINAȚIE
+  // 1. STATE PENTRU PAGINAȚIE
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12; // Aici decizi câte anunțuri apar pe o pagină. 12 este perfect pentru un grid de 2 sau 3 coloane.
+  const itemsPerPage = 18;
 
-  // 2. RESETĂM PAGINA LA 1 CÂND SE SCHIMBĂ FILTRELE
-  // Când utilizatorul schimbă din "Case" în "Apartamente", vrem să îl ducem la prima pagină a noilor rezultate
   useEffect(() => {
     setCurrentPage(1);
-  }, [filteredProperties.length]); 
-  // Atenție: dacă `filteredProperties` e numele variabilei tale cu rezultatele finale, folosește-l pe ăsta.
+  }, [filteredProperties.length]);
 
-  // 3. CALCULĂM ANUNȚURILE PENTRU PAGINA CURENTĂ
   const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  
-  // Asta e lista pe care o vom afișa EFECTIV pe ecran:
+
   const currentItems = filteredProperties.slice(indexOfFirstItem, indexOfLastItem);
 
-  // 4. FUNCȚIA DE SCHIMBARE A PAGINII (CU SCROLL SUS AUTOMAT)
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
-    // Face un scroll fin până sus când dai click pe pagina 2, 3 etc.
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -537,7 +543,7 @@ const zones = useMemo(() => {
                   </button>
                 ))}
               </div>
-              <div className="hidden md:flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">Sortează:</span>
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
                   <SelectTrigger className="w-44 h-9 text-sm">
@@ -550,7 +556,8 @@ const zones = useMemo(() => {
                     <SelectItem value="price-low">Preț (Mic - Mare)</SelectItem>
                   </SelectContent>
                 </Select>
-                <div className="flex border border-border rounded-md overflow-hidden">
+
+                <div className="flex border border-border rounded-md overflow-hidden ml-auto">
                   <button
                     onClick={() => setViewMode("list")}
                     className={cn("p-2 transition-colors", viewMode === "list" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
@@ -596,7 +603,7 @@ const zones = useMemo(() => {
                   <h3 className="font-serif font-semibold text-lg mb-5">Filtre</h3>
                   <div className="space-y-4">
                     <FilterSelects {...filterSelectsProps} />
-                    <Button className="w-full gap-2" onClick={() => {}}>
+                    <Button className="w-full gap-2" onClick={() => { }}>
                       <Search className="h-4 w-4" />
                       CAUTĂ ANUNȚURI
                     </Button>
@@ -640,7 +647,7 @@ const zones = useMemo(() => {
                   <div className="absolute inset-0 z-20 bg-background/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-4 min-h-[400px]">
                     <Loader2 className="h-10 w-10 text-primary animate-spin" />
                     <p className="text-lg font-serif font-medium text-foreground">Căutăm prin toate ofertele...</p>
-                    
+
                   </div>
                 )}
 
@@ -665,18 +672,16 @@ const zones = useMemo(() => {
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-                        {/* MODIFICARE GRID MOBIL: Am pus grid-cols-2 și pe ecrane mici */}
-                        {/* Aici am schimbat visibleProperties cu currentItems */}
                         {currentItems.map((property) => (
                           <PropertyGrid key={property.id} property={property} search={currentSearch} />
                         ))}
                       </div>
                     )}
 
-                    {/* PAGINAȚIA NOUĂ (Înlocuiește complet butonul vechi Load More) */}
+                    {/* PAGINAȚIA NOUĂ */}
                     {totalPages > 1 && (
                       <div className="flex justify-center items-center space-x-1 md:space-x-2 mt-10 mb-10">
-                        <button 
+                        <button
                           onClick={() => paginate(currentPage - 1)}
                           disabled={currentPage === 1}
                           className="px-3 md:px-4 py-2 border rounded-lg bg-white text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors text-sm font-medium"
@@ -686,31 +691,30 @@ const zones = useMemo(() => {
 
                         {[...Array(totalPages)].map((_, index) => {
                           const pageNum = index + 1;
-                          
+
                           if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
                             return (
                               <button
                                 key={pageNum}
                                 onClick={() => paginate(pageNum)}
-                                className={`px-3 md:px-4 py-2 rounded-lg border transition-colors text-sm font-medium ${
-                                  currentPage === pageNum 
-                                    ? 'bg-[#c81e35] text-white border-[#c81e35]' 
-                                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                                }`}
+                                className={`px-3 md:px-4 py-2 rounded-lg border transition-colors text-sm font-medium ${currentPage === pageNum
+                                  ? 'bg-[#c81e35] text-white border-[#c81e35]'
+                                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                                  }`}
                               >
                                 {pageNum}
                               </button>
                             );
                           }
-                          
+
                           if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
                             return <span key={pageNum} className="px-1 md:px-2 text-gray-500">...</span>;
                           }
-                          
+
                           return null;
                         })}
 
-                        <button 
+                        <button
                           onClick={() => paginate(currentPage + 1)}
                           disabled={currentPage === totalPages}
                           className="px-3 md:px-4 py-2 border rounded-lg bg-white text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors text-sm font-medium"
@@ -734,14 +738,14 @@ const zones = useMemo(() => {
             {/* Mobile Filter Fullscreen Overlay (Replaces Drawer) */}
             {isFilterDrawerOpen && (
               <div className="fixed inset-0 z-50 bg-background flex flex-col lg:hidden animate-in slide-in-from-bottom-full duration-300">
-                
+
                 {/* Antetul meniului cu titlu și buton de închidere */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/95 backdrop-blur-sm flex-shrink-0">
                   <h2 className="font-serif text-xl font-bold tracking-tight">Filtre</h2>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => setIsFilterDrawerOpen(false)} 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsFilterDrawerOpen(false)}
                     className="rounded-full h-10 w-10 hover:bg-muted"
                   >
                     <span className="text-2xl leading-none font-light mb-1">&times;</span>
@@ -751,7 +755,7 @@ const zones = useMemo(() => {
                 {/* Zona de conținut (unde dai scroll) */}
                 <div className="px-4 py-6 overflow-y-auto flex-1 overscroll-contain space-y-6">
                   <FilterSelects mobile {...filterSelectsProps} />
-                  
+
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Sortează</label>
                     <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
@@ -769,19 +773,19 @@ const zones = useMemo(() => {
                 </div>
 
                 {/* Butoanele de acțiune lipite de partea de jos */}
-                <div 
-                  className="p-4 border-t border-border bg-background flex gap-3 flex-shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]" 
+                <div
+                  className="p-4 border-t border-border bg-background flex gap-3 flex-shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]"
                   style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
                 >
-                  <Button 
-                    variant="outline" 
-                    className="flex-1 h-12 text-base font-medium" 
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-12 text-base font-medium"
                     onClick={() => { resetAllFilters(); setIsFilterDrawerOpen(false); }}
                   >
                     Resetează
                   </Button>
-                  <Button 
-                    className="flex-1 gap-2 h-12 text-base font-medium shadow-md" 
+                  <Button
+                    className="flex-1 gap-2 h-12 text-base font-medium shadow-md"
                     onClick={() => setIsFilterDrawerOpen(false)}
                   >
                     <Search className="h-4 w-4" />
