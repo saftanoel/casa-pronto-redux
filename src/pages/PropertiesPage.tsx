@@ -21,6 +21,7 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
 type SortOption = "newest" | "oldest" | "price-high" | "price-low";
 
+
 function toSlug(str: string): string {
   return str
     .toLowerCase()
@@ -447,6 +448,33 @@ const zones = useMemo(() => {
     return result;
   }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allProperties, initialProperties, allPropertiesFull, hasActiveFilter]);
 
+// 1. STATE PENTRU PAGINAȚIE
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12; // Aici decizi câte anunțuri apar pe o pagină. 12 este perfect pentru un grid de 2 sau 3 coloane.
+
+  // 2. RESETĂM PAGINA LA 1 CÂND SE SCHIMBĂ FILTRELE
+  // Când utilizatorul schimbă din "Case" în "Apartamente", vrem să îl ducem la prima pagină a noilor rezultate
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredProperties.length]); 
+  // Atenție: dacă `filteredProperties` e numele variabilei tale cu rezultatele finale, folosește-l pe ăsta.
+
+  // 3. CALCULĂM ANUNȚURILE PENTRU PAGINA CURENTĂ
+  const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  
+  // Asta e lista pe care o vom afișa EFECTIV pe ecran:
+  const currentItems = filteredProperties.slice(indexOfFirstItem, indexOfLastItem);
+
+  // 4. FUNCȚIA DE SCHIMBARE A PAGINII (CU SCROLL SUS AUTOMAT)
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    // Face un scroll fin până sus când dai click pe pagina 2, 3 etc.
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+
   const getCategoryLabel = () => {
     if (category) {
       const cat = propertyTypes.find(c => c.value === category);
@@ -630,34 +658,67 @@ const zones = useMemo(() => {
                   <>
                     {viewMode === "list" ? (
                       <div className="flex flex-col gap-6">
-                        {visibleProperties.map((property) => (
+                        {/* Aici am schimbat visibleProperties cu currentItems */}
+                        {currentItems.map((property) => (
                           <PropertyRow key={property.id} property={property} search={currentSearch} />
                         ))}
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {visibleProperties.map((property) => (
+                      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+                        {/* MODIFICARE GRID MOBIL: Am pus grid-cols-2 și pe ecrane mici */}
+                        {/* Aici am schimbat visibleProperties cu currentItems */}
+                        {currentItems.map((property) => (
                           <PropertyGrid key={property.id} property={property} search={currentSearch} />
                         ))}
                       </div>
                     )}
 
-                    {/* Load More Button */}
-                    <div className="flex justify-center py-8">
-                      {hasMoreLocal ? (
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
-                          className="gap-2 min-h-[44px]"
+                    {/* PAGINAȚIA NOUĂ (Înlocuiește complet butonul vechi Load More) */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center items-center space-x-1 md:space-x-2 mt-10 mb-10">
+                        <button 
+                          onClick={() => paginate(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="px-3 md:px-4 py-2 border rounded-lg bg-white text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors text-sm font-medium"
                         >
-                          Încarcă Mai Multe ({filteredProperties.length - visibleCount} rămase)
-                          <ChevronRight className="h-4 w-4 rotate-90" />
-                        </Button>
-                      ) : allProperties.length > 0 ? (
-                        <p className="text-sm text-muted-foreground">Toate proprietățile au fost încărcate</p>
-                      ) : null}
-                    </div>
+                          Înapoi
+                        </button>
+
+                        {[...Array(totalPages)].map((_, index) => {
+                          const pageNum = index + 1;
+                          
+                          if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => paginate(pageNum)}
+                                className={`px-3 md:px-4 py-2 rounded-lg border transition-colors text-sm font-medium ${
+                                  currentPage === pageNum 
+                                    ? 'bg-[#c81e35] text-white border-[#c81e35]' 
+                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          }
+                          
+                          if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                            return <span key={pageNum} className="px-1 md:px-2 text-gray-500">...</span>;
+                          }
+                          
+                          return null;
+                        })}
+
+                        <button 
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className="px-3 md:px-4 py-2 border rounded-lg bg-white text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors text-sm font-medium"
+                        >
+                          Înainte
+                        </button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="text-center py-20 bg-muted/30 rounded-xl">
