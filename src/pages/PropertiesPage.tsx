@@ -547,7 +547,7 @@ const PropertiesPage = () => {
         </div>
 
         {/* Tabs + Sort Bar */}
-        <div className="bg-background border-b border-border sticky top-[calc(2rem+5rem)] z-30">
+        <div className="bg-background border-b border-border sticky top-[85px] md:top-[calc(2rem+5rem)] z-30">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between py-3 gap-3">
               <div className="flex gap-2 bg-muted/40 p-1 rounded-xl overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 flex-shrink-0">
@@ -656,16 +656,26 @@ const PropertiesPage = () => {
 
               {/* Property List */}
               <div className="flex-1 relative">
-                <p className="text-sm text-muted-foreground mb-6">
-                  {isLoadingInitial ? "Se încarcă..." : (
+                <p className="text-sm text-muted-foreground mb-6 flex items-center gap-1.5 flex-wrap">
+                  {isLoadingInitial ? (
+                    "Se încarcă..."
+                  ) : (
                     <>
-                      {filteredProperties.length} proprietăți
-                      {!hasFullData && hasActiveFilter && <span className="ml-1 text-primary">(se încarcă toate...)</span>}
-                      {hasFullData && ` din ${allPropertiesFull!.length}`}
+                      <span>{filteredProperties.length} proprietăți</span>
+
+                      {/* Acum apare mereu cât timp trage datele în fundal */}
+                      {!hasFullData && (
+                        <span className="text-primary font-medium text-xs md:text-sm animate-pulse">
+                          (se încarcă mai multe...)
+                        </span>
+                      )}
+
+                      {hasFullData && <span> din {allPropertiesFull!.length}</span>}
                     </>
                   )}
-                  {isPending && <span className="ml-2 text-primary">Se actualizează...</span>}
+                  {isPending && <span className="ml-2 text-primary text-xs md:text-sm">Se actualizează...</span>}
                 </p>
+
 
                 {/* Eager User Loading Overlay */}
                 {isWaitingForFullData && (
@@ -825,7 +835,7 @@ const PropertiesPage = () => {
 
         <Footer />
       </div>
-    </SearchProvider>
+    </SearchProvider >
   );
 };
 

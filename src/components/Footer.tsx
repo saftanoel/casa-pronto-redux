@@ -92,9 +92,9 @@ const Footer = () => {
       <div className="border-t border-background/10">
         <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-background/50 text-sm text-center sm:text-left">
-            © 2024 Casa Pronto Imobiliare. Toate drepturile rezervate.
+            © 2026 Casa Pronto Imobiliare. Toate drepturile rezervate.
           </p>
-          
+
         </div>
       </div>
 
