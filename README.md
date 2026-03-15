@@ -22,3 +22,10 @@ Custom Fields: Price, surface area, bedrooms, and bathrooms natively attached to
 
 🔗 SEO & Traffic Migration
 Smart 301 Redirects: Custom PHP script implemented on the legacy server/site that intercepts old URLs (/proprietate.php?id=...) and redirects users and Google bots to the new React routes (/proprietate/1234), preserving all SEO "juice" and eliminating 404 errors.
+
+
+This project was developed using a modern AI-assisted workflow. Bootstrapped with Lovable for rapid UI prototyping, and heavily refactored/optimized manually (React hooks, Headless WP API integration, custom PHP routing, and mobile UX) to handle a production database of 4700+ properties.
+
+
+
+
