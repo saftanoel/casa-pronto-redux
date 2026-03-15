@@ -1,4 +1,5 @@
 🏡 Casa Pronto Redux
+
 A modern, fast, and responsive web application for the Casa Pronto real estate agency, built on a Headless WordPress + React architecture. The project transforms the agency's massive database (4700+ listings) into a fluid user experience, comparable to major real estate portals.
 
 🚀 Tech Stack
