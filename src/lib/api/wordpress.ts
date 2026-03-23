@@ -212,22 +212,26 @@ export async function fetchAllProperties(): Promise<Property[]> {
   let allPosts = [...firstBatch];
   
   if (totalPages > 1) {
-    const promises = [];
-    for (let page = 2; page <= totalPages; page++) {
-      promises.push(
-        fetch(`${WP_API_BASE}/anunturi?per_page=100&page=${page}`)
-          .then(r => r.json() as Promise<WPPost[]>)
-      );
-    }
-    const results = await Promise.all(promises);
-    for (const batch of results) {
-      allPosts = allPosts.concat(batch);
+    // Mobile optimization (only 5 pages are loading in the background and so on)
+    const chunkSize = 5; 
+    
+    for (let i = 2; i <= totalPages; i += chunkSize) {
+      const chunkPromises = [];
+      for (let j = i; j < i + chunkSize && j <= totalPages; j++) {
+        chunkPromises.push(
+          fetch(`${WP_API_BASE}/anunturi?per_page=100&page=${j}`)
+            .then(r => r.json() as Promise<WPPost[]>)
+        );
+      }
+      const chunkResults = await Promise.all(chunkPromises);
+      for (const batch of chunkResults) {
+        allPosts = allPosts.concat(batch);
+      }
     }
   }
   
   return allPosts.map(p => mapWPPostToProperty(p, true));
 }
-
 /** Fetch taxonomy options from the dedicated fast endpoint */
 export interface TaxonomyResponse {
   property_city: string[];

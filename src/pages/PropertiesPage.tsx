@@ -334,7 +334,7 @@ const PropertiesPage = () => {
   const hasTaxonomyFilter = !!(zone || category || activeTab !== "toate");
   const hasActiveFilter = !!(zone || category || rooms || area || price || debouncedSearch || activeTab !== "toate");
 
-  const isWaitingForFullData = hasTaxonomyFilter && !hasFullData && !isLoadingInitial;
+  const isWaitingForFullData = hasActiveFilter && !hasFullData && !isLoadingInitial;
 
   useEffect(() => {
     window.scrollTo(0, 0);
