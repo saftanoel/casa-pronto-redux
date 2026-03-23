@@ -90,33 +90,58 @@ export const SearchProvider = ({ children, properties = [], isLoading = false }:
   };
 
   const filteredProperties = useMemo(() => {
+    // 1. Curățăm și pregătim cuvintele (Aici ignorăm și virgulele, și cuvintele gen "cu", "in")
+    const normalizeText = (text: any) => {
+      if (!text) return "";
+      return String(text)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    };
+
+    const stopWords = ["cu", "in", "de", "la", "pe", "si", "un", "o", "din", "pentru", "zona"];
+
+    const searchTerms = filters.searchQuery
+      ? normalizeText(filters.searchQuery)
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ") // Scoatem punctuația
+        .split(/\s+/) // Spargem textul
+        .filter((term) => term.trim() !== "" && !stopWords.includes(term)) // Fără cuvinte de legătură
+      : [];
+
+    // 2. Funcția "God Mode" care extrage absolut orice text sau număr din obiect
+    const extractAllValues = (obj: any): string => {
+      if (obj === null || obj === undefined) return "";
+      if (typeof obj === "string" || typeof obj === "number") return String(obj);
+      if (typeof obj === "object") {
+        return Object.values(obj).map(extractAllValues).join(" ");
+      }
+      return "";
+    };
+
     return properties.filter((p) => {
+      // Filtrele clasice
       if (!matchesTab(p, filters.tab)) return false;
       if (filters.zone && !matchesTaxonomy(p, "property_city", filters.zone)) return false;
       if (filters.propertyType && !matchesTaxonomy(p, "property_type", filters.propertyType)) return false;
       if (!matchesRooms(p, filters.rooms)) return false;
       if (!matchesArea(p, filters.area)) return false;
-      
-      if (filters.searchQuery) {
-  const q = filters.searchQuery.toLowerCase();
-  
-  // Curățăm textele pentru a evita "Casa Pronto"
-  const cleanTitle = (p.title || "").toLowerCase().replace(/casa pronto/g, "");
-  const cleanLoc = (p.location || "").toLowerCase();
-  const cleanPropType = (p.propertyType || "").toLowerCase().replace(/casa pronto/g, "");
-  
-  // Includem și prețul în căutare (convertim în string să fim siguri)
-  const priceStr = (p.price || "").toLowerCase();
 
-  if (
-    !cleanTitle.includes(q) &&
-    !cleanLoc.includes(q) &&
-    !cleanPropType.includes(q) &&
-    !priceStr.includes(q) // Acum caută și în preț (ex: dacă scrii "450")
-  ) {
-    return false;
-  }
-}
+      // Smart Search-ul nostru
+      if (searchTerms.length > 0) {
+        // Extragem absolut tot din proprietatea `p`
+        const rawText = extractAllValues(p);
+
+        // Curățăm textul gigant o singură dată
+        const superString = normalizeText(rawText).replace(/casa pronto/g, "");
+
+        // Verificăm dacă toate cuvintele se regăsesc în textul gigant
+        const matchesAllTerms = searchTerms.every((term) => superString.includes(term));
+
+        if (!matchesAllTerms) {
+          return false;
+        }
+      }
+
       return true;
     });
   }, [filters, properties]);

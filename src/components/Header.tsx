@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useSearch } from "@/context/SearchContext"; // IMPORT NOU
 
 const logo = "https://www.casapronto.ro/wp-content/uploads/2026/03/logo3-D-qtkmdT.jpg";
 
@@ -15,6 +16,9 @@ const Header = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // CONECTĂM HEADER-UL LA CONTEXTUL DE CĂUTARE
+  const { setFilter } = useSearch();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,11 +51,23 @@ const Header = () => {
 
   const handleSearchSubmit = useCallback(() => {
     if (localSearch.trim()) {
-      navigate(`/proprietati?q=${encodeURIComponent(localSearch.trim())}`);
+      const query = localSearch.trim();
+
+      // LOGICA NOUĂ DE NAVIGARE:
+      if (location.pathname.includes("/proprietati")) {
+        // 1. Suntem DEJA pe pagină! Actualizăm filtrele instant fără să reîncărcăm pagina.
+        setFilter("searchQuery", query);
+        // 2. Modificăm tăcut și URL-ul (în caz că vrei să dai copy-paste la link cuiva)
+        navigate(`/proprietati?q=${encodeURIComponent(query)}`, { replace: true });
+      } else {
+        // Suntem pe Homepage, deci mergem spre pagina de proprietăți normal
+        navigate(`/proprietati?q=${encodeURIComponent(query)}`);
+      }
+
       setIsSearchOpen(false);
       setIsMenuOpen(false);
     }
-  }, [localSearch, navigate]);
+  }, [localSearch, location.pathname, navigate, setFilter]);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearchSubmit();
@@ -199,7 +215,6 @@ const Header = () => {
               {link.label}
             </a>
           ))}
-          
         </nav>
       </div>
     </header>

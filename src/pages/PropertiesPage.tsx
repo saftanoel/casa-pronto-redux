@@ -21,7 +21,6 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
 type SortOption = "newest" | "oldest" | "price-high" | "price-low";
 
-
 function toSlug(str: string): string {
   return str
     .toLowerCase()
@@ -52,7 +51,6 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
         className="md:w-80 flex-shrink-0 relative"
         aspectClass="aspect-[4/3] md:aspect-auto md:min-h-[200px]"
       >
-        {/* Badges (Vânzare, Nou, etc.) */}
         <div className="absolute top-3 left-3 flex gap-2 pointer-events-none z-[5]">
           <Badge variant={property.type === "Vânzare" ? "default" : property.type === "Închiriere" ? "secondary" : "outline"}
             className={cn("text-xs", property.type === "Vândut" && "bg-foreground/80 text-background")}>
@@ -61,7 +59,6 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
 
-        {/* PREȚUL PE POZĂ (Glassmorphism) - Jos Stânga */}
         <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg font-bold text-sm md:text-base z-[5] pointer-events-none flex items-baseline gap-1">
           <span>{property.price.replace("€", "").trim()}</span>
           <span className="text-xs">€</span>
@@ -85,7 +82,6 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
           </p>
         </div>
 
-        {/* FOOTER: Mp, Camere, Băi + PREȚUL ROȘU ÎN DREAPTA */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border gap-2">
           <div className="flex items-center gap-3 sm:gap-5 overflow-hidden">
             <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
@@ -106,7 +102,6 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
             )}
           </div>
 
-          {/* PREȚUL ROȘU (Lângă Săgeată) */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <div className="flex items-baseline gap-1 whitespace-nowrap">
               <span className="font-bold text-lg sm:text-xl text-primary leading-none">
@@ -143,7 +138,6 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
           {property.isNew && <Badge className="bg-accent text-accent-foreground text-xs">Nou</Badge>}
         </div>
 
-        {/* PREȚUL PE POZĂ (Glassmorphism) - Jos Stânga */}
         <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg font-bold text-sm md:text-base z-[5] pointer-events-none flex items-baseline gap-1">
           <span>{property.price.replace("€", "").trim()}</span>
           <span className="text-xs font-semibold">€</span>
@@ -160,7 +154,6 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
           <span className="text-sm truncate">{property.location}</span>
         </div>
 
-        {/* FOOTER: Camere, Băi, Mp + PREȚUL ÎN DREAPTA JOS */}
         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border overflow-hidden">
           {property.beds > 0 && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
@@ -177,7 +170,6 @@ const PropertyGrid = ({ property, search }: { property: Property; search: string
             <span className="whitespace-nowrap">{property.area} mp</span>
           </div>
 
-          {/* PREȚUL ROȘU (Lângă Săgeată) */}
           <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
             <div className="items-baseline gap-0.5 whitespace-nowrap hidden sm:flex">
               <span className="font-bold text-sm text-primary leading-none">
@@ -264,18 +256,13 @@ const FilterSelects = ({ mobile = false, category, setCategory, propertyTypes, z
 const ITEMS_PER_PAGE = 12;
 
 const PropertiesPage = () => {
-  // Fetch 1: Initial 60 properties (instant)
   const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
-  // Fetch 2: Taxonomies — independent, instant, populates dropdowns immediately
   const { data: taxonomyData } = useTaxonomies();
-  // Fetch 3: All ~5000 properties (background)
   const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
 
-  // Determine which dataset to use for filtering
   const hasFullData = isAllFetched && !!allPropertiesFull;
   const allProperties = hasFullData ? allPropertiesFull : initialProperties;
 
-  // Debug logs
   useEffect(() => {
     if (taxonomyData) {
       console.log('Taxonomies loaded:', taxonomyData);
@@ -289,16 +276,14 @@ const PropertiesPage = () => {
   }, [allPropertiesFull]);
 
   const zones = useMemo(() => {
-    // Verificăm dacă avem date, dacă nu, returnăm listă goală
     const rawZones = taxonomyData?.property_city || [];
     return rawZones.map((z: any) => {
-      // Dacă WordPress trimite obiect {name, slug}, luăm .name. Dacă trimite string, luăm direct z.
       const label = z?.name || (typeof z === 'string' ? z : "");
       return {
         value: z?.slug || toSlug(label),
         label: label
       };
-    }).filter((item: any) => item.label !== "") // Scoatem intrările goale
+    }).filter((item: any) => item.label !== "")
       .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
 
@@ -313,6 +298,7 @@ const PropertiesPage = () => {
     }).filter((item: any) => item.label !== "")
       .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
+
   const statuses = useMemo(() =>
     (taxonomyData?.property_status ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label, "ro")),
     [taxonomyData]
@@ -328,17 +314,16 @@ const PropertiesPage = () => {
   const [area, setArea] = useState(searchParams.get("area") || "");
   const [price, setPrice] = useState(searchParams.get("price") || "");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
-  // viewmode inteligent 
+
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
     if (typeof window !== "undefined") {
       const savedMode = localStorage.getItem("preferintaViewCasaPronto");
       if (savedMode === "grid" || savedMode === "list") return savedMode;
       return window.innerWidth < 768 ? "grid" : "list";
     }
-    return "grid"; // Fallback 
+    return "grid";
   });
 
-  // De fiecare dată când utilizatorul dă click pe un buton, salvăm în memorie
   useEffect(() => {
     localStorage.setItem("preferintaViewCasaPronto", viewMode);
   }, [viewMode]);
@@ -346,21 +331,16 @@ const PropertiesPage = () => {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isPending, startTransition] = useTransition();
 
-  // Track if user has applied any filter that requires taxonomy data (full dataset)
   const hasTaxonomyFilter = !!(zone || category || activeTab !== "toate");
-  // Track if user has applied ANY filter at all
   const hasActiveFilter = !!(zone || category || rooms || area || price || debouncedSearch || activeTab !== "toate");
 
-  // "Eager user" state: user applied a taxonomy filter before full data loaded
-  // Only show overlay for taxonomy-dependent filters since initial 60 have empty taxonomies
   const isWaitingForFullData = hasTaxonomyFilter && !hasFullData && !isLoadingInitial;
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Sync filters from URL params (but NOT searchQuery — that's controlled by the input directly
-  // to avoid a circular loop: type → debounce → setSearchParams → setSearchQuery → reset keyboard)
+  // Sincronizare TOATE filtrele și cu Header-ul
   useEffect(() => {
     setCategory(searchParams.get("category") || "");
     setZone(searchParams.get("zone") || "");
@@ -368,6 +348,10 @@ const PropertiesPage = () => {
     setRooms(searchParams.get("rooms") || "");
     setArea(searchParams.get("area") || "");
     setPrice(searchParams.get("price") || "");
+
+    // Aici am adăugat magica sincronizare care ascultă ce dai din Header (fără să facă bucle infinite)
+    const qUrl = searchParams.get("q") || "";
+    setSearchQuery(prev => prev !== qUrl ? qUrl : prev);
   }, [searchParams]);
 
   useEffect(() => {
@@ -419,15 +403,34 @@ const PropertiesPage = () => {
     { id: "vandute", label: "VÂNDUTE" },
   ];
 
+  // GOD MODE ADĂUGAT AICI DIRECT ÎN PropertiesPage
   const filteredProperties = useMemo(() => {
-    // Use full data when available; otherwise use initial 60
-    // Note: initial 60 have empty taxonomies, so taxonomy filters won't match them
     const sourceData = allPropertiesFull ?? initialProperties;
+
+    // 1. Pregătim funcția de curățare
+    const normalizeText = (text: any) => {
+      if (!text) return "";
+      return String(text)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    };
+
+    const stopWords = ["cu", "in", "de", "la", "pe", "si", "un", "o", "din", "pentru", "zona"];
+
+    // 2. Extragem cuvintele din bara de search (Tăiem ghilimelele și cuvintele de legătură)
+    const searchTerms = debouncedSearch
+      ? normalizeText(debouncedSearch)
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter((term) => term.trim() !== "" && !stopWords.includes(term))
+      : [];
 
     let result = sourceData.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
       if (zone && !matchesTaxonomy(p, "property_city", zone)) return false;
       if (category && !matchesTaxonomy(p, "property_type", category)) return false;
+
       if (rooms) {
         if (rooms === "4+") {
           if (Number(p.beds) < 4) return false;
@@ -435,6 +438,7 @@ const PropertiesPage = () => {
           if (Number(p.beds) !== Number(rooms)) return false;
         }
       }
+
       if (area) {
         const a = p.area;
         const areaRanges: Record<string, [number, number]> = {
@@ -445,6 +449,7 @@ const PropertiesPage = () => {
         const range = areaRanges[area];
         if (range && (a < range[0] || a >= range[1])) return false;
       }
+
       if (price) {
         const pv = p.priceValue;
         const priceRanges: Record<string, [number, number]> = {
@@ -457,22 +462,23 @@ const PropertiesPage = () => {
         const range = priceRanges[price];
         if (range && (pv < range[0] || pv >= range[1])) return false;
       }
-      if (debouncedSearch) {
-        const q = debouncedSearch.toLowerCase();
 
-        // "Ascundem" numele agenției și diacriticele din textul analizat ca să nu strice căutarea
-        const cleanDesc = p.description?.toLowerCase().replace(/casa pronto/g, "") || "";
-        const cleanTitle = p.title?.toLowerCase().replace(/casa pronto/g, "") || "";
-        const cleanLoc = p.location?.toLowerCase() || "";
+      // 3. LOGICA SMART SEARCH ("God Mode") APLICATĂ LOCAL
+      if (searchTerms.length > 0) {
+        // Stringify ia efectiv TOT anunțul, inclusiv zona de taxonomii
+        const rawText = [
+          p.title, p.description, p.location, p.propertyType, p.price, p.beds, p.baths, p.area,
+          JSON.stringify(p.taxonomies || {})
+        ].join(" ");
 
-        if (
-          !cleanTitle.includes(q) &&
-          !cleanLoc.includes(q) &&
-          !cleanDesc.includes(q)
-        ) {
+        const superString = normalizeText(rawText).replace(/casa pronto/g, "");
+
+        const matchesAllTerms = searchTerms.every((term) => superString.includes(term));
+        if (!matchesAllTerms) {
           return false;
         }
       }
+
       return true;
     });
 
@@ -484,9 +490,9 @@ const PropertiesPage = () => {
     }
 
     return result;
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allProperties, initialProperties, allPropertiesFull, hasActiveFilter]);
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allPropertiesFull, initialProperties]);
 
-  // 1. STATE PENTRU PAGINAȚIE
+  // STATE PENTRU PAGINAȚIE
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 18;
 
@@ -505,7 +511,6 @@ const PropertiesPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-
   const getCategoryLabel = () => {
     if (category) {
       const cat = propertyTypes.find(c => c.value === category);
@@ -521,7 +526,6 @@ const PropertiesPage = () => {
   const hasMoreLocal = visibleCount < filteredProperties.length;
 
   const filterSelectsProps = { category, setCategory, propertyTypes, zone, setZone, zones, searchQuery, setSearchQuery };
-
 
   return (
     <SearchProvider properties={initialProperties} isLoading={isLoadingInitial}>
@@ -663,7 +667,6 @@ const PropertiesPage = () => {
                     <>
                       <span>{filteredProperties.length} proprietăți</span>
 
-                      {/* Acum apare mereu cât timp trage datele în fundal */}
                       {!hasFullData && (
                         <span className="text-primary font-medium text-xs md:text-sm animate-pulse">
                           (se încarcă mai multe...)
@@ -676,13 +679,11 @@ const PropertiesPage = () => {
                   {isPending && <span className="ml-2 text-primary text-xs md:text-sm">Se actualizează...</span>}
                 </p>
 
-
                 {/* Eager User Loading Overlay */}
                 {isWaitingForFullData && (
                   <div className="absolute inset-0 z-20 bg-background/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-4 min-h-[400px]">
                     <Loader2 className="h-10 w-10 text-primary animate-spin" />
                     <p className="text-lg font-serif font-medium text-foreground">Căutăm prin toate ofertele...</p>
-
                   </div>
                 )}
 
@@ -700,7 +701,6 @@ const PropertiesPage = () => {
                   <>
                     {viewMode === "list" ? (
                       <div className="flex flex-col gap-6">
-                        {/* Aici am schimbat visibleProperties cu currentItems */}
                         {currentItems.map((property) => (
                           <PropertyRow key={property.id} property={property} search={currentSearch} />
                         ))}
@@ -713,7 +713,7 @@ const PropertiesPage = () => {
                       </div>
                     )}
 
-                    {/* PAGINAȚIA NOUĂ */}
+                    {/* PAGINAȚIA */}
                     {totalPages > 1 && (
                       <div className="flex justify-center items-center space-x-1 md:space-x-2 mt-10 mb-10">
                         <button
@@ -770,11 +770,9 @@ const PropertiesPage = () => {
               </div>
             </div>
 
-            {/* Mobile Filter Fullscreen Overlay (Replaces Drawer) */}
+            {/* Mobile Filter Fullscreen Overlay */}
             {isFilterDrawerOpen && (
               <div className="fixed inset-0 z-50 bg-background flex flex-col lg:hidden animate-in slide-in-from-bottom-full duration-300">
-
-                {/* Antetul meniului cu titlu și buton de închidere */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/95 backdrop-blur-sm flex-shrink-0">
                   <h2 className="font-serif text-xl font-bold tracking-tight">Filtre</h2>
                   <Button
@@ -787,10 +785,8 @@ const PropertiesPage = () => {
                   </Button>
                 </div>
 
-                {/* Zona de conținut (unde dai scroll) */}
                 <div className="px-4 py-6 overflow-y-auto flex-1 overscroll-contain space-y-6">
                   <FilterSelects mobile {...filterSelectsProps} />
-
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Sortează</label>
                     <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
@@ -807,7 +803,6 @@ const PropertiesPage = () => {
                   </div>
                 </div>
 
-                {/* Butoanele de acțiune lipite de partea de jos */}
                 <div
                   className="p-4 border-t border-border bg-background flex gap-3 flex-shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]"
                   style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
@@ -827,7 +822,6 @@ const PropertiesPage = () => {
                     Aplică Filtre
                   </Button>
                 </div>
-
               </div>
             )}
           </div>
@@ -835,7 +829,7 @@ const PropertiesPage = () => {
 
         <Footer />
       </div>
-    </SearchProvider >
+    </SearchProvider>
   );
 };
 

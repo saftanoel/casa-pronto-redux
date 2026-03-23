@@ -19,6 +19,12 @@ const Index = () => {
   // Use full dataset when available, otherwise initial 60
   const properties = allPropertiesFull ?? initialProperties;
 
+  // --- NOU: Setăm titlul paginii ---
+  useEffect(() => {
+    document.title = "Casa Pronto | Agenție Imobiliară Alba Iulia";
+  }, []);
+
+  // --- VECHI: Scroll la secțiuni ---
   useEffect(() => {
     if (location.hash) {
       const el = document.querySelector(location.hash);
