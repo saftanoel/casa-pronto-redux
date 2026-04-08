@@ -1,6 +1,9 @@
 import { type Property } from "@/data/properties";
 
-export const WP_API_BASE = import.meta.env.VITE_API_BASE_URL;
+export const WP_API_BASE = import.meta.env.VITE_API_BASE_URL || "https://casapronto.ro/wp-json/casapronto/v1";
+
+
+console.log("MAGIE SAU EROARE? URL-UL ESTE:", WP_API_BASE);   
 
 if (!WP_API_BASE) {
   console.error("Lipsește VITE_API_BASE_URL din fișierul .env!");
@@ -12,7 +15,7 @@ export interface WPPost {
   id: number;
   slug?: string;
   date: string;
-  title: { rendered: string };
+  title: { rendered: string };  
   content: { rendered: string };
   featured_media: number;
   gallery_urls?: string[];
