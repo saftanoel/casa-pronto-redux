@@ -1,6 +1,10 @@
 import { type Property } from "@/data/properties";
 
-const WP_API_BASE = "https://casapronto.ro/wp-json/casapronto/v1";
+export const WP_API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+if (!WP_API_BASE) {
+  console.error("Lipsește VITE_API_BASE_URL din fișierul .env!");
+}
 // Custom endpoint returns flattened data — no _embed or _fields needed
 const PER_PAGE_LIST = 12;
 
