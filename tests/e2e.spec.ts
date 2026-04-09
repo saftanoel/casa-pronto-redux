@@ -5,7 +5,7 @@ const CARD_SELECTOR = 'text="€"';
 test.describe('Casa Pronto - Suita Completă de Căutare și Filtrare', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/'); 
+    await page.goto('/'); 
   });
 
   test('Ar trebui să se încarce pagina principală cu titlul corect', async ({ page }) => {
