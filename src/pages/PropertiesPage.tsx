@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { type Property } from "@/data/properties";
 import Header from "@/components/Header";
@@ -20,6 +20,10 @@ import { useDebounce } from "@/hooks/useDebounce";
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
 type SortOption = "newest" | "oldest" | "price-high" | "price-low";
+
+// Tipuri adăugate pentru a fixa erorile TypeScript (fără "any")
+type RawTaxonomy = { slug?: string; name?: string } | string;
+type ParsedTaxonomy = { value: string; label: string };
 
 function toSlug(str: string): string {
   return str
@@ -255,7 +259,8 @@ const FilterSelects = ({ mobile = false, category, setCategory, propertyTypes, z
 
 const ITEMS_PER_PAGE = 12;
 
-const PropertiesPage = () => {
+// Am adăugat parametrul din rută (routeCategory)
+const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { category?: string ; zone?: string }) => {
   const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
   const { data: taxonomyData } = useTaxonomies();
   const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
@@ -275,28 +280,42 @@ const PropertiesPage = () => {
     }
   }, [allPropertiesFull]);
 
+  // Semnal pentru Vite Prerender (SSG) - Declansat cand sunt gata datele
+  useEffect(() => {
+    if (initialProperties.length > 0 || isAllFetched) {
+      const timer = setTimeout(() => {
+        document.dispatchEvent(new Event('prerender-ready'));
+      }, 1000); // mic delay ca să se randeze și pozele în DOM
+      return () => clearTimeout(timer);
+    }
+  }, [initialProperties, isAllFetched]);
+
+  // TypeScript tipizat corect pentru zones
   const zones = useMemo(() => {
     const rawZones = taxonomyData?.property_city || [];
-    return rawZones.map((z: any) => {
-      const label = z?.name || (typeof z === 'string' ? z : "");
+    return rawZones.map((z: RawTaxonomy) => {
+      const label = (typeof z === 'object' && z !== null && z.name) ? z.name : (typeof z === 'string' ? z : "");
+      const slug = (typeof z === 'object' && z !== null && z.slug) ? z.slug : "";
       return {
-        value: z?.slug || toSlug(label),
+        value: slug || toSlug(label),
         label: label
       };
-    }).filter((item: any) => item.label !== "")
-      .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
+    }).filter((item: ParsedTaxonomy) => item.label !== "")
+      .sort((a: ParsedTaxonomy, b: ParsedTaxonomy) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
 
+  // TypeScript tipizat corect pentru propertyTypes
   const propertyTypes = useMemo(() => {
     const rawTypes = taxonomyData?.property_type || [];
-    return rawTypes.map((t: any) => {
-      const label = t?.name || (typeof t === 'string' ? t : "");
+    return rawTypes.map((t: RawTaxonomy) => {
+      const label = (typeof t === 'object' && t !== null && t.name) ? t.name : (typeof t === 'string' ? t : "");
+      const slug = (typeof t === 'object' && t !== null && t.slug) ? t.slug : "";
       return {
-        value: t?.slug || toSlug(label),
+        value: slug || toSlug(label),
         label: label
       };
-    }).filter((item: any) => item.label !== "")
-      .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
+    }).filter((item: ParsedTaxonomy) => item.label !== "")
+      .sort((a: ParsedTaxonomy, b: ParsedTaxonomy) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
 
   const statuses = useMemo(() =>
@@ -308,12 +327,24 @@ const PropertiesPage = () => {
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
-  const [zone, setZone] = useState(searchParams.get("zone") || "");
-  const [category, setCategory] = useState(searchParams.get("category") || "");
+  const [zone, setZone] = useState(routeZone || searchParams.get("zone") || "");
+  
+  // Aici setăm categoria luând în considerare și prop-ul primit din rută (ex. "case-de-vanzare")
+  const [category, setCategory] = useState(routeCategory || searchParams.get("category") || "");
   const [rooms, setRooms] = useState(searchParams.get("rooms") || "");
   const [area, setArea] = useState(searchParams.get("area") || "");
   const [price, setPrice] = useState(searchParams.get("price") || "");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
+
+  // Păstrăm sincronizarea categoriei si a zonei dacă navigăm prin Header (React Router)
+  useEffect(() => {
+    if(routeCategory) {
+      setCategory(routeCategory);
+    }
+    if(routeZone) {
+      setZone(routeZone);
+    }
+  }, [routeCategory, routeZone]);
 
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
     if (typeof window !== "undefined") {
@@ -340,51 +371,49 @@ const PropertiesPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Sincronizare TOATE filtrele și cu Header-ul
   useEffect(() => {
-    setCategory(searchParams.get("category") || "");
+    setCategory(routeCategory || searchParams.get("category") || "");
     setZone(searchParams.get("zone") || "");
     setActiveTab((searchParams.get("tab") as FilterTab) || "toate");
     setRooms(searchParams.get("rooms") || "");
     setArea(searchParams.get("area") || "");
     setPrice(searchParams.get("price") || "");
 
-    // Aici am adăugat magica sincronizare care ascultă ce dai din Header (fără să facă bucle infinite)
     const qUrl = searchParams.get("q") || "";
     setSearchQuery(prev => prev !== qUrl ? qUrl : prev);
-  }, [searchParams]);
+  }, [searchParams, routeCategory]);
 
   useEffect(() => {
     const params = new URLSearchParams();
     if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
     if (zone) params.set("zone", zone);
-    if (category) params.set("category", category);
+    if (category && !routeCategory) params.set("category", category); // Nu punem în param dacă e în rută curată
     if (rooms) params.set("rooms", rooms);
     if (area) params.set("area", area);
     if (price) params.set("price", price);
     if (debouncedSearch) params.set("q", debouncedSearch);
     setSearchParams(params, { replace: true });
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch]);
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory, setSearchParams]);
 
   const currentSearch = useMemo(() => {
     const params = new URLSearchParams();
     if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
     if (zone) params.set("zone", zone);
-    if (category) params.set("category", category);
+    if (category && !routeCategory) params.set("category", category);
     if (rooms) params.set("rooms", rooms);
     if (area) params.set("area", area);
     if (price) params.set("price", price);
     if (debouncedSearch) params.set("q", debouncedSearch);
     const qs = params.toString();
     return qs ? `?${qs}` : "";
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch]);
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory]);
 
   const resetAllFilters = () => {
     startTransition(() => {
       setActiveTab("toate");
       setSearchQuery("");
       setZone("");
-      setCategory("");
+      if (!routeCategory) setCategory(""); // Resetează categoria doar dacă nu e din rută fixă
       setRooms("");
       setArea("");
       setPrice("");
@@ -403,12 +432,10 @@ const PropertiesPage = () => {
     { id: "vandute", label: "VÂNDUTE" },
   ];
 
-  // GOD MODE ADĂUGAT AICI DIRECT ÎN PropertiesPage
   const filteredProperties = useMemo(() => {
     const sourceData = allPropertiesFull ?? initialProperties;
 
-    // 1. Pregătim funcția de curățare
-    const normalizeText = (text: any) => {
+    const normalizeText = (text: string | number | null | undefined) => {
       if (!text) return "";
       return String(text)
         .normalize("NFD")
@@ -418,7 +445,6 @@ const PropertiesPage = () => {
 
     const stopWords = ["cu", "in", "de", "la", "pe", "si", "un", "o", "din", "pentru", "zona"];
 
-    // 2. Extragem cuvintele din bara de search (Tăiem ghilimelele și cuvintele de legătură)
     const searchTerms = debouncedSearch
       ? normalizeText(debouncedSearch)
         .replace(/[^a-z0-9\s]/g, " ")
@@ -426,7 +452,7 @@ const PropertiesPage = () => {
         .filter((term) => term.trim() !== "" && !stopWords.includes(term))
       : [];
 
-    let result = sourceData.filter((p) => {
+    const result = sourceData.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
       if (zone && !matchesTaxonomy(p, "property_city", zone)) return false;
       if (category && !matchesTaxonomy(p, "property_type", category)) return false;
@@ -463,9 +489,7 @@ const PropertiesPage = () => {
         if (range && (pv < range[0] || pv >= range[1])) return false;
       }
 
-      // 3. LOGICA SMART SEARCH ("God Mode") APLICATĂ LOCAL
       if (searchTerms.length > 0) {
-        // Stringify ia efectiv TOT anunțul, inclusiv zona de taxonomii
         const rawText = [
           p.title, p.description, p.location, p.propertyType, p.price, p.beds, p.baths, p.area,
           JSON.stringify(p.taxonomies || {})
@@ -492,7 +516,6 @@ const PropertiesPage = () => {
     return result;
   }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allPropertiesFull, initialProperties]);
 
-  // STATE PENTRU PAGINAȚIE
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 18;
 
@@ -519,6 +542,17 @@ const PropertiesPage = () => {
     return "Anunțuri Imobiliare";
   };
 
+  // SEO: Funcție pentru a da Titlul Corect în funcție de filtrele active (pentru Google)
+  const getPageTitle = () => {
+    let catLabel = routeCategory ? (propertyTypes.find(c => c.value === routeCategory)?.label || routeCategory) : "Anunțuri Imobiliare";
+    let zoneLabel = routeZone ? (zones.find(z => z.value === routeZone)?.label || routeZone) : "Alba Iulia și împrejurimi";
+    
+    catLabel = catLabel.charAt(0).toUpperCase() + catLabel.slice(1).replace('-', ' ');
+    zoneLabel = zoneLabel.charAt(0).toUpperCase() + zoneLabel.slice(1).replace('-', ' ');
+
+    return `${catLabel} de vânzare și închiriere ${zoneLabel} | Casa Pronto`;
+  };
+
   const visibleProperties = useMemo(
     () => filteredProperties.slice(0, visibleCount),
     [filteredProperties, visibleCount]
@@ -529,6 +563,13 @@ const PropertiesPage = () => {
 
   return (
     <SearchProvider properties={initialProperties} isLoading={isLoadingInitial}>
+      
+      {/* MAGIA SEO PENTRU GOOGLEBOT */}
+      <Helmet>
+        <title>{getPageTitle()}</title>
+        <meta name="description" content={`Vezi cele mai noi oferte de ${category ? category.replace('-', ' ') : 'proprietăți imobiliare'} din Alba Iulia. Găsește-ți casa de vis cu Casa Pronto!`} />
+      </Helmet>
+
       <div className="min-h-screen flex flex-col">
         <Header />
 

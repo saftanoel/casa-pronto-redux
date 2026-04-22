@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import FeaturedProperties from "@/components/FeaturedProperties";
@@ -19,10 +20,16 @@ const Index = () => {
   // Use full dataset when available, otherwise initial 60
   const properties = allPropertiesFull ?? initialProperties;
 
-  // --- NOU: Setăm titlul paginii ---
+  // --- NOU: Semnalul pentru Vite Prerender (SSG) ---
   useEffect(() => {
-    document.title = "Casa Pronto | Agenție Imobiliară Alba Iulia";
-  }, []);
+    // Tragem semnalul pentru poză doar după ce componentele au datele (isLoading e false)
+    if (!isLoading) {
+      const timer = setTimeout(() => {
+        document.dispatchEvent(new Event('prerender-ready'));
+      }, 1000); // 1 secundă extra pentru a lăsa imaginile și animațiile să se randeze
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   // --- VECHI: Scroll la secțiuni ---
   useEffect(() => {
@@ -36,6 +43,13 @@ const Index = () => {
 
   return (
     <SearchProvider properties={properties} isLoading={isLoading}>
+      
+      {/* NOU: Folosim Helmet pentru un SEO perfect pe Homepage */}
+      <Helmet>
+        <title>Casa Pronto | Agenție Imobiliară Alba Iulia</title>
+        <meta name="description" content="Agenția Imobiliară Casa Pronto din Alba Iulia. Găsește cele mai noi oferte de apartamente, case, terenuri și spații comerciale de vânzare și închiriere." />
+      </Helmet>
+
       <div className="min-h-screen">
         <Header />
         <main>
