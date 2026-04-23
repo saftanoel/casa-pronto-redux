@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Phone, Mail, MapPin, Clock, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,6 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-
 const contactInfo = [
   { icon: Phone, label: "Telefon", value: "0740 197 476", href: "tel:0740197476" },
   { icon: Mail, label: "Email", value: "casa_pronto@yahoo.com", href: "mailto:casa_pronto@yahoo.com" },
@@ -37,6 +36,29 @@ const contactInfo = [
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Senzorul pentru hartă
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [isMapVisible, setIsMapVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Când containerul intră în zona vizuală (cu 200px înainte)
+        if (entries[0].isIntersecting) {
+          setIsMapVisible(true);
+          observer.disconnect(); // Oprim senzorul după ce harta s-a încărcat o dată
+        }
+      },
+      { rootMargin: "200px" } // Declanșează cu 200px înainte ca utilizatorul să ajungă la ea
+    );
+
+    if (mapRef.current) {
+      observer.observe(mapRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const {
     register,
@@ -53,8 +75,6 @@ const Contact = () => {
     const WP_API_URL = "https://casapronto.ro/wp-json/casa-pronto/v1/contact";
 
     try {
-      console.log("Trimitere date către WordPress...", data);
-
       const res = await fetch(WP_API_URL, {
         method: "POST",
         headers: { 
@@ -64,19 +84,13 @@ const Contact = () => {
         body: JSON.stringify(data),
       });
 
-      // Verificăm dacă răspunsul este OK
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Răspuns server (eroare):", errorText);
         throw new Error("Serverul WordPress a raportat o eroare.");
       }
 
-      const result = await res.json();
-      console.log("Succes server:", result);
-
       toast.success("Mesajul a fost trimis cu succes! Te vom contacta în cel mai scurt timp.");
-      reset(); // Resetează câmpurile formularului
-    } catch (error: any) {
+      reset(); 
+    } catch (error) {
       console.error("Eroare la trimitere formular:", error);
       toast.error("A apărut o eroare. Te rugăm să încerci din nou sau să ne suni direct.");
     } finally {
@@ -123,18 +137,26 @@ const Contact = () => {
               })}
             </div>
 
-            {/* Map */}
-            <div className="mt-8 rounded-xl overflow-hidden border border-border h-64">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2504.7404845883398!2d23.5696261!3d46.074462399999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x474ea7d6d819e357%3A0xaad3b4a1251da7f1!2sAgen%C8%9Bia%20Imobiliar%C4%83%20Casa%20Pronto%20Alba%20Iulia!5e1!3m2!1sro!2sro!4v1772721606205!5m2!1sro!2sro"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Casa Pronto - Locație pe Google Maps"
-              />
+            {/* Smart Scroll-Loaded Map */}
+            <div ref={mapRef} className="mt-8 rounded-xl overflow-hidden border border-border h-64 bg-muted relative">
+              {!isMapVisible ? (
+                // Un loader finuț care stă aici doar o fracțiune de secundă
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/50" />
+                </div>
+              ) : (
+                // Harta se încarcă DOAR când userul a dat scroll până aici
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2780.8930777176466!2d23.57500161563242!3d46.07172087911364!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x474ea82012bd22bd%3A0xc3d1566418b5ef0c!2sCasa%20Pronto!5e0!3m2!1sen!2sro!4v1689670000000!5m2!1sen!2sro" // TODO: Pune link-ul tău corect aici!
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen 
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Casa Pronto - Locație pe Google Maps"
+                />
+              )}
             </div>
           </div>
 

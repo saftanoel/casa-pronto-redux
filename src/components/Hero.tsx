@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search, MapPin, Home, Building2, Ruler, Euro, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext";
 import { useTaxonomies } from "@/hooks/useProperties";
+import heroBg1 from "@/assets/hero-bg.webp";
+import heroBg2 from "@/assets/hero-bg-2.webp";
+import heroBg3 from "@/assets/hero-bg-3.webp";
+import heroBg4 from "@/assets/hero-bg-4.webp";
 
 const heroImages = [
-  "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-cCucqGh7.jpg",
-  "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-4-B0lpn2F7.jpg",
-  "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-3-C9kBEvwH.jpg",
-  "https://www.casapronto.ro/wp-content/uploads/2026/03/hero-bg-2-BEiqB60L.jpg",
+  heroBg1,
+  heroBg2,
+  heroBg3,
+  heroBg4
 ];
 
 function toSlug(str: string): string {
@@ -33,7 +37,7 @@ const suprafataOptions = [
 type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 
 const Hero = () => {
-  const { filters, setFilter, scrollToProperties, allProperties } = useSearch();
+  const { filters, setFilter } = useSearch();
 
   // Fetch taxonomies independently — populates dropdowns INSTANTLY, no dependency on properties
   const { data: taxonomyData } = useTaxonomies();
@@ -90,7 +94,7 @@ const Hero = () => {
       id="home"
       className="relative min-h-screen flex items-center justify-center pt-32 pb-20"
     >
-      {/* Background Slideshow */}
+      {/* Background Slideshow - Intact */}
       {heroImages.map((img, index) => (
         <div
           key={index}
@@ -106,24 +110,26 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-5xl mx-auto text-center text-background">
-          <span className="inline-block px-4 py-2 rounded-full bg-primary/20 text-primary-foreground text-sm font-medium mb-6 animate-fade-up">
+          
+          {/* FĂRĂ ANIMAȚIE: Textul LCP va apărea instant */}
+          <span className="inline-block px-4 py-2 rounded-full bg-primary/20 text-primary-foreground text-sm font-medium mb-6">
             Agenția Imobiliară #1 în Alba Iulia
           </span>
           
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
             Găsește-ți Casa
             <span className="text-primary"> Perfectă</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-background/80 mb-10 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: "0.2s" }}>
+          <p className="text-lg md:text-xl text-background/80 mb-10 max-w-2xl mx-auto">
             Din anul 2004 vă punem la dispoziție cele mai frumoase proprietăți imobiliare în Alba Iulia. 
             Peste 1000 de anunțuri active.
           </p>
 
-          {/* Search Box */}
+          {/* Search Box - Păstrează animația deoarece e sub nivelul vizual critic inițial */}
           <div 
             className="bg-background/95 backdrop-blur-xl rounded-2xl p-4 md:p-6 shadow-2xl max-w-4xl mx-auto animate-fade-up"
-            style={{ animationDelay: "0.3s" }}
+            style={{ animationDelay: "0.2s" }}
           >
             {/* Tabs */}
             <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
@@ -273,7 +279,7 @@ const Hero = () => {
           {/* Stats */}
           <div 
             className="flex flex-wrap justify-center gap-8 md:gap-16 mt-12 animate-fade-up"
-            style={{ animationDelay: "0.4s" }}
+            style={{ animationDelay: "0.3s" }}
           >
             {[
               { value: "1000+", label: "Proprietăți" },
