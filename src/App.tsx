@@ -30,6 +30,7 @@ const Index = () => {
   useEffect(() => {
     if (!isLoading) {
       const timer = setTimeout(() => {
+        (window as any).__PRERENDER_READY_FIRED = true;
         document.dispatchEvent(new Event('prerender-ready'));
       }, 1000);
       return () => clearTimeout(timer);

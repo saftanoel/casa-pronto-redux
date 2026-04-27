@@ -284,11 +284,23 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   useEffect(() => {
     if (initialProperties.length > 0 || isAllFetched) {
       const timer = setTimeout(() => {
+        (window as any).__PRERENDER_READY_FIRED = true;
         document.dispatchEvent(new Event('prerender-ready'));
       }, 1000); // mic delay ca să se randeze și pozele în DOM
       return () => clearTimeout(timer);
     }
   }, [initialProperties, isAllFetched]);
+
+  // Absolute 5s Fallback pentru subcategorii cu 0 rezultate (Evită timeout-ul Puppeteer)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!(window as any).__PRERENDER_READY_FIRED) {
+        (window as any).__PRERENDER_READY_FIRED = true;
+        document.dispatchEvent(new Event('prerender-ready'));
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // TypeScript tipizat corect pentru zones
   const zones = useMemo(() => {
@@ -373,7 +385,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
   useEffect(() => {
     setCategory(routeCategory || searchParams.get("category") || "");
-    setZone(searchParams.get("zone") || "");
+    setZone(routeZone || searchParams.get("zone") || "");
     setActiveTab((searchParams.get("tab") as FilterTab) || "toate");
     setRooms(searchParams.get("rooms") || "");
     setArea(searchParams.get("area") || "");
@@ -381,7 +393,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
     const qUrl = searchParams.get("q") || "";
     setSearchQuery(prev => prev !== qUrl ? qUrl : prev);
-  }, [searchParams, routeCategory]);
+  }, [searchParams, routeCategory, routeZone]);
 
   useEffect(() => {
     const params = new URLSearchParams();

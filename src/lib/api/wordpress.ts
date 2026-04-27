@@ -11,6 +11,13 @@ if (!WP_API_BASE) {
 // Custom endpoint returns flattened data — no _embed or _fields needed
 const PER_PAGE_LIST = 12;
 
+function isPrerendering(): boolean {
+  if (typeof window === 'undefined') return false;
+  const isPuppeteer = window.navigator && window.navigator.userAgent && window.navigator.userAgent.includes('HeadlessChrome');
+  const isInject = (window as any).__PRERENDER_INJECTED?.isPrerendering;
+  return !!(isPuppeteer || isInject);
+}
+
 export interface WPPost {
   id: number;
   slug?: string;
@@ -207,6 +214,45 @@ export async function fetchPropertiesPaginated(page = 1, perPage = PER_PAGE_LIST
 
 /** Fetch all properties — still needed for homepage featured + search context */
 export async function fetchAllProperties(): Promise<Property[]> {
+  if (isPrerendering()) {
+    try {
+      const res = await fetch('/prerender-properties.json');
+      if (res.ok) {
+        const posts: WPPost[] = await res.json();
+        
+        // Memory Optimization for Prerender:
+        // Instead of processing 4700+ properties for EVERY page, we limit the array
+        // to a smaller chunk (e.g., 100 items) to prevent Chromium OOM crashes.
+        // To ensure subcategories (like /case-oarda) aren't empty, we filter first.
+        const pathname = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
+        let filteredPosts = posts;
+        
+        if (pathname !== '/' && pathname !== '/proprietati' && pathname.length > 1) {
+          const searchTerms = pathname.substring(1).replace('-', ' ').split(' ');
+          const matchingPosts = posts.filter(p => {
+             const rawStr = [
+               p.title?.rendered,
+               p.content?.rendered,
+               JSON.stringify(p.taxonomies)
+             ].join(" ").toLowerCase();
+             return searchTerms.some(term => rawStr.includes(term));
+          });
+          
+          // Combine matches first, then pad with other posts, and slice
+          filteredPosts = Array.from(new Set([...matchingPosts, ...posts])).slice(0, 100);
+        } else {
+          filteredPosts = posts.slice(0, 100);
+        }
+        
+        return filteredPosts.map(p => mapWPPostToProperty(p, true));
+      }
+    } catch (e) {
+      console.error("Prerender JSON fallback failed for all properties", e);
+    }
+    // NEVER fall back to the live API during prerendering to prevent crashes
+    return [];
+  }
+
   const firstUrl = `${WP_API_BASE}/anunturi?per_page=100&page=1`;
   const firstResponse = await fetch(firstUrl);
   
@@ -247,6 +293,19 @@ export interface TaxonomyResponse {
 }
 
 export async function fetchTaxonomies(): Promise<TaxonomyResponse> {
+  if (isPrerendering()) {
+    try {
+      const res = await fetch('/prerender-taxonomies.json');
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.error("Prerender JSON fallback failed for taxonomies", e);
+    }
+    // NEVER fall back to live API during prerendering
+    return { property_city: [], property_type: [], property_status: [] };
+  }
+
   const response = await fetch(`${WP_API_BASE}/taxonomii`);
   if (!response.ok) {
     throw new Error(`Failed to fetch taxonomies: ${response.status}`);
@@ -256,6 +315,39 @@ export async function fetchTaxonomies(): Promise<TaxonomyResponse> {
 
 /** Fetch initial batch of properties (fast first paint) */
 export async function fetchInitialProperties(limit = 9): Promise<Property[]> {
+  if (isPrerendering()) {
+    try {
+      const res = await fetch('/prerender-properties.json');
+      if (res.ok) {
+        const posts: WPPost[] = await res.json();
+        // Memory Optimization & SEO Relevance for Prerender
+        const pathname = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
+        let filteredPosts = posts;
+        
+        if (pathname !== '/' && pathname !== '/proprietati' && pathname.length > 1) {
+          const searchTerms = pathname.substring(1).replace('-', ' ').split(' ');
+          const matchingPosts = posts.filter(p => {
+             const rawStr = [
+               p.title?.rendered,
+               p.content?.rendered,
+               JSON.stringify(p.taxonomies)
+             ].join(" ").toLowerCase();
+             return searchTerms.some(term => rawStr.includes(term));
+          });
+          filteredPosts = Array.from(new Set([...matchingPosts, ...posts])).slice(0, limit);
+        } else {
+          filteredPosts = posts.slice(0, limit);
+        }
+        
+        return filteredPosts.map(p => mapWPPostToProperty(p, true));
+      }
+    } catch (e) {
+      console.error("Prerender JSON fallback failed for initial properties", e);
+    }
+    // NEVER fall back to live API during prerendering
+    return [];
+  }
+
   const url = `${WP_API_BASE}/anunturi?limit=${limit}`;
   const response = await fetch(url);
   if (!response.ok) {
