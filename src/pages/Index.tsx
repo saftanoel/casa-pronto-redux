@@ -43,7 +43,7 @@ const Index = () => {
 
   return (
     <SearchProvider properties={properties} isLoading={isLoading}>
-      
+
       {/* NOU: Folosim Helmet pentru un SEO perfect pe Homepage */}
       <Helmet>
         <title>Casa Pronto | Agenție Imobiliară Alba Iulia</title>

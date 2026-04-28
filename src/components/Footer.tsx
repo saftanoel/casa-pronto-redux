@@ -14,14 +14,23 @@ const Footer = () => {
       email: "casa_pronto@yahoo.com",
     },
     propertyTypes: [
-      { label: "Apartamente", category: "apartamente" },
-      { label: "Case", category: "case" },
-      { label: "Terenuri", category: "terenuri" },
-      { label: "Spații Comerciale", category: "spatii-comerciale" },
-      { label: "Garsoniere", category: "garsoniere" },
-      { label: "Vile", category: "vile" },
-      { label: "Proiecte Rezidențiale", category: "proiecte-rezidentiale" },
+      { label: "Apartamente", href: "/apartamente" },
+      { label: "Case", href: "/case" },
+      { label: "Terenuri", href: "/terenuri" },
+      { label: "Spații Comerciale", href: "/spatii-comerciale" },
+      { label: "Garsoniere", href: "/garsoniere" },
+      { label: "Vile", href: "/vile" },
+      { label: "Hale", href: "/hale" },
+      { label: "Birouri", href: "/birouri" },
     ],
+    popularSearches: [
+      { label: "Apartamente Alba Micesti", href: "/apartamente-alba-micesti" },
+      { label: "Apartamente Cetate", href: "/apartamente-cetate" },
+      { label: "Case Alba Micesti", href: "/case-alba-micesti" },
+      { label: "Case Cetate", href: "/case-cetate" },
+      { label: "Terenuri Micesti", href: "/terenuri-micesti" },
+      { label: "Garsoniere Centru", href: "/garsoniere-centru" },
+    ]
   };
 
 
@@ -76,7 +85,24 @@ const Footer = () => {
               {links.propertyTypes.map((link) => (
                 <li key={link.label}>
                   <Link
-                    to={`/proprietati?category=${link.category}`}
+                    to={link.href}
+                    className="text-background/70 hover:text-primary transition-colors text-sm"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Cautari Populare (SEO) */}
+          <div>
+            <h4 className="font-serif font-semibold text-lg mb-5">Căutări frecvente</h4>
+            <ul className="space-y-2.5">
+              {links.popularSearches.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    to={link.href}
                     className="text-background/70 hover:text-primary transition-colors text-sm"
                   >
                     {link.label}
