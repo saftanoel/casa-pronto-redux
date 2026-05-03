@@ -3,7 +3,7 @@ import { type Property } from "@/data/properties";
 export const WP_API_BASE = import.meta.env.VITE_API_BASE_URL || "https://casapronto.ro/wp-json/casapronto/v1";
 
 
-console.log("MAGIE SAU EROARE? URL-UL ESTE:", WP_API_BASE);   
+console.log("MAGIE SAU EROARE? URL-UL ESTE:", WP_API_BASE);
 
 if (!WP_API_BASE) {
   console.error("Lipsește VITE_API_BASE_URL din fișierul .env!");
@@ -22,10 +22,17 @@ export interface WPPost {
   id: number;
   slug?: string;
   date: string;
-  title: { rendered: string };  
+  title: { rendered: string };
   content: { rendered: string };
   featured_media: number;
   gallery_urls?: string[];
+  gallery_data?: Array<{
+    full: string;
+    medium_large?: string;
+    medium?: string;
+    webp?: string;
+    thumbnail?: string;
+  }>;
   taxonomies?: {
     property_type?: string[];
     property_status?: string[];
@@ -49,6 +56,15 @@ export interface WPPost {
         };
       };
     }>;
+  };
+  seo?: {
+    title?: string;
+    description?: string;
+    canonical_url?: string;
+    og_image?: string;
+    og_title?: string;
+    og_description?: string;
+    noindex?: boolean;
   };
 }
 
@@ -159,9 +175,17 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
   const baths = details?.bathrooms ?? 0;
   const area = details?.area ?? 0;
 
-  const galleryImages = post.gallery_urls && post.gallery_urls.length > 0
+  let finalFeaturedImage = featuredImage;
+  let galleryImages = post.gallery_urls && post.gallery_urls.length > 0
     ? post.gallery_urls
     : [featuredImage];
+  let fullImages = galleryImages;
+
+  if (post.gallery_data && post.gallery_data.length > 0) {
+    galleryImages = post.gallery_data.map(img => img.webp || img.medium_large || img.medium || img.full);
+    fullImages = post.gallery_data.map(img => img.full);
+    finalFeaturedImage = galleryImages[0];
+  }
 
   const taxonomies = {
     property_type: post.taxonomies?.property_type ?? [],
@@ -171,12 +195,14 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
 
   return {
     id: post.id,
-    image: featuredImage,
+    image: finalFeaturedImage,
     images: galleryImages,
+    fullImages,
     title,
     description: contentText.trim(),
     location,
     zone,
+    seo: post.seo,
     price,
     priceValue,
     beds,
@@ -196,15 +222,15 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
 export async function fetchPropertiesPaginated(page = 1, perPage = PER_PAGE_LIST): Promise<PaginatedResult> {
   const url = `${WP_API_BASE}/anunturi?per_page=${perPage}&page=${page}`;
   const response = await fetch(url);
-  
+
   if (!response.ok) {
     throw new Error(`Failed to fetch properties: ${response.status}`);
   }
-  
+
   const totalPages = parseInt(response.headers.get("X-WP-TotalPages") || "1");
   const totalItems = parseInt(response.headers.get("X-WP-Total") || "0");
   const posts: WPPost[] = await response.json();
-  
+
   return {
     properties: posts.map(p => mapWPPostToProperty(p, true)),
     totalPages,
@@ -219,31 +245,31 @@ export async function fetchAllProperties(): Promise<Property[]> {
       const res = await fetch('/prerender-properties.json');
       if (res.ok) {
         const posts: WPPost[] = await res.json();
-        
+
         // Memory Optimization for Prerender:
         // Instead of processing 4700+ properties for EVERY page, we limit the array
         // to a smaller chunk (e.g., 100 items) to prevent Chromium OOM crashes.
         // To ensure subcategories (like /case-oarda) aren't empty, we filter first.
         const pathname = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
         let filteredPosts = posts;
-        
+
         if (pathname !== '/' && pathname !== '/proprietati' && pathname.length > 1) {
           const searchTerms = pathname.substring(1).replace('-', ' ').split(' ');
           const matchingPosts = posts.filter(p => {
-             const rawStr = [
-               p.title?.rendered,
-               p.content?.rendered,
-               JSON.stringify(p.taxonomies)
-             ].join(" ").toLowerCase();
-             return searchTerms.some(term => rawStr.includes(term));
+            const rawStr = [
+              p.title?.rendered,
+              p.content?.rendered,
+              JSON.stringify(p.taxonomies)
+            ].join(" ").toLowerCase();
+            return searchTerms.some(term => rawStr.includes(term));
           });
-          
+
           // Combine matches first, then pad with other posts, and slice
           filteredPosts = Array.from(new Set([...matchingPosts, ...posts])).slice(0, 100);
         } else {
           filteredPosts = posts.slice(0, 100);
         }
-        
+
         return filteredPosts.map(p => mapWPPostToProperty(p, true));
       }
     } catch (e) {
@@ -253,26 +279,27 @@ export async function fetchAllProperties(): Promise<Property[]> {
     return [];
   }
 
-  const firstUrl = `${WP_API_BASE}/anunturi?per_page=100&page=1`;
+  const PER_PAGE = 10;
+  const firstUrl = `${WP_API_BASE}/anunturi?per_page=${PER_PAGE}&page=1`;
   const firstResponse = await fetch(firstUrl);
-  
+
   if (!firstResponse.ok) {
     throw new Error(`Failed to fetch properties: ${firstResponse.status}`);
   }
-  
+
   const totalPages = parseInt(firstResponse.headers.get("X-WP-TotalPages") || "1");
   const firstBatch: WPPost[] = await firstResponse.json();
   let allPosts = [...firstBatch];
-  
+
   if (totalPages > 1) {
-    // Mobile optimization (only 5 pages are loading in the background and so on)
-    const chunkSize = 5; 
-    
+    // Mobile optimization (only 1 page is loading in the background to prevent timeouts)
+    const chunkSize = 1;
+
     for (let i = 2; i <= totalPages; i += chunkSize) {
       const chunkPromises = [];
       for (let j = i; j < i + chunkSize && j <= totalPages; j++) {
         chunkPromises.push(
-          fetch(`${WP_API_BASE}/anunturi?per_page=100&page=${j}`)
+          fetch(`${WP_API_BASE}/anunturi?per_page=${PER_PAGE}&page=${j}`)
             .then(r => r.json() as Promise<WPPost[]>)
         );
       }
@@ -282,14 +309,29 @@ export async function fetchAllProperties(): Promise<Property[]> {
       }
     }
   }
-  
+
   return allPosts.map(p => mapWPPostToProperty(p, true));
 }
 /** Fetch taxonomy options from the dedicated fast endpoint */
+export interface TaxonomyTerm {
+  slug: string;
+  name: string;
+  description?: string;
+  seo?: {
+    title?: string;
+    description?: string;
+    canonical_url?: string;
+    og_image?: string;
+    og_title?: string;
+    og_description?: string;
+    noindex?: boolean;
+  };
+}
+
 export interface TaxonomyResponse {
-  property_city: string[];
-  property_type: string[];
-  property_status: string[];
+  property_city: Array<TaxonomyTerm | string>;
+  property_type: Array<TaxonomyTerm | string>;
+  property_status: Array<TaxonomyTerm | string>;
 }
 
 export async function fetchTaxonomies(): Promise<TaxonomyResponse> {
@@ -323,22 +365,22 @@ export async function fetchInitialProperties(limit = 9): Promise<Property[]> {
         // Memory Optimization & SEO Relevance for Prerender
         const pathname = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
         let filteredPosts = posts;
-        
+
         if (pathname !== '/' && pathname !== '/proprietati' && pathname.length > 1) {
           const searchTerms = pathname.substring(1).replace('-', ' ').split(' ');
           const matchingPosts = posts.filter(p => {
-             const rawStr = [
-               p.title?.rendered,
-               p.content?.rendered,
-               JSON.stringify(p.taxonomies)
-             ].join(" ").toLowerCase();
-             return searchTerms.some(term => rawStr.includes(term));
+            const rawStr = [
+              p.title?.rendered,
+              p.content?.rendered,
+              JSON.stringify(p.taxonomies)
+            ].join(" ").toLowerCase();
+            return searchTerms.some(term => rawStr.includes(term));
           });
           filteredPosts = Array.from(new Set([...matchingPosts, ...posts])).slice(0, limit);
         } else {
           filteredPosts = posts.slice(0, limit);
         }
-        
+
         return filteredPosts.map(p => mapWPPostToProperty(p, true));
       }
     } catch (e) {

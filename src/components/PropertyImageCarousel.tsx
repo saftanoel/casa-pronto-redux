@@ -9,6 +9,7 @@ interface PropertyImageCarouselProps {
   className?: string;
   aspectClass?: string;
   children?: React.ReactNode; // For overlaying badges, price, etc.
+  priority?: boolean;
 }
 
 const PropertyImageCarousel = ({
@@ -17,6 +18,7 @@ const PropertyImageCarousel = ({
   className,
   aspectClass = "aspect-[4/3]",
   children,
+  priority,
 }: PropertyImageCarouselProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, skipSnaps: false });
   const [activeIndex, setActiveIndex] = useState(0);
@@ -50,7 +52,7 @@ const PropertyImageCarousel = ({
   if (images.length <= 1) {
     return (
       <div className={cn("relative overflow-hidden", aspectClass, className)}>
-        <img src={images[0]} alt={alt} className="w-full h-full object-cover object-center" loading="lazy" />
+        <img src={images[0]} alt={alt} className="w-full h-full object-cover object-center" loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} />
         {children}
       </div>
     );
@@ -72,7 +74,8 @@ const PropertyImageCarousel = ({
                 alt={`${alt} - ${i + 1}`}
                 className="w-full h-full object-cover object-center"
                 draggable={false}
-                loading="lazy"
+                loading={priority && i === 0 ? "eager" : "lazy"}
+                fetchPriority={priority && i === 0 ? "high" : "auto"}
               />
             </div>
           ))}

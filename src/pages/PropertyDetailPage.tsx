@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useCallback, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { ChevronRight, ChevronLeft, MapPin, Bed, Bath, Square, Phone, Mail, Share2, ArrowLeft } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -173,6 +174,17 @@ const PropertyDetailPage = () => {
   return (
     <SearchProvider>
       <div className="min-h-screen flex flex-col">
+        <Helmet>
+          <title>{property.seo?.title || `${property.title} | Casa Pronto`}</title>
+          {property.seo?.description && <meta name="description" content={property.seo.description} />}
+          {property.seo?.canonical_url && <link rel="canonical" href={property.seo.canonical_url} />}
+          <meta property="og:title" content={property.seo?.og_title || property.seo?.title || property.title} />
+          <meta property="og:description" content={property.seo?.og_description || property.seo?.description || property.description} />
+          <meta property="og:image" content={property.seo?.og_image || property.image} />
+          <meta property="og:type" content="article" />
+          {property.seo?.noindex && <meta name="robots" content="noindex, nofollow" />}
+        </Helmet>
+        
         <Header />
 
         {/* Page Header */}
@@ -201,6 +213,7 @@ const PropertyDetailPage = () => {
                 <div className="relative">
                   <PropertyGallery
                     images={property.images}
+                    fullImages={property.fullImages}
                     title={property.title}
                     type={property.type}
                     isNew={property.isNew}

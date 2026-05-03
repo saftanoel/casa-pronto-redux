@@ -6,12 +6,14 @@ import { cn } from "@/lib/utils";
 
 interface PropertyGalleryProps {
   images: string[];
+  fullImages?: string[];
   title: string;
   type: string;
   isNew?: boolean;
 }
 
-const PropertyGallery = ({ images, title, type, isNew }: PropertyGalleryProps) => {
+const PropertyGallery = ({ images, fullImages, title, type, isNew }: PropertyGalleryProps) => {
+  const lightboxImages = fullImages && fullImages.length > 0 ? fullImages : images;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, skipSnaps: false });
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -104,7 +106,8 @@ const PropertyGallery = ({ images, title, type, isNew }: PropertyGalleryProps) =
                     alt={`${title} - ${i + 1}`}
                     className="w-full h-full object-cover"
                     draggable={false}
-                    loading="lazy"
+                    loading={i === 0 ? "eager" : "lazy"}
+                    fetchPriority={i === 0 ? "high" : "auto"}
                   />
                 </div>
               ))}
@@ -207,7 +210,7 @@ const PropertyGallery = ({ images, title, type, isNew }: PropertyGalleryProps) =
 
           {/* Image */}
           <img
-            src={images[lightboxIndex]}
+            src={lightboxImages[lightboxIndex]}
             alt={`${title} - ${lightboxIndex + 1}`}
             className="max-w-[90vw] max-h-[85vh] object-contain select-none"
             onClick={(e) => e.stopPropagation()}
