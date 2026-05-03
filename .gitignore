@@ -32,3 +32,8 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Build artifacts and generated cache
+*.zip
+public/prerender-properties.json
+public/prerender-taxonomies.json
