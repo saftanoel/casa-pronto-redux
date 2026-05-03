@@ -6,7 +6,9 @@ export interface TaxonomyOption {
   label: string;
 }
 
-function toSlug(str: string): string {
+function toSlug(input: any): string {
+  if (!input) return "";
+  const str = typeof input === "string" ? input : (input?.name || "");
   return str
     .toLowerCase()
     .replace(/ă/g, "a").replace(/â/g, "a").replace(/î/g, "i")
@@ -21,8 +23,9 @@ function extractUnique(properties: Property[], key: "property_type" | "property_
     const terms = p.taxonomies?.[key] ?? [];
     for (const term of terms) {
       const slug = toSlug(term);
-      if (!seen.has(slug)) {
-        seen.set(slug, term);
+      const name = typeof term === "string" ? term : (term?.name || "");
+      if (!seen.has(slug) && name) {
+        seen.set(slug, name);
       }
     }
   }

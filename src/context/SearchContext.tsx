@@ -67,7 +67,10 @@ function matchesRooms(property: Property, roomsFilter: string): boolean {
 function matchesTab(property: Property, tab: FilterTab): boolean {
   if (tab === "toate") return true;
   const statuses = property.taxonomies?.property_status ?? [];
-  const slugs = statuses.map(s => s.toLowerCase());
+  const slugs = statuses.map((s: any) => {
+    const val = typeof s === 'string' ? s : (s?.name || "");
+    return val.toLowerCase();
+  });
   switch (tab) {
     case "cumparare": return slugs.some(s => s.includes("cumpar") || s.includes("vanzar") || s.includes("vânzar"));
     case "inchiriere": return slugs.some(s => s.includes("inchiri") || s.includes("închiri"));

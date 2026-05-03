@@ -26,9 +26,10 @@ import type { TaxonomyTerm } from "@/lib/api/wordpress";
 type RawTaxonomy = TaxonomyTerm | string;
 type ParsedTaxonomy = { value: string; label: string; termData?: TaxonomyTerm };
 
-function toSlug(str: string): string {
-  if (!str) return "";
-  return String(str)
+function toSlug(input: any): string {
+  if (!input) return "";
+  const str = typeof input === "string" ? input : (input?.name || "");
+  return str
     .toLowerCase()
     .replace(/ă/g, "a").replace(/â/g, "a").replace(/î/g, "i")
     .replace(/ș/g, "s").replace(/ț/g, "t")

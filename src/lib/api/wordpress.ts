@@ -86,10 +86,13 @@ function extractType(title: string): "Vânzare" | "Închiriere" | "Vândut" {
   return "Vânzare";
 }
 
-function extractTypeWithTaxonomy(title: string, statuses?: string[]): "Vânzare" | "Închiriere" | "Vândut" {
+function extractTypeWithTaxonomy(title: string, statuses?: any[]): "Vânzare" | "Închiriere" | "Vândut" {
   // Check taxonomies first — they are the source of truth
   if (statuses && statuses.length > 0) {
-    const slugs = statuses.map(s => s.toLowerCase());
+    const slugs = statuses.map(s => {
+      const val = typeof s === 'string' ? s : (s?.name || "");
+      return val.toLowerCase();
+    });
     if (slugs.some(s => s.includes("vandu") || s.includes("vându") || s.includes("vandut") || s.includes("vândut"))) return "Vândut";
     if (slugs.some(s => s.includes("inchiri") || s.includes("închiri"))) return "Închiriere";
     if (slugs.some(s => s.includes("cumpar") || s.includes("vanzar") || s.includes("vânzar"))) return "Vânzare";
