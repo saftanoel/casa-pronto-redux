@@ -40,6 +40,7 @@ const FeaturedProperties = () => {
               <PropertyCard
                 key={property.id}
                 {...property}
+                priority={index < 2}
                 className="animate-fade-up"
                 style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
               />

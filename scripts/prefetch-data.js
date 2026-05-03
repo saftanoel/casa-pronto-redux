@@ -8,7 +8,8 @@ const PUBLIC_DIR = path.resolve(process.cwd(), 'public');
 async function fetchAllProperties() {
   console.log("Starting to fetch all properties from WordPress...");
 
-  const firstUrl = `${WP_API_BASE}/anunturi?per_page=100&page=1`;
+  const PER_PAGE = 10;
+  const firstUrl = `${WP_API_BASE}/anunturi?per_page=${PER_PAGE}&page=1`;
   const firstResponse = await fetch(firstUrl);
 
   if (!firstResponse.ok) {
@@ -23,13 +24,13 @@ async function fetchAllProperties() {
   let allPosts = [...firstBatch];
 
   if (totalPages > 1) {
-    const chunkSize = 5;
+    const chunkSize = 1; // reduced to 1 for fully serial requests to prevent HeadersTimeout
 
     for (let i = 2; i <= totalPages; i += chunkSize) {
       const chunkPromises = [];
       for (let j = i; j < i + chunkSize && j <= totalPages; j++) {
         chunkPromises.push(
-          fetch(`${WP_API_BASE}/anunturi?per_page=100&page=${j}`)
+          fetch(`${WP_API_BASE}/anunturi?per_page=${PER_PAGE}&page=${j}`)
             .then(r => r.json())
         );
       }

@@ -18,6 +18,7 @@ interface PropertyCardProps {
   isNew?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  priority?: boolean;
 }
 
 const PropertyCard = ({
@@ -34,6 +35,7 @@ const PropertyCard = ({
   isNew = false,
   className,
   style,
+  priority,
 }: PropertyCardProps) => {
   const allImages = images && images.length > 0 ? images : [image];
   return (
@@ -46,7 +48,7 @@ const PropertyCard = ({
         style={style}
       >
         {/* Image Carousel */}
-        <PropertyImageCarousel images={allImages} alt={title} aspectClass="aspect-[4/3]">
+        <PropertyImageCarousel images={allImages} alt={title} aspectClass="aspect-[4/3]" priority={priority}>
           {/* Overlay badges (Stânga Sus) */}
           <div className="absolute top-4 left-4 flex gap-2 pointer-events-none z-[5]">
             <Badge

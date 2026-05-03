@@ -90,6 +90,11 @@ async function processBatch(batchRoutes, batchIndex) {
       try {
         page = await browser.newPage();
 
+        // Pass browser console to Node terminal
+        page.on('console', msg => console.log(`[Browser Console] ${msg.type().toUpperCase()} ${msg.text()}`));
+        page.on('pageerror', err => console.error(`[Browser Error] ${err.toString()}`));
+        page.on('requestfailed', request => console.error(`[Browser Request Failed] ${request.url()} - ${request.failure()?.errorText}`));
+
         // Aggressive Network Interception
         await page.setRequestInterception(true);
         page.on('request', request => {

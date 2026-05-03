@@ -21,12 +21,14 @@ type FilterTab = "toate" | "cumparare" | "inchiriere" | "vandute";
 type ViewMode = "grid" | "list";
 type SortOption = "newest" | "oldest" | "price-high" | "price-low";
 
-// Tipuri adăugate pentru a fixa erorile TypeScript (fără "any")
-type RawTaxonomy = { slug?: string; name?: string } | string;
-type ParsedTaxonomy = { value: string; label: string };
+import type { TaxonomyTerm } from "@/lib/api/wordpress";
+
+type RawTaxonomy = TaxonomyTerm | string;
+type ParsedTaxonomy = { value: string; label: string; termData?: TaxonomyTerm };
 
 function toSlug(str: string): string {
-  return str
+  if (!str) return "";
+  return String(str)
     .toLowerCase()
     .replace(/ă/g, "a").replace(/â/g, "a").replace(/î/g, "i")
     .replace(/ș/g, "s").replace(/ț/g, "t")
@@ -37,7 +39,10 @@ function toSlug(str: string): string {
 function matchTab(p: Property, tab: FilterTab): boolean {
   if (tab === "toate") return true;
   const statuses = p.taxonomies?.property_status ?? [];
-  const statusSlugs = statuses.map(s => s.toLowerCase());
+  const statusSlugs = statuses.map((s: any) => {
+    const val = typeof s === 'string' ? s : (s?.name || "");
+    return val.toLowerCase();
+  });
   switch (tab) {
     case "cumparare": return statusSlugs.some(s => s.includes("cumpar") || s.includes("vanzar") || s.includes("vânzar"));
     case "inchiriere": return statusSlugs.some(s => s.includes("inchiri") || s.includes("închiri"));
@@ -46,7 +51,7 @@ function matchTab(p: Property, tab: FilterTab): boolean {
   }
 }
 
-const PropertyRow = ({ property, search }: { property: Property; search: string }) => (
+const PropertyRow = ({ property, search, priority }: { property: Property; search: string; priority?: boolean }) => (
   <Link to={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 flex flex-col md:flex-row animate-fade-up">
       <PropertyImageCarousel
@@ -54,6 +59,7 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
         alt={property.title}
         className="md:w-80 flex-shrink-0 relative"
         aspectClass="aspect-[4/3] md:aspect-auto md:min-h-[200px]"
+        priority={priority}
       >
         <div className="absolute top-3 left-3 flex gap-2 pointer-events-none z-[5]">
           <Badge variant={property.type === "Vânzare" ? "default" : property.type === "Închiriere" ? "secondary" : "outline"}
@@ -126,13 +132,14 @@ const PropertyRow = ({ property, search }: { property: Property; search: string 
   </Link>
 );
 
-const PropertyGrid = ({ property, search }: { property: Property; search: string }) => (
+const PropertyGrid = ({ property, search, priority }: { property: Property; search: string; priority?: boolean }) => (
   <Link to={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 animate-fade-up">
       <PropertyImageCarousel
         images={property.images?.length > 0 ? property.images : [property.image]}
         alt={property.title}
         aspectClass="aspect-[4/3]"
+        priority={priority}
       >
         <div className="absolute top-3 left-3 flex gap-2 pointer-events-none z-[5]">
           <Badge variant={property.type === "Vânzare" ? "default" : property.type === "Închiriere" ? "secondary" : "outline"}
@@ -302,38 +309,49 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
     return () => clearTimeout(timer);
   }, []);
 
-  // TypeScript tipizat corect pentru zones
   const zones = useMemo(() => {
     const rawZones = taxonomyData?.property_city || [];
     return rawZones.map((z: RawTaxonomy) => {
-      const label = (typeof z === 'object' && z !== null && z.name) ? z.name : (typeof z === 'string' ? z : "");
-      const slug = (typeof z === 'object' && z !== null && z.slug) ? z.slug : "";
+      const isObj = typeof z === 'object' && z !== null;
+      const label = isObj && z.name ? z.name : (typeof z === 'string' ? z : "");
+      const slug = isObj && z.slug ? z.slug : "";
       return {
         value: slug || toSlug(label),
-        label: label
+        label: label,
+        termData: isObj ? z : undefined
       };
     }).filter((item: ParsedTaxonomy) => item.label !== "")
       .sort((a: ParsedTaxonomy, b: ParsedTaxonomy) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
 
-  // TypeScript tipizat corect pentru propertyTypes
   const propertyTypes = useMemo(() => {
     const rawTypes = taxonomyData?.property_type || [];
     return rawTypes.map((t: RawTaxonomy) => {
-      const label = (typeof t === 'object' && t !== null && t.name) ? t.name : (typeof t === 'string' ? t : "");
-      const slug = (typeof t === 'object' && t !== null && t.slug) ? t.slug : "";
+      const isObj = typeof t === 'object' && t !== null;
+      const label = isObj && t.name ? t.name : (typeof t === 'string' ? t : "");
+      const slug = isObj && t.slug ? t.slug : "";
       return {
         value: slug || toSlug(label),
-        label: label
+        label: label,
+        termData: isObj ? t : undefined
       };
     }).filter((item: ParsedTaxonomy) => item.label !== "")
       .sort((a: ParsedTaxonomy, b: ParsedTaxonomy) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
 
-  const statuses = useMemo(() =>
-    (taxonomyData?.property_status ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label, "ro")),
-    [taxonomyData]
-  );
+  const statuses = useMemo(() => {
+    const rawStatuses = taxonomyData?.property_status || [];
+    return rawStatuses.map((s: RawTaxonomy) => {
+      const isObj = typeof s === 'object' && s !== null;
+      const label = isObj && s.name ? String(s.name) : (typeof s === 'string' ? s : "");
+      const slug = isObj && s.slug ? String(s.slug) : "";
+      return {
+        value: slug || toSlug(label),
+        label: label
+      };
+    }).filter(item => item.label !== "")
+      .sort((a, b) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData]);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
@@ -573,13 +591,36 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
   const filterSelectsProps = { category, setCategory, propertyTypes, zone, setZone, zones, searchQuery, setSearchQuery };
 
+  const activeTerm = useMemo(() => {
+    if (routeZone) return zones.find(z => z.value === routeZone)?.termData;
+    if (routeCategory) return propertyTypes.find(c => c.value === routeCategory)?.termData;
+    return undefined;
+  }, [routeZone, routeCategory, zones, propertyTypes]);
+
+  const seoTitle = activeTerm?.seo?.title || getPageTitle();
+  const seoDesc = activeTerm?.seo?.description || `Vezi cele mai noi oferte de ${category ? category.replace('-', ' ') : 'proprietăți imobiliare'} din Alba Iulia. Găsește-ți casa de vis cu Casa Pronto!`;
+  const canonical = activeTerm?.seo?.canonical_url || `https://casapronto.ro/${routeCategory ? `${routeCategory}${routeZone ? `-${routeZone}` : ''}` : 'proprietati'}`;
+  const ogTitle = activeTerm?.seo?.og_title || seoTitle;
+  const ogDesc = activeTerm?.seo?.og_description || seoDesc;
+
   return (
     <SearchProvider properties={initialProperties} isLoading={isLoadingInitial}>
       
       {/* MAGIA SEO PENTRU GOOGLEBOT */}
       <Helmet>
-        <title>{getPageTitle()}</title>
-        <meta name="description" content={`Vezi cele mai noi oferte de ${category ? category.replace('-', ' ') : 'proprietăți imobiliare'} din Alba Iulia. Găsește-ți casa de vis cu Casa Pronto!`} />
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDesc} />
+        
+        {/* Canonical Link */}
+        <link rel="canonical" href={canonical} />
+        
+        {/* OpenGraph */}
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDesc} />
+        {activeTerm?.seo?.og_image && <meta property="og:image" content={activeTerm.seo.og_image} />}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonical} />
+        {activeTerm?.seo?.noindex && <meta name="robots" content="noindex, nofollow" />}
       </Helmet>
 
       <div className="min-h-screen flex flex-col">
@@ -589,7 +630,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
         <div className="bg-muted/50 pt-36 pb-8 border-b border-border">
           <div className="container mx-auto px-4">
             <h1 className="font-serif text-3xl md:text-4xl font-bold">{getCategoryLabel()} Alba Iulia</h1>
-            <nav className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
+            <nav className="flex items-center gap-2 mt-3 text-sm text-muted-foreground mb-6">
               <Link to="/" className="hover:text-primary transition-colors">Casa Pronto</Link>
               <ChevronRight className="h-3.5 w-3.5" />
               <Link to="/proprietati" onClick={resetAllFilters} className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
@@ -600,6 +641,13 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
                 </>
               )}
             </nav>
+            {/* Term Description Box */}
+            {activeTerm?.description && (
+              <div 
+                className="prose prose-sm md:prose-base max-w-4xl text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: activeTerm.description }}
+              />
+            )}
           </div>
         </div>
 
@@ -754,14 +802,14 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
                   <>
                     {viewMode === "list" ? (
                       <div className="flex flex-col gap-6">
-                        {currentItems.map((property) => (
-                          <PropertyRow key={property.id} property={property} search={currentSearch} />
+                        {currentItems.map((property, index) => (
+                          <PropertyRow key={property.id} property={property} search={currentSearch} priority={index < 2} />
                         ))}
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-                        {currentItems.map((property) => (
-                          <PropertyGrid key={property.id} property={property} search={currentSearch} />
+                        {currentItems.map((property, index) => (
+                          <PropertyGrid key={property.id} property={property} search={currentSearch} priority={index < 2} />
                         ))}
                       </div>
                     )}

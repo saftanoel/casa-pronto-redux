@@ -1,4 +1,14 @@
 
+export interface PropertySEO {
+  title?: string;
+  description?: string;
+  canonical_url?: string;
+  og_image?: string;
+  og_title?: string;
+  og_description?: string;
+  noindex?: boolean;
+}
+
 export interface PropertyTaxonomies {
   property_type: string[];
   property_status: string[];
@@ -9,6 +19,7 @@ export interface Property {
   id: number;
   image: string;
   images: string[];
+  fullImages?: string[];
   title: string;
   description: string;
   location: string;
@@ -25,5 +36,6 @@ export interface Property {
   agent: string;
   date?: string;
   taxonomies?: PropertyTaxonomies;
+  seo?: PropertySEO;
 }
 
