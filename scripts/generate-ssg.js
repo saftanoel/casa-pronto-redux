@@ -108,29 +108,27 @@ async function processBatch(batchRoutes, batchIndex) {
           }
         });
 
-        // Strict 30s Global Timeout for the entire route
+        // Strict 20s Global Timeout for the entire route
         await Promise.race([
           (async () => {
-            // Step 1: navigate and wait for ALL network requests (incl. lazy chunks) to settle
-            await page.goto(url, { waitUntil: 'networkidle0', timeout: 25000 });
+            // domcontentloaded is enough — all JS is bundled synchronously (no lazy chunks)
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
 
-            // Step 2: wait until #root actually has content — polls every 200ms up to 10s.
-            // This is the bulletproof guard against Suspense snapshots firing too early.
+            // Wait until #root has actual content — guards against React not finishing render
             await page.waitForFunction(
               () => {
                 const root = document.getElementById('root');
                 return root && root.children.length > 0 && root.innerText.trim().length > 50;
               },
-              { timeout: 10000, polling: 200 }
+              { timeout: 8000, polling: 200 }
             ).catch(() => {
-              // Non-fatal: if root never fills we still grab whatever HTML is present
               console.warn('[SSG] #root did not populate fully — snapshotting anyway');
             });
 
-            // Step 3: extra 500ms buffer for animations / React commit phase
+            // Small buffer for animations / final React commit
             await new Promise(resolve => setTimeout(resolve, 500));
           })(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Global Route Timeout (30s)")), 30000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Global Route Timeout (20s)")), 20000))
         ]);
 
       } catch (err) {
@@ -246,7 +244,7 @@ Theme Name: Casa Pronto Imobiliare (React SPA)
 Theme URI: https://casapronto.ro
 Author: Safta Noel
 Description: Tema custom ultra-rapida bazata pe React pentru agentia Casa Pronto Alba Iulia. Static Site Generated(SSG) cu Puppeteer & Vite.
-Version: 7.0.0
+Version: 7.2.0
 License: Proprietary
 Text Domain: casapronto
 */`;

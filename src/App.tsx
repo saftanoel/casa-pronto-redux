@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect } from "react";
 import { useLocation, BrowserRouter, Routes, Route } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
@@ -13,20 +13,11 @@ import About from "@/components/About";
 import Services from "@/components/Services";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import PropertiesPage from "./pages/PropertiesPage";
+import PropertyDetailPage from "./pages/PropertyDetailPage";
+import NotFound from "./pages/NotFound";
 import { SearchProvider } from "@/context/SearchContext";
 import { useProperties, useAllProperties } from "@/hooks/useProperties";
-
-// Route-level code splitting — these pages are only downloaded when navigated to
-const PropertiesPage = lazy(() => import("./pages/PropertiesPage"));
-const PropertyDetailPage = lazy(() => import("./pages/PropertyDetailPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-
-// Minimal fallback that won't cause layout shift
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-  </div>
-);
 
 const queryClient = new QueryClient();
 
@@ -89,7 +80,6 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
             <Routes>
             <Route path="/" element={<Index />} />
             {/* --- 1. CATEGORII PRINCIPALE (Top 8 din baza ta) --- */}
@@ -139,7 +129,6 @@ const App = () => (
             <Route path="/proprietate/:id" element={<PropertyDetailPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
