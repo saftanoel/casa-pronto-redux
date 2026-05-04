@@ -417,8 +417,8 @@ const PropertyDetailPage = () => {
 
         <Footer />
 
-        {/* Mobile Sticky Contact Bar */}
-        {isMobile && (
+        {/* Mobile Sticky Contact Bar — rendered only after hydration to prevent mismatch */}
+        {isMobile === true && (
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border shadow-[0_-4px_20px_-4px_hsl(0_0%_0%/0.1)] p-3 flex gap-3 md:hidden">
             <Button className="flex-1 gap-2 h-12 text-base" asChild>
               <a href="tel:0740197476">
@@ -436,7 +436,7 @@ const PropertyDetailPage = () => {
         )}
 
         {/* Spacer for sticky bar on mobile */}
-        {isMobile && <div className="h-[72px] md:hidden" />}
+        {isMobile === true && <div className="h-[72px] md:hidden" />}
       </div>
     </SearchProvider>
   );

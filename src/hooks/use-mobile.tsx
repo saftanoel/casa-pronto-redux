@@ -15,5 +15,8 @@ export function useIsMobile() {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  return !!isMobile;
+  // Return undefined until after hydration to prevent SSR mismatch errors #418/#423.
+  // Components should check `isMobile === true` (not just `isMobile`) before rendering
+  // mobile-only UI, so nothing renders on the server or first paint.
+  return isMobile;
 }
