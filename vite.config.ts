@@ -56,30 +56,7 @@ export default defineConfig(({ mode }) => {
       outDir: "dist",
       emptyOutDir: true,
       chunkSizeWarningLimit: 2000,
-      cssCodeSplit: false, // Single CSS file — critters will inline the critical subset
-      rollupOptions: {
-        output: {
-          // Aggressive manual chunking — heavy vendor libraries cached separately
-          manualChunks(id) {
-            if (id.includes("node_modules")) {
-              // React runtime — smallest, most cached chunk
-              if (id.includes("/react-dom/") || id.includes("/react/index")) return "vendor-react";
-              // Router
-              if (id.includes("react-router")) return "vendor-router";
-              // Data fetching
-              if (id.includes("@tanstack")) return "vendor-query";
-              // Radix UI component library (large)
-              if (id.includes("@radix-ui")) return "vendor-radix";
-              // Carousel / embla
-              if (id.includes("embla-carousel")) return "vendor-embla";
-              // Lucide icons (large)
-              if (id.includes("lucide-react")) return "vendor-icons";
-              // Everything else in node_modules
-              return "vendor-misc";
-            }
-          },
-        },
-      },
+      cssCodeSplit: false, // Single CSS file — Critters inlines the critical subset in SSG script
     },
   };
 });

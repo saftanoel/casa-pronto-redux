@@ -108,16 +108,29 @@ async function processBatch(batchRoutes, batchIndex) {
           }
         });
 
-        // Strict 15s Global Timeout for the entire route
+        // Strict 30s Global Timeout for the entire route
         await Promise.race([
           (async () => {
-            // Wait for domcontentloaded to ensure immediate resolution for SPA
-            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+            // Step 1: navigate and wait for ALL network requests (incl. lazy chunks) to settle
+            await page.goto(url, { waitUntil: 'networkidle0', timeout: 25000 });
 
-            // Dumb but bulletproof: Hardcoded 3-second wait to allow React to fully hydrate
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Step 2: wait until #root actually has content — polls every 200ms up to 10s.
+            // This is the bulletproof guard against Suspense snapshots firing too early.
+            await page.waitForFunction(
+              () => {
+                const root = document.getElementById('root');
+                return root && root.children.length > 0 && root.innerText.trim().length > 50;
+              },
+              { timeout: 10000, polling: 200 }
+            ).catch(() => {
+              // Non-fatal: if root never fills we still grab whatever HTML is present
+              console.warn('[SSG] #root did not populate fully — snapshotting anyway');
+            });
+
+            // Step 3: extra 500ms buffer for animations / React commit phase
+            await new Promise(resolve => setTimeout(resolve, 500));
           })(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Global Route Timeout (15s)")), 15000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Global Route Timeout (30s)")), 30000))
         ]);
 
       } catch (err) {
