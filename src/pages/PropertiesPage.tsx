@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useTransition } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
@@ -355,6 +355,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   }, [taxonomyData]);
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -415,16 +416,32 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   }, [searchParams, routeCategory, routeZone]);
 
   useEffect(() => {
+    // Dacă suntem pe o rută fixă (din footer) și userul modifică zona sau categoria,
+    // ieșim de pe ruta fixă și-l redirecționăm către /proprietati cu parametrii noi de query.
+    if ((routeCategory && category !== routeCategory) || (routeZone && zone !== routeZone)) {
+      const params = new URLSearchParams();
+      if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
+      if (zone) params.set("zone", zone);
+      if (category) params.set("category", category);
+      if (rooms) params.set("rooms", rooms);
+      if (area) params.set("area", area);
+      if (price) params.set("price", price);
+      if (debouncedSearch) params.set("q", debouncedSearch);
+      
+      navigate(`/proprietati?${params.toString()}`, { replace: true });
+      return;
+    }
+
     const params = new URLSearchParams();
     if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
-    if (zone) params.set("zone", zone);
-    if (category && !routeCategory) params.set("category", category); // Nu punem în param dacă e în rută curată
+    if (zone && !routeZone) params.set("zone", zone);
+    if (category && !routeCategory) params.set("category", category);
     if (rooms) params.set("rooms", rooms);
     if (area) params.set("area", area);
     if (price) params.set("price", price);
     if (debouncedSearch) params.set("q", debouncedSearch);
     setSearchParams(params, { replace: true });
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory, setSearchParams]);
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory, routeZone, navigate, setSearchParams]);
 
   const currentSearch = useMemo(() => {
     const params = new URLSearchParams();

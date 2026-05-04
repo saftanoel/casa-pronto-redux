@@ -185,7 +185,12 @@ export function mapWPPostToProperty(post: WPPost, preferSmallImage = false): Pro
   let fullImages = galleryImages;
 
   if (post.gallery_data && post.gallery_data.length > 0) {
-    galleryImages = post.gallery_data.map(img => img.webp || img.medium_large || img.medium || img.full);
+    if (preferSmallImage) {
+      // Prioritize medium sizes for listing cards to improve Lighthouse scores
+      galleryImages = post.gallery_data.map(img => img.medium_large || img.medium || img.webp || img.full);
+    } else {
+      galleryImages = post.gallery_data.map(img => img.webp || img.full);
+    }
     fullImages = post.gallery_data.map(img => img.full);
     finalFeaturedImage = galleryImages[0];
   }
