@@ -52,7 +52,15 @@ const PropertyImageCarousel = ({
   if (images.length <= 1) {
     return (
       <div className={cn("relative overflow-hidden", aspectClass, className)}>
-        <img src={images[0]} alt={alt} className="w-full h-full object-cover object-center" loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} />
+        <img
+          src={images[0]}
+          alt={alt}
+          width={800}
+          height={600}
+          className="w-full h-full object-cover object-center"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+        />
         {children}
       </div>
     );
@@ -72,6 +80,8 @@ const PropertyImageCarousel = ({
               <img
                 src={img}
                 alt={`${alt} - ${i + 1}`}
+                width={800}
+                height={600}
                 className="w-full h-full object-cover object-center"
                 draggable={false}
                 loading={priority && i === 0 ? "eager" : "lazy"}

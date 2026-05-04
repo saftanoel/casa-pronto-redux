@@ -3,6 +3,7 @@ import path from 'path';
 import puppeteer from 'puppeteer';
 import express from 'express';
 import { fileURLToPath } from 'url';
+import Critters from 'critters';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -232,7 +233,7 @@ Theme Name: Casa Pronto Imobiliare (React SPA)
 Theme URI: https://casapronto.ro
 Author: Safta Noel
 Description: Tema custom ultra-rapida bazata pe React pentru agentia Casa Pronto Alba Iulia. Static Site Generated(SSG) cu Puppeteer & Vite.
-Version: 5.0.0
+Version: 7.0.0
 License: Proprietary
 Text Domain: casapronto
 */`;
@@ -288,7 +289,47 @@ exit;
     fs.writeFileSync(path.join(DIST_DIR, 'style.css'), styleCss, 'utf-8');
     fs.writeFileSync(path.join(DIST_DIR, 'index.php'), indexPhp, 'utf-8');
 
-    console.log('[SSG] Theme generation complete. The dist/ folder is ready to be zipped!');
+    console.log('[SSG] Theme generation complete.');
+
+    // --- CRITICAL CSS INLINING (Critters) ---
+    // Process every HTML file in dist/ and inline the above-the-fold CSS.
+    console.log('[SSG] Inlining critical CSS into all HTML files...');
+    const critters = new Critters({
+      path: DIST_DIR,
+      publicPath: '/',
+      preload: 'swap',
+      pruneSource: false,
+      mergeStylesheets: true,
+      inlineFonts: false,
+    });
+
+    // Collect all index.html files recursively
+    function findHtmlFiles(dir) {
+      const files = [];
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          files.push(...findHtmlFiles(fullPath));
+        } else if (entry.name.endsWith('.html')) {
+          files.push(fullPath);
+        }
+      }
+      return files;
+    }
+
+    const htmlFiles = findHtmlFiles(DIST_DIR);
+    for (const htmlFile of htmlFiles) {
+      const html = fs.readFileSync(htmlFile, 'utf-8');
+      try {
+        const processed = await critters.process(html);
+        fs.writeFileSync(htmlFile, processed, 'utf-8');
+      } catch (e) {
+        // Non-fatal — log and continue
+        console.warn(`[SSG] Critters skipped ${htmlFile}: ${e.message}`);
+      }
+    }
+    console.log(`[SSG] Critical CSS inlined into ${htmlFiles.length} HTML files.`);
+    console.log('[SSG] The dist/ folder is ready to be zipped!');
     // -----------------------------------
 
   } catch (error) {
