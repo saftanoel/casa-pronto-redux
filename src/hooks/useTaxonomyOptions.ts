@@ -21,7 +21,7 @@ function extractUnique(properties: Property[], key: "property_type" | "property_
   const seen = new Map<string, string>();
   for (const p of properties) {
     const terms = p.taxonomies?.[key] ?? [];
-    for (const term of terms) {
+    for (const term of terms as any[]) {
       const slug = toSlug(term);
       const name = typeof term === "string" ? term : (term?.name || "");
       if (!seen.has(slug) && name) {

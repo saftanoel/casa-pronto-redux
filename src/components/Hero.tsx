@@ -41,14 +41,27 @@ const Hero = () => {
 
   // Fetch taxonomies independently — populates dropdowns INSTANTLY, no dependency on properties
   const { data: taxonomyData } = useTaxonomies();
-  const zones = useMemo(() =>
-    (taxonomyData?.property_city ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
-    [taxonomyData]
-  );
-  const propertyTypes = useMemo(() =>
-    (taxonomyData?.property_type ?? []).map((label: string) => ({ value: toSlug(label), label })).sort((a: {label:string}, b: {label:string}) => a.label.localeCompare(b.label, "ro")),
-    [taxonomyData]
-  );
+  const zones = useMemo(() => {
+    const rawZones = taxonomyData?.property_city ?? [];
+    return rawZones.map((z: any) => {
+      const isObj = typeof z === 'object' && z !== null;
+      const label = isObj && z.name ? String(z.name) : (typeof z === 'string' ? z : "");
+      const slug = isObj && z.slug ? String(z.slug) : "";
+      return { value: slug || toSlug(label), label };
+    }).filter((item: any) => item.label !== "")
+      .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData]);
+
+  const propertyTypes = useMemo(() => {
+    const rawTypes = taxonomyData?.property_type ?? [];
+    return rawTypes.map((t: any) => {
+      const isObj = typeof t === 'object' && t !== null;
+      const label = isObj && t.name ? String(t.name) : (typeof t === 'string' ? t : "");
+      const slug = isObj && t.slug ? String(t.slug) : "";
+      return { value: slug || toSlug(label), label };
+    }).filter((item: any) => item.label !== "")
+      .sort((a: any, b: any) => a.label.localeCompare(b.label, "ro"));
+  }, [taxonomyData]);
   const activeTab = filters.tab;
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
