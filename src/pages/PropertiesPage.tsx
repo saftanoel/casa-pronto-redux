@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useTransition } from "react";
+import { useState, useMemo, useEffect, useTransition, useRef, useCallback } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
@@ -356,6 +356,10 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  // Guard: don't fire the sync-params navigate() on the very first render.
+  // Without this, the two competing useEffects (lines 406 + 418) race each other
+  // on mount and cause category !== routeCategory → immediate redirect to /proprietati.
+  const isMounted = useRef(false);
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -368,14 +372,11 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   const [price, setPrice] = useState(searchParams.get("price") || "");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
 
-  // Păstrăm sincronizarea categoriei si a zonei dacă navigăm prin Header (React Router)
+  // Sync route props → local state when React Router navigates to a new fixed route.
+  // Dependency array intentionally excludes searchParams to avoid feedback loops.
   useEffect(() => {
-    if(routeCategory) {
-      setCategory(routeCategory);
-    }
-    if(routeZone) {
-      setZone(routeZone);
-    }
+    setCategory(routeCategory || "");
+    setZone(routeZone || "");
   }, [routeCategory, routeZone]);
 
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
@@ -403,35 +404,11 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
     window.scrollTo(0, 0);
   }, []);
 
+  // Sync filter state → URL search params.
+  // NEVER calls navigate() — that would create a feedback loop with the effect above.
+  // Navigation away from a fixed route is handled in handleSetCategory/handleSetZone below.
   useEffect(() => {
-    setCategory(routeCategory || searchParams.get("category") || "");
-    setZone(routeZone || searchParams.get("zone") || "");
-    setActiveTab((searchParams.get("tab") as FilterTab) || "toate");
-    setRooms(searchParams.get("rooms") || "");
-    setArea(searchParams.get("area") || "");
-    setPrice(searchParams.get("price") || "");
-
-    const qUrl = searchParams.get("q") || "";
-    setSearchQuery(prev => prev !== qUrl ? qUrl : prev);
-  }, [searchParams, routeCategory, routeZone]);
-
-  useEffect(() => {
-    // Dacă suntem pe o rută fixă (din footer) și userul modifică zona sau categoria,
-    // ieșim de pe ruta fixă și-l redirecționăm către /proprietati cu parametrii noi de query.
-    if ((routeCategory && category !== routeCategory) || (routeZone && zone !== routeZone)) {
-      const params = new URLSearchParams();
-      if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
-      if (zone) params.set("zone", zone);
-      if (category) params.set("category", category);
-      if (rooms) params.set("rooms", rooms);
-      if (area) params.set("area", area);
-      if (price) params.set("price", price);
-      if (debouncedSearch) params.set("q", debouncedSearch);
-      
-      navigate(`/proprietati?${params.toString()}`, { replace: true });
-      return;
-    }
-
+    if (!isMounted.current) { isMounted.current = true; return; }
     const params = new URLSearchParams();
     if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
     if (zone && !routeZone) params.set("zone", zone);
@@ -441,7 +418,33 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
     if (price) params.set("price", price);
     if (debouncedSearch) params.set("q", debouncedSearch);
     setSearchParams(params, { replace: true });
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory, routeZone, navigate, setSearchParams]);
+  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory, routeZone, setSearchParams]);
+
+  // When user changes category/zone on a fixed route, escape to /proprietati with query params.
+  // These handlers are passed to FilterSelects instead of raw setCategory/setZone.
+  const handleSetCategory = useCallback((newCat: string) => {
+    if (routeCategory && newCat !== routeCategory) {
+      const params = new URLSearchParams();
+      if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
+      if (zone) params.set("zone", zone);
+      if (newCat) params.set("category", newCat);
+      navigate(`/proprietati?${params.toString()}`, { replace: true });
+    } else {
+      setCategory(newCat);
+    }
+  }, [routeCategory, activeTab, zone, navigate]);
+
+  const handleSetZone = useCallback((newZone: string) => {
+    if (routeZone && newZone !== routeZone) {
+      const params = new URLSearchParams();
+      if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
+      if (category) params.set("category", category);
+      if (newZone) params.set("zone", newZone);
+      navigate(`/proprietati?${params.toString()}`, { replace: true });
+    } else {
+      setZone(newZone);
+    }
+  }, [routeZone, activeTab, category, navigate]);
 
   const currentSearch = useMemo(() => {
     const params = new URLSearchParams();
@@ -607,7 +610,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   );
   const hasMoreLocal = visibleCount < filteredProperties.length;
 
-  const filterSelectsProps = { category, setCategory, propertyTypes, zone, setZone, zones, searchQuery, setSearchQuery };
+  const filterSelectsProps = { category, setCategory: handleSetCategory, propertyTypes, zone, setZone: handleSetZone, zones, searchQuery, setSearchQuery };
 
   const activeTerm = useMemo(() => {
     if (routeZone) return zones.find(z => z.value === routeZone)?.termData;

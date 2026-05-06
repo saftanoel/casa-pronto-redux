@@ -1,0 +1,68 @@
+Options -MultiViews
+RewriteEngine On
+
+# ══════════════════════════════════════════════════════════════════════════════
+# IMPORTANT: This file belongs in the WordPress ROOT directory (where wp-login.php is),
+# BEFORE the "# BEGIN WordPress" block. Do NOT place it inside the theme folder —
+# Apache ignores .htaccess files inside wp-content/themes/.
+#
+# Theme folder name assumed: casapronto
+# Full theme path: /wp-content/themes/casapronto/
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── Static asset passthrough ──────────────────────────────────────────────────
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# ── Pre-rendered SSG routes → static HTML in theme directory ─────────────────
+# Apache serves these directly (200 OK) without touching WordPress/PHP.
+# Googlebot receives fully-populated HTML. No server-side processing needed.
+
+RewriteRule ^proprietati/?$                 /wp-content/themes/casapronto/proprietati/index.html [L]
+RewriteRule ^apartamente/?$                 /wp-content/themes/casapronto/apartamente/index.html [L]
+RewriteRule ^case/?$                        /wp-content/themes/casapronto/case/index.html [L]
+RewriteRule ^terenuri/?$                    /wp-content/themes/casapronto/terenuri/index.html [L]
+RewriteRule ^spatii-comerciale/?$           /wp-content/themes/casapronto/spatii-comerciale/index.html [L]
+RewriteRule ^garsoniere/?$                  /wp-content/themes/casapronto/garsoniere/index.html [L]
+RewriteRule ^hale/?$                        /wp-content/themes/casapronto/hale/index.html [L]
+RewriteRule ^birouri/?$                     /wp-content/themes/casapronto/birouri/index.html [L]
+RewriteRule ^vile/?$                        /wp-content/themes/casapronto/vile/index.html [L]
+
+# Apartamente zone
+RewriteRule ^apartamente-cetate/?$          /wp-content/themes/casapronto/apartamente-cetate/index.html [L]
+RewriteRule ^apartamente-centru/?$          /wp-content/themes/casapronto/apartamente-centru/index.html [L]
+RewriteRule ^apartamente-ampoi/?$           /wp-content/themes/casapronto/apartamente-ampoi/index.html [L]
+RewriteRule ^apartamente-alba-micesti/?$    /wp-content/themes/casapronto/apartamente-alba-micesti/index.html [L]
+
+# Garsoniere zone
+RewriteRule ^garsoniere-cetate/?$           /wp-content/themes/casapronto/garsoniere-cetate/index.html [L]
+RewriteRule ^garsoniere-centru/?$           /wp-content/themes/casapronto/garsoniere-centru/index.html [L]
+
+# Case zone
+RewriteRule ^case-cetate/?$                 /wp-content/themes/casapronto/case-cetate/index.html [L]
+RewriteRule ^case-centru/?$                 /wp-content/themes/casapronto/case-centru/index.html [L]
+RewriteRule ^case-alba-micesti/?$           /wp-content/themes/casapronto/case-alba-micesti/index.html [L]
+RewriteRule ^case-micesti/?$                /wp-content/themes/casapronto/case-micesti/index.html [L]
+RewriteRule ^case-ciugud/?$                 /wp-content/themes/casapronto/case-ciugud/index.html [L]
+RewriteRule ^case-barabant/?$               /wp-content/themes/casapronto/case-barabant/index.html [L]
+RewriteRule ^case-oarda/?$                  /wp-content/themes/casapronto/case-oarda/index.html [L]
+RewriteRule ^case-cugir/?$                  /wp-content/themes/casapronto/case-cugir/index.html [L]
+
+# Terenuri zone
+RewriteRule ^terenuri-cetate/?$             /wp-content/themes/casapronto/terenuri-cetate/index.html [L]
+RewriteRule ^terenuri-centru/?$             /wp-content/themes/casapronto/terenuri-centru/index.html [L]
+RewriteRule ^terenuri-alba-micesti/?$       /wp-content/themes/casapronto/terenuri-alba-micesti/index.html [L]
+RewriteRule ^terenuri-micesti/?$            /wp-content/themes/casapronto/terenuri-micesti/index.html [L]
+RewriteRule ^terenuri-ciugud/?$             /wp-content/themes/casapronto/terenuri-ciugud/index.html [L]
+RewriteRule ^terenuri-oarda/?$              /wp-content/themes/casapronto/terenuri-oarda/index.html [L]
+
+# Spatii comerciale & Hale zone
+RewriteRule ^spatii-comerciale-cetate/?$    /wp-content/themes/casapronto/spatii-comerciale-cetate/index.html [L]
+RewriteRule ^spatii-comerciale-centru/?$    /wp-content/themes/casapronto/spatii-comerciale-centru/index.html [L]
+RewriteRule ^hale-cetate/?$                 /wp-content/themes/casapronto/hale-cetate/index.html [L]
+RewriteRule ^hale-centru/?$                 /wp-content/themes/casapronto/hale-centru/index.html [L]
+
+# ── SPA fallback ──────────────────────────────────────────────────────────────
+# Dynamic routes (/proprietate/:id) and unknown URLs → WordPress handles them
+# via its own rules below (theme index.php loads the React app shell).
