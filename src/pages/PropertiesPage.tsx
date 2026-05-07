@@ -405,19 +405,28 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   }, []);
 
   // Sync filter state → URL search params.
-  // NEVER calls navigate() — that would create a feedback loop with the effect above.
-  // Navigation away from a fixed route is handled in handleSetCategory/handleSetZone below.
+  // Uses functional updater to only touch the specific params we own,
+  // preserving any other existing params (e.g. ?category= from footer links).
   useEffect(() => {
     if (!isMounted.current) { isMounted.current = true; return; }
-    const params = new URLSearchParams();
-    if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
-    if (zone && !routeZone) params.set("zone", zone);
-    if (category && !routeCategory) params.set("category", category);
-    if (rooms) params.set("rooms", rooms);
-    if (area) params.set("area", area);
-    if (price) params.set("price", price);
-    if (debouncedSearch) params.set("q", debouncedSearch);
-    setSearchParams(params, { replace: true });
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      // activeTab
+      if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
+      else params.delete("tab");
+      // zone (only write to URL if not coming from a fixed route)
+      if (zone && !routeZone) params.set("zone", zone);
+      else if (!routeZone) params.delete("zone");
+      // category (same)
+      if (category && !routeCategory) params.set("category", category);
+      else if (!routeCategory) params.delete("category");
+      // other filters
+      if (rooms) params.set("rooms", rooms); else params.delete("rooms");
+      if (area) params.set("area", area); else params.delete("area");
+      if (price) params.set("price", price); else params.delete("price");
+      if (debouncedSearch) params.set("q", debouncedSearch); else params.delete("q");
+      return params;
+    }, { replace: true });
   }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory, routeZone, setSearchParams]);
 
   // When user changes category/zone on a fixed route, escape to /proprietati with query params.
@@ -541,16 +550,24 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
       }
 
       if (searchTerms.length > 0) {
+        // displayId = backend id + 10000 (e.g. backend 62527 shows as 72527 on UI)
+        const displayId = (Number(p.id) + 10000).toString();
+
         const rawText = [
           p.title, p.description, p.location, p.propertyType, p.price, p.beds, p.baths, p.area,
+          displayId,
           JSON.stringify(p.taxonomies || {})
         ].join(" ");
 
         const superString = normalizeText(rawText).replace(/casa pronto/g, "");
 
-        const matchesAllTerms = searchTerms.every((term) => superString.includes(term));
-        if (!matchesAllTerms) {
-          return false;
+        // Special case: if the entire search is a pure number, match displayId directly
+        const isIdSearch = /^\d+$/.test(debouncedSearch.trim());
+        if (isIdSearch) {
+          if (!displayId.includes(debouncedSearch.trim())) return false;
+        } else {
+          const matchesAllTerms = searchTerms.every((term) => superString.includes(term));
+          if (!matchesAllTerms) return false;
         }
       }
 
