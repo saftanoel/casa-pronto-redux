@@ -550,22 +550,22 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
       }
 
       if (searchTerms.length > 0) {
-        // displayId = backend id + 10000 (e.g. backend 62527 shows as 72527 on UI)
+        const rawId = p.id.toString();
         const displayId = (Number(p.id) + 10000).toString();
 
-        const rawText = [
-          p.title, p.description, p.location, p.propertyType, p.price, p.beds, p.baths, p.area,
-          displayId,
-          JSON.stringify(p.taxonomies || {})
-        ].join(" ");
-
-        const superString = normalizeText(rawText).replace(/casa pronto/g, "");
-
-        // Special case: if the entire search is a pure number, match displayId directly
+        // Pure number search: match raw backend ID OR display ID (CEO-friendly)
         const isIdSearch = /^\d+$/.test(debouncedSearch.trim());
         if (isIdSearch) {
-          if (!displayId.includes(debouncedSearch.trim())) return false;
+          const query = debouncedSearch.trim();
+          if (!rawId.includes(query) && !displayId.includes(query)) return false;
         } else {
+          const rawText = [
+            p.title, p.description, p.location, p.propertyType, p.price, p.beds, p.baths, p.area,
+            rawId, displayId,
+            JSON.stringify(p.taxonomies || {})
+          ].join(" ");
+
+          const superString = normalizeText(rawText).replace(/casa pronto/g, "");
           const matchesAllTerms = searchTerms.every((term) => superString.includes(term));
           if (!matchesAllTerms) return false;
         }
