@@ -379,6 +379,16 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
     setZone(routeZone || "");
   }, [routeCategory, routeZone]);
 
+  // Sync global URL search params -> local search query
+  // This allows the Header's search bar to update the PropertiesPage seamlessly.
+  // We only update if urlQ differs from debouncedSearch to avoid overriding the user's active local typing.
+  useEffect(() => {
+    const urlQ = searchParams.get("q") || "";
+    if (urlQ !== debouncedSearch && urlQ !== searchQuery) {
+      setSearchQuery(urlQ);
+    }
+  }, [searchParams.get("q")]); // Explicitly depend only on the "q" parameter
+
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
     if (typeof window !== "undefined") {
       const savedMode = localStorage.getItem("preferintaViewCasaPronto");
