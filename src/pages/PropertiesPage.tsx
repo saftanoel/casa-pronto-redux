@@ -503,10 +503,11 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
         .toLowerCase();
     };
 
-    const stopWords = ["cu", "in", "de", "la", "pe", "si", "un", "o", "din", "pentru", "zona"];
+    const stopWords = ["cu", "in", "de", "la", "pe", "si", "un", "o", "din", "pentru", "zona", "euro", "lei", "€"];
 
     const searchTerms = debouncedSearch
-      ? normalizeText(debouncedSearch)
+      ? normalizeText(debouncedSearch.replace(/€/g, " "))
+        .replace(/(\d)\s+(?=\d)/g, "$1")
         .replace(/[^a-z0-9\s]/g, " ")
         .split(/\s+/)
         .filter((term) => term.trim() !== "" && !stopWords.includes(term))
@@ -552,23 +553,23 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
       if (searchTerms.length > 0) {
         const rawId = p.id.toString();
         const displayId = (Number(p.id) + 10000).toString();
+        const cleanPrice = p.price ? p.price.toString().replace(/\D/g, '') : '';
 
-        // Pure number search: match raw backend ID OR display ID (CEO-friendly)
-        const isIdSearch = /^\d+$/.test(debouncedSearch.trim());
-        if (isIdSearch) {
-          const query = debouncedSearch.trim();
-          if (!rawId.includes(query) && !displayId.includes(query)) return false;
-        } else {
-          const rawText = [
-            p.title, p.description, p.location, p.propertyType, p.price, p.beds, p.baths, p.area,
-            rawId, displayId,
-            JSON.stringify(p.taxonomies || {})
-          ].join(" ");
+        const rawText = [
+          p.title, p.location, p.propertyType,
+          JSON.stringify(p.taxonomies || {})
+        ].join(" ");
 
-          const superString = normalizeText(rawText).replace(/casa pronto/g, "");
-          const matchesAllTerms = searchTerms.every((term) => superString.includes(term));
-          if (!matchesAllTerms) return false;
-        }
+        const superString = normalizeText(rawText).replace(/casa pronto/g, "");
+
+        const matchesAllTerms = searchTerms.every((term) => {
+          if (/^\d+$/.test(term)) {
+            return term === rawId || term === displayId || term === cleanPrice;
+          }
+          return superString.includes(term);
+        });
+
+        if (!matchesAllTerms) return false;
       }
 
       return true;
