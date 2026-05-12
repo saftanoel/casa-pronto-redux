@@ -48,6 +48,8 @@ const Index = () => {
       <Helmet>
         <title>Casa Pronto | Agenție Imobiliară Alba Iulia</title>
         <meta name="description" content="Agenția Imobiliară Casa Pronto din Alba Iulia. Găsește cele mai noi oferte de apartamente, case, terenuri și spații comerciale de vânzare și închiriere." />
+        <link rel="canonical" href="https://casapronto.ro/" />
+        <meta property="og:url" content="https://casapronto.ro/" />
       </Helmet>
 
       <div className="min-h-screen">

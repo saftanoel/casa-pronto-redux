@@ -288,7 +288,58 @@ if (file_exists($ssg_file)) {
 // 4. DYNAMIC ROUTE FALLBACK
 $fallback_file = $theme_dir . '/index.html';
 if (file_exists($fallback_file)) {
-    echo file_get_contents($fallback_file);
+    $html = file_get_contents($fallback_file);
+    
+    // Inject dynamic SEO tags for property pages to allow Googlebot to index them immediately
+    if (preg_match('#^/proprietate/(\d+)#', $path, $matches)) {
+        $property_id = intval($matches[1]);
+        $post = get_post($property_id);
+        
+        if ($post && $post->post_status === 'publish') {
+            $title = get_the_title($property_id);
+            $seo_title = get_post_meta($property_id, 'rank_math_title', true);
+            if ($seo_title) {
+                $seo_title = str_replace('%title%', $title, $seo_title);
+                $seo_title = str_replace('%sep%', '-', $seo_title);
+                $seo_title = str_replace('%sitename%', 'Casa Pronto Imobiliare', $seo_title);
+            } else {
+                $seo_title = $title . ' | Casa Pronto Imobiliare';
+            }
+            
+            $seo_desc = get_post_meta($property_id, 'rank_math_description', true);
+            if (!$seo_desc) {
+                $seo_desc = wp_trim_words($post->post_content, 25);
+            }
+            
+            $canonical = get_permalink($property_id);
+            
+            // Clean out the generic homepage tags
+            $html = preg_replace('/<title>.*?<\/title>/s', '', $html);
+            $html = preg_replace('/<meta[^>]*name=["\']description["\'][^>]*>/i', '', $html);
+            $html = preg_replace('/<link[^>]*rel=["\']canonical["\'][^>]*>/i', '', $html);
+            $html = preg_replace('/<meta[^>]*property=["\']og:(title|description|url|type)["\'][^>]*>/i', '', $html);
+            
+            // Inject property specific tags
+            $head_inject = '
+                <title>' . esc_html($seo_title) . '</title>
+                <meta name="description" content="' . esc_attr($seo_desc) . '">
+                <link rel="canonical" href="' . esc_url($canonical) . '">
+                <meta property="og:title" content="' . esc_attr($seo_title) . '">
+                <meta property="og:description" content="' . esc_attr($seo_desc) . '">
+                <meta property="og:url" content="' . esc_url($canonical) . '">
+                <meta property="og:type" content="article">
+            ';
+            $html = str_replace('</head>', $head_inject . '</head>', $html);
+        } else {
+            // Strip any canonical from the fallback so it does not falsely claim to be the homepage
+            $html = preg_replace('/<link[^>]*rel=["\']canonical["\'][^>]*>/i', '', $html);
+        }
+    } else {
+        // Strip the canonical for unknown/404 routes as well
+        $html = preg_replace('/<link[^>]*rel=["\']canonical["\'][^>]*>/i', '', $html);
+    }
+    
+    echo $html;
     exit;
 }
 
