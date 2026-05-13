@@ -291,11 +291,12 @@ if (file_exists($fallback_file)) {
     $html = file_get_contents($fallback_file);
     
     // Inject dynamic SEO tags for property pages to allow Googlebot to index them immediately
-    if (preg_match('#^/proprietate/(\d+)#', $path, $matches)) {
+    $current_path = $_SERVER['REQUEST_URI'];
+    if (preg_match('#/proprietate/(\\d+)#i', $current_path, $matches)) {
         $property_id = intval($matches[1]);
         $post = get_post($property_id);
         
-        if ($post && $post->post_status === 'publish') {
+        if ($post) {
             $title = get_the_title($property_id);
             $seo_title = get_post_meta($property_id, 'rank_math_title', true);
             if ($seo_title) {
@@ -314,10 +315,10 @@ if (file_exists($fallback_file)) {
             $canonical = get_permalink($property_id);
             
             // Clean out the generic homepage tags
-            $html = preg_replace('/<title>.*?<\/title>/s', '', $html);
-            $html = preg_replace('/<meta[^>]*name=["\']description["\'][^>]*>/i', '', $html);
-            $html = preg_replace('/<link[^>]*rel=["\']canonical["\'][^>]*>/i', '', $html);
-            $html = preg_replace('/<meta[^>]*property=["\']og:(title|description|url|type)["\'][^>]*>/i', '', $html);
+            $html = preg_replace('/<title>.*?<\\/title>/s', '', $html);
+            $html = preg_replace('/<meta[^>]*name=["\\\'"]description["\\\'"][^>]*>/i', '', $html);
+            $html = preg_replace('/<link[^>]*rel=["\\\'"]canonical["\\\'"][^>]*>/i', '', $html);
+            $html = preg_replace('/<meta[^>]*property=["\\\'"]og:(title|description|url|type)["\\\'"][^>]*>/i', '', $html);
             
             // Inject property specific tags
             $head_inject = '
@@ -332,11 +333,11 @@ if (file_exists($fallback_file)) {
             $html = str_replace('</head>', $head_inject . '</head>', $html);
         } else {
             // Strip any canonical from the fallback so it does not falsely claim to be the homepage
-            $html = preg_replace('/<link[^>]*rel=["\']canonical["\'][^>]*>/i', '', $html);
+            $html = preg_replace('/<link[^>]*rel=["\\\'"]canonical["\\\'"][^>]*>/i', '', $html);
         }
     } else {
         // Strip the canonical for unknown/404 routes as well
-        $html = preg_replace('/<link[^>]*rel=["\']canonical["\'][^>]*>/i', '', $html);
+        $html = preg_replace('/<link[^>]*rel=["\\\'"]canonical["\\\'"][^>]*>/i', '', $html);
     }
     
     echo $html;
