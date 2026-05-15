@@ -86,7 +86,7 @@ const Hero = () => {
     const params = new URLSearchParams();
     if (filters.tab && filters.tab !== "toate") params.set("tab", filters.tab);
     if (filters.zone) params.set("zone", filters.zone);
-    if (filters.propertyType) params.set("category", filters.propertyType);
+    if (filters.propertyType) params.set("tip", filters.propertyType);
     if (filters.rooms) params.set("rooms", filters.rooms);
     if (filters.area) params.set("area", filters.area);
     if (filters.price) params.set("price", filters.price);

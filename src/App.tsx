@@ -81,46 +81,46 @@ const App = () => (
             <Routes>
             <Route path="/" element={<Index />} />
             {/* --- 1. CATEGORII PRINCIPALE (Top 8 din baza ta) --- */}
-            <Route path="/apartamente" element={<PropertiesPage category="apartamente" />} />
-            <Route path="/case" element={<PropertiesPage category="case" />} />
-            <Route path="/terenuri" element={<PropertiesPage category="terenuri" />} />
-            <Route path="/spatii-comerciale" element={<PropertiesPage category="spatii-comerciale" />} />
-            <Route path="/garsoniere" element={<PropertiesPage category="garsoniere" />} />
-            <Route path="/hale" element={<PropertiesPage category="hale" />} />
-            <Route path="/birouri" element={<PropertiesPage category="birouri" />} />
-            <Route path="/vile" element={<PropertiesPage category="vile" />} />
+            <Route path="/apartamente" element={<PropertiesPage tip="apartamente" />} />
+            <Route path="/case" element={<PropertiesPage tip="case" />} />
+            <Route path="/terenuri" element={<PropertiesPage tip="terenuri" />} />
+            <Route path="/spatii-comerciale" element={<PropertiesPage tip="spatii-comerciale" />} />
+            <Route path="/garsoniere" element={<PropertiesPage tip="garsoniere" />} />
+            <Route path="/hale" element={<PropertiesPage tip="hale" />} />
+            <Route path="/birouri" element={<PropertiesPage tip="birouri" />} />
+            <Route path="/vile" element={<PropertiesPage tip="vile" />} />
 
             {/* --- 2. APARTAMENTE & GARSONIERE PE ZONE (Top zone Alba Iulia) --- */}
-            <Route path="/apartamente-cetate" element={<PropertiesPage category="apartamente" zone="cetate" />} />
-            <Route path="/apartamente-centru" element={<PropertiesPage category="apartamente" zone="centru" />} />
-            <Route path="/apartamente-ampoi" element={<PropertiesPage category="apartamente" zone="ampoi" />} />
-            <Route path="/apartamente-alba-micesti" element={<PropertiesPage category="apartamente" zone="alba-micesti" />} />
-            <Route path="/garsoniere-cetate" element={<PropertiesPage category="garsoniere" zone="cetate" />} />
-            <Route path="/garsoniere-centru" element={<PropertiesPage category="garsoniere" zone="centru" />} />
+            <Route path="/apartamente-cetate" element={<PropertiesPage tip="apartamente" zone="cetate" />} />
+            <Route path="/apartamente-centru" element={<PropertiesPage tip="apartamente" zone="centru" />} />
+            <Route path="/apartamente-ampoi" element={<PropertiesPage tip="apartamente" zone="ampoi" />} />
+            <Route path="/apartamente-alba-micesti" element={<PropertiesPage tip="apartamente" zone="alba-micesti" />} />
+            <Route path="/garsoniere-cetate" element={<PropertiesPage tip="garsoniere" zone="cetate" />} />
+            <Route path="/garsoniere-centru" element={<PropertiesPage tip="garsoniere" zone="centru" />} />
 
             {/* --- 3. CASE PE ZONE --- */}
-            <Route path="/case-cetate" element={<PropertiesPage category="case" zone="cetate" />} />
-            <Route path="/case-centru" element={<PropertiesPage category="case" zone="centru" />} />
-            <Route path="/case-alba-micesti" element={<PropertiesPage category="case" zone="alba-micesti" />} />
-            <Route path="/case-micesti" element={<PropertiesPage category="case" zone="micesti" />} />
-            <Route path="/case-ciugud" element={<PropertiesPage category="case" zone="ciugud" />} />
-            <Route path="/case-barabant" element={<PropertiesPage category="case" zone="barabant" />} />
-            <Route path="/case-oarda" element={<PropertiesPage category="case" zone="oarda" />} />
-            <Route path="/case-cugir" element={<PropertiesPage category="case" zone="cugir" />} />
+            <Route path="/case-cetate" element={<PropertiesPage tip="case" zone="cetate" />} />
+            <Route path="/case-centru" element={<PropertiesPage tip="case" zone="centru" />} />
+            <Route path="/case-alba-micesti" element={<PropertiesPage tip="case" zone="alba-micesti" />} />
+            <Route path="/case-micesti" element={<PropertiesPage tip="case" zone="micesti" />} />
+            <Route path="/case-ciugud" element={<PropertiesPage tip="case" zone="ciugud" />} />
+            <Route path="/case-barabant" element={<PropertiesPage tip="case" zone="barabant" />} />
+            <Route path="/case-oarda" element={<PropertiesPage tip="case" zone="oarda" />} />
+            <Route path="/case-cugir" element={<PropertiesPage tip="case" zone="cugir" />} />
 
             {/* --- 4. TERENURI PE ZONE --- */}
-            <Route path="/terenuri-cetate" element={<PropertiesPage category="terenuri" zone="cetate" />} />
-            <Route path="/terenuri-centru" element={<PropertiesPage category="terenuri" zone="centru" />} />
-            <Route path="/terenuri-alba-micesti" element={<PropertiesPage category="terenuri" zone="alba-micesti" />} />
-            <Route path="/terenuri-micesti" element={<PropertiesPage category="terenuri" zone="micesti" />} />
-            <Route path="/terenuri-ciugud" element={<PropertiesPage category="terenuri" zone="ciugud" />} />
-            <Route path="/terenuri-oarda" element={<PropertiesPage category="terenuri" zone="oarda" />} />
+            <Route path="/terenuri-cetate" element={<PropertiesPage tip="terenuri" zone="cetate" />} />
+            <Route path="/terenuri-centru" element={<PropertiesPage tip="terenuri" zone="centru" />} />
+            <Route path="/terenuri-alba-micesti" element={<PropertiesPage tip="terenuri" zone="alba-micesti" />} />
+            <Route path="/terenuri-micesti" element={<PropertiesPage tip="terenuri" zone="micesti" />} />
+            <Route path="/terenuri-ciugud" element={<PropertiesPage tip="terenuri" zone="ciugud" />} />
+            <Route path="/terenuri-oarda" element={<PropertiesPage tip="terenuri" zone="oarda" />} />
 
             {/* --- 5. SPAȚII COMERCIALE & HALE --- */}
-            <Route path="/spatii-comerciale-cetate" element={<PropertiesPage category="spatii-comerciale" zone="cetate" />} />
-            <Route path="/spatii-comerciale-centru" element={<PropertiesPage category="spatii-comerciale" zone="centru" />} />
-            <Route path="/hale-cetate" element={<PropertiesPage category="hale" zone="cetate" />} />
-            <Route path="/hale-centru" element={<PropertiesPage category="hale" zone="centru" />} />
+            <Route path="/spatii-comerciale-cetate" element={<PropertiesPage tip="spatii-comerciale" zone="cetate" />} />
+            <Route path="/spatii-comerciale-centru" element={<PropertiesPage tip="spatii-comerciale" zone="centru" />} />
+            <Route path="/hale-cetate" element={<PropertiesPage tip="hale" zone="cetate" />} />
+            <Route path="/hale-centru" element={<PropertiesPage tip="hale" zone="centru" />} />
 
             {/* Rute Standard / Fallback */}
             <Route path="/proprietati" element={<PropertiesPage />} />

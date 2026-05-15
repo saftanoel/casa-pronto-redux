@@ -196,7 +196,7 @@ const PropertyDetailPage = () => {
               <ChevronRight className="h-3.5 w-3.5" />
               <Link to="/proprietati" className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
               <ChevronRight className="h-3.5 w-3.5" />
-              <Link to={`/proprietati?category=${property.propertyType}`} className="hover:text-primary transition-colors">{getCategoryLabel()}</Link>
+              <Link to={`/proprietati?tip=${property.propertyType}`} className="hover:text-primary transition-colors">{getCategoryLabel()}</Link>
               <ChevronRight className="h-3.5 w-3.5" />
               <span className="text-foreground line-clamp-1">{property.title}</span>
             </nav>
@@ -246,7 +246,7 @@ const PropertyDetailPage = () => {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4 overflow-x-auto scrollbar-hide -mx-6 px-6">
                     <span className="flex items-center gap-1.5">
                       <span className="font-medium text-foreground">Categorie</span>
-                      <Link to={`/proprietati?category=${property.propertyType}`} className="text-primary hover:underline">{getCategoryLabel()}</Link>
+                      <Link to={`/proprietati?tip=${property.propertyType}`} className="text-primary hover:underline">{getCategoryLabel()}</Link>
                     </span>
                     <span>•</span>
                     <span><span className="font-medium text-foreground">ID anunț:</span> {10000 + property.id}</span>

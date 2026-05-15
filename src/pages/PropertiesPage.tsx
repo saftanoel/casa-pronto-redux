@@ -204,8 +204,8 @@ const PropertyGrid = ({ property, search, priority }: { property: Property; sear
 
 interface FilterSelectsProps {
   mobile?: boolean;
-  category: string;
-  setCategory: (v: string) => void;
+  tip: string;
+  setTip: (v: string) => void;
   propertyTypes: { value: string; label: string }[];
   zone: string;
   setZone: (v: string) => void;
@@ -214,13 +214,13 @@ interface FilterSelectsProps {
   setSearchQuery: (v: string) => void;
 }
 
-const FilterSelects = ({ mobile = false, category, setCategory, propertyTypes, zone, setZone, zones, searchQuery, setSearchQuery }: FilterSelectsProps) => {
+const FilterSelects = ({ mobile = false, tip, setTip, propertyTypes, zone, setZone, zones, searchQuery, setSearchQuery }: FilterSelectsProps) => {
   const h = mobile ? "h-11" : "h-10";
   return (
     <>
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">Categorie</label>
-        <Select value={category || "all"} onValueChange={(v) => setCategory(v === "all" ? "" : v)}>
+        <Select value={tip || "all"} onValueChange={(v) => setTip(v === "all" ? "" : v)}>
           <SelectTrigger className={h}>
             <SelectValue placeholder="Toate" />
           </SelectTrigger>
@@ -267,8 +267,8 @@ const FilterSelects = ({ mobile = false, category, setCategory, propertyTypes, z
 
 const ITEMS_PER_PAGE = 12;
 
-// Am adăugat parametrul din rută (routeCategory)
-const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { category?: string ; zone?: string }) => {
+// Am adăugat parametrul din rută (routeTip)
+const PropertiesPage = ({ tip: routeTip , zone: routeZone }: { tip?: string ; zone?: string }) => {
   const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
   const { data: taxonomyData } = useTaxonomies();
   const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
@@ -358,7 +358,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   const navigate = useNavigate();
   // Guard: don't fire the sync-params navigate() on the very first render.
   // Without this, the two competing useEffects (lines 406 + 418) race each other
-  // on mount and cause category !== routeCategory → immediate redirect to /proprietati.
+  // on mount and cause tip !== routeTip → immediate redirect to /proprietati.
   const isMounted = useRef(false);
   const [activeTab, setActiveTab] = useState<FilterTab>((searchParams.get("tab") as FilterTab) || "toate");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
@@ -366,7 +366,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   const [zone, setZone] = useState(routeZone || searchParams.get("zone") || "");
   
   // Aici setăm categoria luând în considerare și prop-ul primit din rută (ex. "case-de-vanzare")
-  const [category, setCategory] = useState(routeCategory || searchParams.get("category") || "");
+  const [tip, setTip] = useState(routeTip || searchParams.get("tip") || "");
   const [rooms, setRooms] = useState(searchParams.get("rooms") || "");
   const [area, setArea] = useState(searchParams.get("area") || "");
   const [price, setPrice] = useState(searchParams.get("price") || "");
@@ -374,10 +374,15 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
   // Sync route props → local state when React Router navigates to a new fixed route.
   // Dependency array intentionally excludes searchParams to avoid feedback loops.
+  const isFirstRouteSync = useRef(true);
   useEffect(() => {
-    setCategory(routeCategory || "");
+    if (isFirstRouteSync.current) {
+      isFirstRouteSync.current = false;
+      return;
+    }
+    setTip(routeTip || "");
     setZone(routeZone || "");
-  }, [routeCategory, routeZone]);
+  }, [routeTip, routeZone]);
 
   // Sync global URL search params -> local search query
   // This allows the Header's search bar to update the PropertiesPage seamlessly.
@@ -405,8 +410,8 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isPending, startTransition] = useTransition();
 
-  const hasTaxonomyFilter = !!(zone || category || activeTab !== "toate");
-  const hasActiveFilter = !!(zone || category || rooms || area || price || debouncedSearch || activeTab !== "toate");
+  const hasTaxonomyFilter = !!(zone || tip || activeTab !== "toate");
+  const hasActiveFilter = !!(zone || tip || rooms || area || price || debouncedSearch || activeTab !== "toate");
 
   const isWaitingForFullData = hasActiveFilter && !hasFullData && !isLoadingInitial;
 
@@ -416,7 +421,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
   // Sync filter state → URL search params.
   // Uses functional updater to only touch the specific params we own,
-  // preserving any other existing params (e.g. ?category= from footer links).
+  // preserving any other existing params (e.g. ?tip= from footer links).
   useEffect(() => {
     if (!isMounted.current) { isMounted.current = true; return; }
     setSearchParams(prev => {
@@ -427,9 +432,9 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
       // zone (only write to URL if not coming from a fixed route)
       if (zone && !routeZone) params.set("zone", zone);
       else if (!routeZone) params.delete("zone");
-      // category (same)
-      if (category && !routeCategory) params.set("category", category);
-      else if (!routeCategory) params.delete("category");
+      // tip (same)
+      if (tip && !routeTip) params.set("tip", tip);
+      else if (!routeTip) params.delete("tip");
       // other filters
       if (rooms) params.set("rooms", rooms); else params.delete("rooms");
       if (area) params.set("area", area); else params.delete("area");
@@ -437,53 +442,53 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
       if (debouncedSearch) params.set("q", debouncedSearch); else params.delete("q");
       return params;
     }, { replace: true });
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory, routeZone, setSearchParams]);
+  }, [activeTab, zone, tip, rooms, area, price, debouncedSearch, routeTip, routeZone, setSearchParams]);
 
-  // When user changes category/zone on a fixed route, escape to /proprietati with query params.
-  // These handlers are passed to FilterSelects instead of raw setCategory/setZone.
-  const handleSetCategory = useCallback((newCat: string) => {
-    if (routeCategory && newCat !== routeCategory) {
+  // When user changes tip/zone on a fixed route, escape to /proprietati with query params.
+  // These handlers are passed to FilterSelects instead of raw setTip/setZone.
+  const handleSetTip = useCallback((newCat: string) => {
+    if (routeTip && newCat !== routeTip) {
       const params = new URLSearchParams();
       if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
       if (zone) params.set("zone", zone);
-      if (newCat) params.set("category", newCat);
+      if (newCat) params.set("tip", newCat);
       navigate(`/proprietati?${params.toString()}`, { replace: true });
     } else {
-      setCategory(newCat);
+      setTip(newCat);
     }
-  }, [routeCategory, activeTab, zone, navigate]);
+  }, [routeTip, activeTab, zone, navigate]);
 
   const handleSetZone = useCallback((newZone: string) => {
     if (routeZone && newZone !== routeZone) {
       const params = new URLSearchParams();
       if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
-      if (category) params.set("category", category);
+      if (tip) params.set("tip", tip);
       if (newZone) params.set("zone", newZone);
       navigate(`/proprietati?${params.toString()}`, { replace: true });
     } else {
       setZone(newZone);
     }
-  }, [routeZone, activeTab, category, navigate]);
+  }, [routeZone, activeTab, tip, navigate]);
 
   const currentSearch = useMemo(() => {
     const params = new URLSearchParams();
     if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
     if (zone) params.set("zone", zone);
-    if (category && !routeCategory) params.set("category", category);
+    if (tip && !routeTip) params.set("tip", tip);
     if (rooms) params.set("rooms", rooms);
     if (area) params.set("area", area);
     if (price) params.set("price", price);
     if (debouncedSearch) params.set("q", debouncedSearch);
     const qs = params.toString();
     return qs ? `?${qs}` : "";
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, routeCategory]);
+  }, [activeTab, zone, tip, rooms, area, price, debouncedSearch, routeTip]);
 
   const resetAllFilters = () => {
     startTransition(() => {
       setActiveTab("toate");
       setSearchQuery("");
       setZone("");
-      if (!routeCategory) setCategory(""); // Resetează categoria doar dacă nu e din rută fixă
+      if (!routeTip) setTip(""); // Resetează categoria doar dacă nu e din rută fixă
       setRooms("");
       setArea("");
       setPrice("");
@@ -493,7 +498,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy]);
+  }, [activeTab, zone, tip, rooms, area, price, debouncedSearch, sortBy]);
 
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "toate", label: "TOATE" },
@@ -526,7 +531,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
     const result = sourceData.filter((p) => {
       if (!matchTab(p, activeTab)) return false;
       if (zone && !matchesTaxonomy(p, "property_city", zone)) return false;
-      if (category && !matchesTaxonomy(p, "property_type", category)) return false;
+      if (tip && !matchesTaxonomy(p, "property_type", tip)) return false;
 
       if (rooms) {
         if (rooms === "4+") {
@@ -567,16 +572,20 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
         const rawText = [
           p.title, p.location, p.propertyType,
+          p.beds ? `${p.beds} camere camera` : "",
+          p.baths ? `${p.baths} bai baie` : "",
+          p.area ? `${p.area} mp m2 metri` : "",
           JSON.stringify(p.taxonomies || {})
         ].join(" ");
 
         const superString = normalizeText(rawText).replace(/casa pronto/g, "");
 
         const matchesAllTerms = searchTerms.every((term) => {
-          if (/^\d+$/.test(term)) {
-            return term === rawId || term === displayId || term === cleanPrice;
+          let matched = superString.includes(term);
+          if (!matched && /^\d+$/.test(term)) {
+            matched = term === rawId || term === displayId || term === cleanPrice;
           }
-          return superString.includes(term);
+          return matched;
         });
 
         if (!matchesAllTerms) return false;
@@ -593,7 +602,7 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
     }
 
     return result;
-  }, [activeTab, zone, category, rooms, area, price, debouncedSearch, sortBy, allPropertiesFull, initialProperties]);
+  }, [activeTab, zone, tip, rooms, area, price, debouncedSearch, sortBy, allPropertiesFull, initialProperties]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 18;
@@ -613,9 +622,9 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const getCategoryLabel = () => {
-    if (category) {
-      const cat = propertyTypes.find(c => c.value === category);
+  const getTipLabel = () => {
+    if (tip) {
+      const cat = propertyTypes.find(c => c.value === tip);
       return cat?.label || "Anunțuri Imobiliare";
     }
     return "Anunțuri Imobiliare";
@@ -623,13 +632,62 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
 
   // SEO: Funcție pentru a da Titlul Corect în funcție de filtrele active (pentru Google)
   const getPageTitle = () => {
-    let catLabel = routeCategory ? (propertyTypes.find(c => c.value === routeCategory)?.label || routeCategory) : "Anunțuri Imobiliare";
-    let zoneLabel = routeZone ? (zones.find(z => z.value === routeZone)?.label || routeZone) : "Alba Iulia și împrejurimi";
-    
-    catLabel = catLabel.charAt(0).toUpperCase() + catLabel.slice(1).replace('-', ' ');
-    zoneLabel = zoneLabel.charAt(0).toUpperCase() + zoneLabel.slice(1).replace('-', ' ');
+    let catLabel = "Anunțuri Imobiliare";
+    if (tip) {
+      const foundCat = propertyTypes.find(c => c.value === tip);
+      catLabel = foundCat ? foundCat.label : tip;
+      catLabel = catLabel.charAt(0).toUpperCase() + catLabel.slice(1).replace(/-/g, ' ');
+    }
 
-    return `${catLabel} de vânzare și închiriere ${zoneLabel} | Casa Pronto`;
+    let zoneLabel = "Alba Iulia și împrejurimi";
+    if (zone) {
+      const foundZone = zones.find(z => z.value === zone);
+      zoneLabel = foundZone ? foundZone.label : zone;
+      zoneLabel = zoneLabel.charAt(0).toUpperCase() + zoneLabel.slice(1).replace(/-/g, ' ');
+    } else if (tip) {
+      zoneLabel = "Alba Iulia";
+    }
+
+    let actionLabel = "de vânzare și închiriere";
+    if (activeTab === "cumparare") actionLabel = "de vânzare";
+    else if (activeTab === "inchiriere") actionLabel = "de închiriat";
+    else if (activeTab === "vandute") actionLabel = "vândute";
+
+    if (!tip && !zone && activeTab === "toate") {
+      return "Anunțuri Imobiliare de vânzare și închiriere Alba Iulia și împrejurimi | Casa Pronto";
+    }
+
+    if (!tip) {
+      return `Anunțuri Imobiliare ${actionLabel} ${zoneLabel} | Casa Pronto`;
+    }
+
+    return `${catLabel} ${actionLabel} ${zoneLabel} | Casa Pronto`;
+  };
+
+  const getPageDescription = () => {
+    let catLabel = "proprietăți imobiliare";
+    if (tip) {
+      const foundCat = propertyTypes.find(c => c.value === tip);
+      catLabel = foundCat ? foundCat.label.toLowerCase() : tip.replace(/-/g, ' ').toLowerCase();
+    }
+
+    let actionLabel = "de vânzare și închiriere";
+    if (activeTab === "cumparare") actionLabel = "de vânzare";
+    else if (activeTab === "inchiriere") actionLabel = "de închiriat";
+    else if (activeTab === "vandute") actionLabel = "vândute";
+
+    let zoneLabel = "Alba Iulia";
+    if (zone) {
+      const foundZone = zones.find(z => z.value === zone);
+      zoneLabel = foundZone ? foundZone.label : zone.replace(/-/g, ' ');
+      zoneLabel = zoneLabel.charAt(0).toUpperCase() + zoneLabel.slice(1);
+    }
+
+    if (!tip && !zone && activeTab === "toate") {
+      return "Vezi cele mai noi oferte de proprietăți imobiliare din Alba Iulia. Găsește-ți casa de vis cu Casa Pronto!";
+    }
+
+    return `Vezi cele mai noi oferte de ${catLabel} ${actionLabel} în ${zoneLabel}. Găsește-ți casa de vis cu Casa Pronto!`;
   };
 
   const visibleProperties = useMemo(
@@ -638,19 +696,22 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
   );
   const hasMoreLocal = visibleCount < filteredProperties.length;
 
-  const filterSelectsProps = { category, setCategory: handleSetCategory, propertyTypes, zone, setZone: handleSetZone, zones, searchQuery, setSearchQuery };
+  const filterSelectsProps = { tip, setTip: handleSetTip, propertyTypes, zone, setZone: handleSetZone, zones, searchQuery, setSearchQuery };
 
   const activeTerm = useMemo(() => {
     if (routeZone) return zones.find(z => z.value === routeZone)?.termData;
-    if (routeCategory) return propertyTypes.find(c => c.value === routeCategory)?.termData;
+    if (routeTip) return propertyTypes.find(c => c.value === routeTip)?.termData;
     return undefined;
-  }, [routeZone, routeCategory, zones, propertyTypes]);
+  }, [routeZone, routeTip, zones, propertyTypes]);
 
-  const seoTitle = activeTerm?.seo?.title || getPageTitle();
-  const seoDesc = activeTerm?.seo?.description || `Vezi cele mai noi oferte de ${category ? category.replace('-', ' ') : 'proprietăți imobiliare'} din Alba Iulia. Găsește-ți casa de vis cu Casa Pronto!`;
-  const canonical = activeTerm?.seo?.canonical_url || `https://casapronto.ro/${routeCategory ? `${routeCategory}${routeZone ? `-${routeZone}` : ''}` : 'proprietati'}`;
-  const ogTitle = activeTerm?.seo?.og_title || seoTitle;
-  const ogDesc = activeTerm?.seo?.og_description || seoDesc;
+  // Dacă utilizatorul a selectat alte filtre în afară de cel default al rutei, ignorăm titlul SEO din WordPress și generăm unul dinamic
+  const isFiltering = activeTab !== "toate" || (tip && tip !== routeTip) || (zone && zone !== routeZone);
+
+  const seoTitle = (!isFiltering && activeTerm?.seo?.title) ? activeTerm.seo.title : getPageTitle();
+  const seoDesc = (!isFiltering && activeTerm?.seo?.description) ? activeTerm.seo.description : getPageDescription();
+  const canonical = activeTerm?.seo?.canonical_url || `https://casapronto.ro/${routeTip ? `${routeTip}${routeZone ? `-${routeZone}` : ''}` : 'proprietati'}`;
+  const ogTitle = (!isFiltering && activeTerm?.seo?.og_title) ? activeTerm.seo.og_title : seoTitle;
+  const ogDesc = (!isFiltering && activeTerm?.seo?.og_description) ? activeTerm.seo.og_description : seoDesc;
 
   return (
     <SearchProvider properties={initialProperties} isLoading={isLoadingInitial}>
@@ -678,15 +739,15 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
         {/* Page Header */}
         <div className="bg-muted/50 pt-36 pb-8 border-b border-border">
           <div className="container mx-auto px-4">
-            <h1 className="font-serif text-3xl md:text-4xl font-bold">{getCategoryLabel()} Alba Iulia</h1>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold">{getTipLabel()} Alba Iulia</h1>
             <nav className="flex items-center gap-2 mt-3 text-sm text-muted-foreground mb-6">
               <Link to="/" className="hover:text-primary transition-colors">Casa Pronto</Link>
               <ChevronRight className="h-3.5 w-3.5" />
               <Link to="/proprietati" onClick={resetAllFilters} className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
-              {category && (
+              {tip && (
                 <>
                   <ChevronRight className="h-3.5 w-3.5" />
-                  <span className="text-foreground">{getCategoryLabel()}</span>
+                  <span className="text-foreground">{getTipLabel()}</span>
                 </>
               )}
             </nav>
@@ -767,9 +828,9 @@ const PropertiesPage = ({ category: routeCategory , zone: routeZone }: { categor
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 Filtrează
-                {(category || zone || debouncedSearch) && (
+                {(tip || zone || debouncedSearch) && (
                   <Badge variant="secondary" className="ml-auto text-xs">
-                    {[category, zone, debouncedSearch].filter(Boolean).length}
+                    {[tip, zone, debouncedSearch].filter(Boolean).length}
                   </Badge>
                 )}
               </Button>

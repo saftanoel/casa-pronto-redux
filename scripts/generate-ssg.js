@@ -239,15 +239,38 @@ async function runSSG() {
     // --- WORDPRESS THEME GENERATION ---
     console.log('[SSG] Generating WordPress Theme files (index.php & style.css)...');
 
-    const styleCss = `/*
+    let styleCss = `/*
 Theme Name: Casa Pronto Imobiliare (React SPA)
 Theme URI: https://casapronto.ro
 Author: Safta Noel
 Description: Tema custom ultra-rapida bazata pe React pentru agentia Casa Pronto Alba Iulia. Static Site Generated(SSG) cu Puppeteer & Vite.
-Version: 7.2.0
+Version: 8.3.6
 License: Proprietary
 Text Domain: casapronto
 */`;
+
+    // --- AUTO-INCREMENT VERSION ---
+    try {
+      const scriptPath = __filename;
+      let scriptContent = fs.readFileSync(scriptPath, 'utf-8');
+      const versionRegex = new RegExp("\\nVersion: (\\d+)\\.(\\d+)\\.(\\d+)\\n");
+      const versionMatch = scriptContent.match(versionRegex);
+      
+      if (versionMatch) {
+        const major = parseInt(versionMatch[1], 10);
+        const minor = parseInt(versionMatch[2], 10);
+        const patch = parseInt(versionMatch[3], 10) + 1;
+        const newVersion = `${major}.${minor}.${patch}`;
+        
+        scriptContent = scriptContent.replace(versionRegex, `\nVersion: ${newVersion}\n`);
+        fs.writeFileSync(scriptPath, scriptContent, 'utf-8');
+        
+        styleCss = styleCss.replace(versionRegex, `\nVersion: ${newVersion}\n`);
+        console.log(`[SSG] Auto-bumped Theme Version to ${newVersion}`);
+      }
+    } catch (err) {
+      console.warn('[SSG] Failed to auto-bump version:', err.message);
+    }
 
     const indexPhp = `<?php
 /**
@@ -335,6 +358,54 @@ if (file_exists($fallback_file)) {
             // Strip any canonical from the fallback so it does not falsely claim to be the homepage
             $html = preg_replace('/<link[^>]*rel=["\\\'"]canonical["\\\'"][^>]*>/i', '', $html);
         }
+    } elseif (strpos($parsed_url['path'], '/proprietati') === 0) {
+        parse_str(parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY) ?? '', $query_params);
+        $tip = isset($query_params['tip']) ? sanitize_text_field($query_params['tip']) : '';
+        $tab = isset($query_params['tab']) ? sanitize_text_field($query_params['tab']) : 'toate';
+        $zone = isset($query_params['zone']) ? sanitize_text_field($query_params['zone']) : '';
+        
+        if ($tip || $zone || $tab !== 'toate') {
+            $catLabel = "Anunțuri Imobiliare";
+            if ($tip) {
+                $catLabel = ucfirst(str_replace('-', ' ', $tip));
+            }
+            
+            $zoneLabel = "Alba Iulia și împrejurimi";
+            if ($zone) {
+                $zoneLabel = ucfirst(str_replace('-', ' ', $zone));
+            } else if ($tip) {
+                $zoneLabel = "Alba Iulia";
+            }
+            
+            $actionLabel = "de vânzare și închiriere";
+            if ($tab === "cumparare") $actionLabel = "de vânzare";
+            elseif ($tab === "inchiriere") $actionLabel = "de închiriat";
+            elseif ($tab === "vandute") $actionLabel = "vândute";
+            
+            if (!$tip) {
+                $seo_title = "Anunțuri Imobiliare {$actionLabel} {$zoneLabel} | Casa Pronto";
+            } else {
+                $seo_title = "{$catLabel} {$actionLabel} {$zoneLabel} | Casa Pronto";
+            }
+            
+            $catDescLabel = $tip ? strtolower($catLabel) : "proprietăți imobiliare";
+            $descZoneLabel = $zone ? $zoneLabel : "Alba Iulia";
+            $seo_desc = "Vezi cele mai noi oferte de {$catDescLabel} {$actionLabel} în {$descZoneLabel}. Găsește-ți casa de vis cu Casa Pronto!";
+            
+            // Clean out the generic homepage tags
+            $html = preg_replace('/<title>.*?<\\/title>/s', '', $html);
+            $html = preg_replace('/<meta[^>]*name=["\\\'"]description["\\\'"][^>]*>/i', '', $html);
+            $html = preg_replace('/<meta[^>]*property=["\\\'"]og:(title|description)["\\\'"][^>]*>/i', '', $html);
+            
+            // Inject dynamic tags
+            $head_inject = '
+                <title>' . esc_html($seo_title) . '</title>
+                <meta name="description" content="' . esc_attr($seo_desc) . '">
+                <meta property="og:title" content="' . esc_attr($seo_title) . '">
+                <meta property="og:description" content="' . esc_attr($seo_desc) . '">
+            ';
+            $html = str_replace('</head>', $head_inject . '</head>', $html);
+        }
     } else {
         // Strip the canonical for unknown/404 routes as well
         $html = preg_replace('/<link[^>]*rel=["\\\'"]canonical["\\\'"][^>]*>/i', '', $html);
@@ -349,8 +420,19 @@ echo "<h1>Casa Pronto SPA Theme Error: index.html not found.</h1>";
 exit;
 `;
 
+    const functionsPhp = `<?php
+// Opreste redirectul automat al WordPress pe pagina de proprietati pentru a pastra filtrele (?tip=, ?zona=, etc.)
+add_filter('redirect_canonical', function($redirect_url, $requested_url) {
+    if (strpos($requested_url, 'proprietati') !== false) {
+        return false; // Îi spunem lui WordPress să ignore regulile de redirect pentru această rută
+    }
+    return $redirect_url;
+}, 10, 2);
+`;
+
     fs.writeFileSync(path.join(DIST_DIR, 'style.css'), styleCss, 'utf-8');
     fs.writeFileSync(path.join(DIST_DIR, 'index.php'), indexPhp, 'utf-8');
+    fs.writeFileSync(path.join(DIST_DIR, 'functions.php'), functionsPhp, 'utf-8');
 
     console.log('[SSG] Theme generation complete.');
 
