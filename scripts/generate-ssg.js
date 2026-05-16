@@ -244,7 +244,7 @@ Theme Name: Casa Pronto Imobiliare (React SPA)
 Theme URI: https://casapronto.ro
 Author: Safta Noel
 Description: Tema custom ultra-rapida bazata pe React pentru agentia Casa Pronto Alba Iulia. Static Site Generated(SSG) cu Puppeteer & Vite.
-Version: 8.3.6
+Version: 8.3.13
 License: Proprietary
 Text Domain: casapronto
 */`;
@@ -337,11 +337,11 @@ if (file_exists($fallback_file)) {
             
             $canonical = get_permalink($property_id);
             
-            // Clean out the generic homepage tags
-            $html = preg_replace('/<title>.*?<\\/title>/s', '', $html);
-            $html = preg_replace('/<meta[^>]*name=["\\\'"]description["\\\'"][^>]*>/i', '', $html);
-            $html = preg_replace('/<link[^>]*rel=["\\\'"]canonical["\\\'"][^>]*>/i', '', $html);
-            $html = preg_replace('/<meta[^>]*property=["\\\'"]og:(title|description|url|type)["\\\'"][^>]*>/i', '', $html);
+            // Clean out the generic homepage tags (SAFE SYNTAX)
+            $html = preg_replace('/<title>.*?<\\/title>/is', '', $html);
+            $html = preg_replace('/<meta[^>]*name="description"[^>]*>/i', '', $html);
+            $html = preg_replace('/<link[^>]*rel=[^>]*canonical[^>]*>/i', '', $html);
+            $html = preg_replace('/<meta[^>]*property="og:(title|description|url|type)"[^>]*>/i', '', $html);
             
             // Inject property specific tags
             $head_inject = '
@@ -356,7 +356,7 @@ if (file_exists($fallback_file)) {
             $html = str_replace('</head>', $head_inject . '</head>', $html);
         } else {
             // Strip any canonical from the fallback so it does not falsely claim to be the homepage
-            $html = preg_replace('/<link[^>]*rel=["\\\'"]canonical["\\\'"][^>]*>/i', '', $html);
+            $html = preg_replace('/<link[^>]*rel=[^>]*canonical[^>]*>/i', '', $html);
         }
     } elseif (strpos($parsed_url['path'], '/proprietati') === 0) {
         parse_str(parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY) ?? '', $query_params);
@@ -392,10 +392,26 @@ if (file_exists($fallback_file)) {
             $descZoneLabel = $zone ? $zoneLabel : "Alba Iulia";
             $seo_desc = "Vezi cele mai noi oferte de {$catDescLabel} {$actionLabel} în {$descZoneLabel}. Găsește-ți casa de vis cu Casa Pronto!";
             
-            // Clean out the generic homepage tags
-            $html = preg_replace('/<title>.*?<\\/title>/s', '', $html);
-            $html = preg_replace('/<meta[^>]*name=["\\\'"]description["\\\'"][^>]*>/i', '', $html);
-            $html = preg_replace('/<meta[^>]*property=["\\\'"]og:(title|description)["\\\'"][^>]*>/i', '', $html);
+            // Clean out the generic homepage tags (SAFE SYNTAX)
+            $html = preg_replace('/<title>.*?<\\/title>/is', '', $html);
+            $html = preg_replace('/<meta[^>]*name="description"[^>]*>/i', '', $html);
+            $html = preg_replace('/<meta[^>]*property="og:(title|description)"[^>]*>/i', '', $html);
+            // 1. Strip out the old canonical tag safely without quote matching conflicts
+            $html = preg_replace('/<link[^>]*rel=[^>]*canonical[^>]*>/i', '', $html);
+            
+            // 2. Rebuild the clean canonical string
+            $canonical_params = [];
+            $whitelist = ['tip', 'zone', 'tab', 'rooms', 'area', 'price', 'q'];
+            foreach ($whitelist as $key) {
+                if (!empty($query_params[$key])) {
+                    $canonical_params[$key] = $query_params[$key];
+                }
+            }
+            
+            $canonical_url = 'https://casapronto.ro/proprietati';
+            if (!empty($canonical_params)) {
+                $canonical_url .= '?' . http_build_query($canonical_params);
+            }
             
             // Inject dynamic tags
             $head_inject = '
@@ -404,11 +420,13 @@ if (file_exists($fallback_file)) {
                 <meta property="og:title" content="' . esc_attr($seo_title) . '">
                 <meta property="og:description" content="' . esc_attr($seo_desc) . '">
             ';
-            $html = str_replace('</head>', $head_inject . '</head>', $html);
+            // 3. Inject the dynamic canonical tag smoothly
+            $canonical_inject = '<link rel="canonical" href="' . htmlspecialchars($canonical_url) . '" />' . "\n";
+            $html = str_replace('</head>', $head_inject . $canonical_inject . '</head>', $html);
         }
     } else {
         // Strip the canonical for unknown/404 routes as well
-        $html = preg_replace('/<link[^>]*rel=["\\\'"]canonical["\\\'"][^>]*>/i', '', $html);
+        $html = preg_replace('/<link[^>]*rel=[^>]*canonical[^>]*>/i', '', $html);
     }
     
     echo $html;

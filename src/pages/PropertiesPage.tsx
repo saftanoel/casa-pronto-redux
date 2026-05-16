@@ -268,7 +268,7 @@ const FilterSelects = ({ mobile = false, tip, setTip, propertyTypes, zone, setZo
 const ITEMS_PER_PAGE = 12;
 
 // Am adăugat parametrul din rută (routeTip)
-const PropertiesPage = ({ tip: routeTip , zone: routeZone }: { tip?: string ; zone?: string }) => {
+const PropertiesPage = ({ tip: routeTip, zone: routeZone }: { tip?: string; zone?: string }) => {
   const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
   const { data: taxonomyData } = useTaxonomies();
   const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
@@ -364,7 +364,7 @@ const PropertiesPage = ({ tip: routeTip , zone: routeZone }: { tip?: string ; zo
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [zone, setZone] = useState(routeZone || searchParams.get("zone") || "");
-  
+
   // Aici setăm categoria luând în considerare și prop-ul primit din rută (ex. "case-de-vanzare")
   const [tip, setTip] = useState(routeTip || searchParams.get("tip") || "");
   const [rooms, setRooms] = useState(searchParams.get("rooms") || "");
@@ -704,26 +704,39 @@ const PropertiesPage = ({ tip: routeTip , zone: routeZone }: { tip?: string ; zo
     return undefined;
   }, [routeZone, routeTip, zones, propertyTypes]);
 
-  // Dacă utilizatorul a selectat alte filtre în afară de cel default al rutei, ignorăm titlul SEO din WordPress și generăm unul dinamic
   const isFiltering = activeTab !== "toate" || (tip && tip !== routeTip) || (zone && zone !== routeZone);
 
   const seoTitle = (!isFiltering && activeTerm?.seo?.title) ? activeTerm.seo.title : getPageTitle();
   const seoDesc = (!isFiltering && activeTerm?.seo?.description) ? activeTerm.seo.description : getPageDescription();
-  const canonical = activeTerm?.seo?.canonical_url || `https://casapronto.ro/${routeTip ? `${routeTip}${routeZone ? `-${routeZone}` : ''}` : 'proprietati'}`;
+  const getCanonicalUrl = () => {
+    let base = activeTerm?.seo?.canonical_url || `https://casapronto.ro/${routeTip ? `${routeTip}${routeZone ? `-${routeZone}` : ''}` : 'proprietati'}`;
+    if (!routeTip && !routeZone) {
+      const whitelist = ['tip', 'zone', 'tab', 'rooms', 'area', 'price', 'q'];
+      const params = new URLSearchParams();
+      whitelist.forEach(key => {
+        const val = searchParams.get(key);
+        if (val) params.set(key, val);
+      });
+      const qs = params.toString();
+      if (qs) base += `?${qs}`;
+    }
+    return base;
+  };
+  const canonical = getCanonicalUrl();
   const ogTitle = (!isFiltering && activeTerm?.seo?.og_title) ? activeTerm.seo.og_title : seoTitle;
   const ogDesc = (!isFiltering && activeTerm?.seo?.og_description) ? activeTerm.seo.og_description : seoDesc;
 
   return (
     <SearchProvider properties={initialProperties} isLoading={isLoadingInitial}>
-      
+
       {/* MAGIA SEO PENTRU GOOGLEBOT */}
       <Helmet>
         <title>{seoTitle}</title>
         <meta name="description" content={seoDesc} />
-        
+
         {/* Canonical Link */}
         <link rel="canonical" href={canonical} />
-        
+
         {/* OpenGraph */}
         <meta property="og:title" content={ogTitle} />
         <meta property="og:description" content={ogDesc} />
@@ -753,7 +766,7 @@ const PropertiesPage = ({ tip: routeTip , zone: routeZone }: { tip?: string ; zo
             </nav>
             {/* Term Description Box */}
             {activeTerm?.description && (
-              <div 
+              <div
                 className="prose prose-sm md:prose-base max-w-4xl text-muted-foreground"
                 dangerouslySetInnerHTML={{ __html: activeTerm.description }}
               />
