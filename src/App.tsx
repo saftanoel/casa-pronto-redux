@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, BrowserRouter, Routes, Route } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import CookieConsent from "react-cookie-consent";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -78,7 +79,22 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-            <Routes>
+          <CookieConsent
+            location="bottom"
+            buttonText="Accept Toate"
+            enableDeclineButton
+            declineButtonText="Refuz"
+            cookieName="casa_pronto_cookie_consent"
+            disableStyles={true}
+            containerClasses="fixed bottom-0 left-0 w-full bg-background/95 backdrop-blur-md border-t border-border shadow-lg z-50 p-4 md:px-8 md:py-6 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8"
+            contentClasses="text-sm text-muted-foreground flex-1 text-center md:text-left text-balance"
+            buttonWrapperClasses="flex flex-row items-center gap-3 w-full md:w-auto justify-center"
+            buttonClasses="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-md font-medium text-sm transition-colors cursor-pointer w-full md:w-auto whitespace-nowrap"
+            declineButtonClasses="bg-transparent text-foreground border border-border hover:bg-muted px-6 py-2.5 rounded-md font-medium text-sm transition-colors cursor-pointer w-full md:w-auto whitespace-nowrap"
+          >
+            Folosim cookie-uri pentru a-ți oferi cea mai bună experiență pe site-ul nostru, pentru a analiza traficul și pentru a personaliza conținutul. Prin continuarea navigării, ești de acord cu utilizarea acestora.
+          </CookieConsent>
+          <Routes>
             <Route path="/" element={<Index />} />
             {/* --- 1. CATEGORII PRINCIPALE (Top 8 din baza ta) --- */}
             <Route path="/apartamente" element={<PropertiesPage tip="apartamente" />} />
