@@ -244,7 +244,7 @@ Theme Name: Casa Pronto Imobiliare (React SPA)
 Theme URI: https://casapronto.ro
 Author: Safta Noel
 Description: Tema custom ultra-rapida bazata pe React pentru agentia Casa Pronto Alba Iulia. Static Site Generated(SSG) cu Puppeteer & Vite.
-Version: 8.3.13
+Version: 8.3.14
 License: Proprietary
 Text Domain: casapronto
 */`;
