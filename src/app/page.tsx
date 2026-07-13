@@ -1,8 +1,16 @@
-export default function Home() {
+import { fetchInitialProperties } from "@/lib/api/wordpress";
+import PropertyListingsInteractive from "@/components/PropertyListingsInteractive";
+
+// Optionally set dynamic revalidation (e.g. revalidate every 3600 seconds)
+export const revalidate = 3600;
+
+export default async function Home() {
+  // Fetch initial batch of properties server-side
+  const properties = await fetchInitialProperties(60);
+
   return (
-    <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold">Casa Pronto Next.js App</h1>
-      <p>The homepage will be migrated from the Vite structure.</p>
+    <main>
+      <PropertyListingsInteractive initialProperties={properties} />
     </main>
   );
 }
