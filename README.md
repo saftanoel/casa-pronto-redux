@@ -26,6 +26,33 @@ To achieve optimal Lighthouse scores, instantaneous page loads, and native Googl
 * **Client-Side Hydration & State:** Interactive filtering, live search queries, view mode toggling, and dynamic pagination are handed off to client-side components wrapped in React Context and TanStack Query after initial hydration.
 * **Native Next.js Routing:** File-based App Router structure eliminating legacy client-side routing libraries.
 
+## 🔄 Architecture Migration Journey (V1 SPA → V2 Next.js App Router)
+
+### Why We Migrated
+The initial version (V1) was built as a Vite-based React Single Page Application (SPA) with a custom Node.js/Puppeteer build script (`generate-ssg.js`) and a PHP `.htaccess` regex injection layer (`index.php`) designed to pre-render HTML for Googlebot. While innovative, this hybrid SPA approach suffered from several limitations:
+* **SEO & Indexing:** Direct route visits showed brief loading spinners, React Helmet metadata was injected on the client side, and Googlebot frequently struggled to crawl dynamic SPA routes.
+* **Server Complexity:** Maintaining custom PHP regex string replacements inside `index.php` created maintenance overhead and potential hydration mismatches.
+* **Performance:** Crawl budget was consumed inefficiently without native server-side rendering.
+
+### Migration Strategy & Implementation Roadmap
+
+#### ✅ Phase 0 — Core App Router Migration (Completed)
+* **Framework Upgrade:** Migrated from Vite + `react-router-dom` to **Next.js 16 (App Router)**.
+* **Server-Side Data Fetching:** Homepage (`src/app/page.tsx`) fetches an initial payload of 60 properties on the server; dynamic property detail pages (`/proprietate/[id]`) run as async Server Components.
+* **Native Metadata (`generateMetadata`):** Replaced React Helmet and PHP regex injection with native Next.js `generateMetadata()` for server HTML metadata, canonical links, and Open Graph tags.
+* **Client State & Navigation:** Refactored navigation to `next/link` and `next/navigation`, maintaining `SearchContext` + TanStack Query for seamless client-side hydration.
+
+#### 🔄 Phase 1 — Technical SEO Foundation (Active Branch: `fix/seo-foundation`)
+* **Dynamic XML Sitemap (`app/sitemap.ts`):** Generating automatic sitemap entries for all ~4,700+ property listings.
+* **Robots Configuration (`app/robots.ts`):** Native Next.js robots directives.
+* **Structured Data (JSON-LD):** Injecting `RealEstateListing` and `BreadcrumbList` schema markup into server HTML.
+* **Canonical & Error Boundaries:** Adding branded `not-found.tsx` and handling category sub-path canonicals.
+
+#### 🚀 Phase 2 — API & Performance Optimization (Upcoming)
+* **WordPress Query Optimization:** Implementing field filtering (`_fields`) on `/wp-json/casapronto/v1/anunturi` to shrink API payload sizes.
+* **Request Deduplication:** Wrapping WordPress API fetchers in React `cache()` to eliminate duplicate server requests between `generateMetadata()` and page components.
+* **Image Optimization:** Migrating standard `<img>` tags to `next/image` with WebP/AVIF auto-conversion and responsive sizes.
+
 ## 🧠 State Management & Search Synchronization
 * Highly optimized URL state synchronization (`SearchContext` + `useSearchParams` / `useRouter`) allowing users to share exact search filter combinations via deep link URLs seamlessly.
 
