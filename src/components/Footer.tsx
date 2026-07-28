@@ -1,5 +1,6 @@
+"use client";
 import { ArrowUp } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {
@@ -85,7 +86,7 @@ const Footer = () => {
               {links.propertyTypes.map((link) => (
                 <li key={link.label}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-background/70 hover:text-primary transition-colors text-xs"
                   >
                     {link.label}
@@ -102,7 +103,7 @@ const Footer = () => {
               {links.popularSearches.map((link) => (
                 <li key={link.label}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-background/70 hover:text-primary transition-colors text-xs"
                   >
                     {link.label}

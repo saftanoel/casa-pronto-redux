@@ -1,10 +1,11 @@
+"use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Menu, X, Phone, Mail, Search } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useSearch } from "@/context/SearchContext"; // IMPORT NOU
 
 const logo = "https://www.casapronto.ro/wp-content/uploads/2026/03/logo3-D-qtkmdT.jpg";
 
@@ -14,11 +15,9 @@ const Header = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [localSearch, setLocalSearch] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // CONECTĂM HEADER-UL LA CONTEXTUL DE CĂUTARE
-  const { setFilter } = useSearch();
+  const router = useRouter();
+  const navigate = router.push;
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,21 +52,17 @@ const Header = () => {
     if (localSearch.trim()) {
       const query = localSearch.trim();
 
-      // LOGICA NOUĂ DE NAVIGARE:
-      if (location.pathname.includes("/proprietati")) {
-        // 1. Suntem DEJA pe pagină! Actualizăm filtrele instant fără să reîncărcăm pagina.
-        setFilter("searchQuery", query);
-        // 2. Modificăm tăcut și URL-ul (în caz că vrei să dai copy-paste la link cuiva)
-        navigate(`/proprietati?q=${encodeURIComponent(query)}`, { replace: true });
+      // LOGICA NOUĂ DE NAVIGARE: Next.js folosește URL params ca sursă de adevăr
+      if (pathname.includes("/proprietati")) {
+        router.replace(`/proprietati?q=${encodeURIComponent(query)}`);
       } else {
-        // Suntem pe Homepage, deci mergem spre pagina de proprietăți normal
         navigate(`/proprietati?q=${encodeURIComponent(query)}`);
       }
 
       setIsSearchOpen(false);
       setIsMenuOpen(false);
     }
-  }, [localSearch, location.pathname, navigate, setFilter]);
+  }, [localSearch, pathname, navigate, router]);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearchSubmit();
@@ -76,7 +71,7 @@ const Header = () => {
   const handleNavClick = (e: React.MouseEvent, href: string) => {
     if (href === "/") {
       e.preventDefault();
-      if (location.pathname === "/") {
+      if (pathname === "/") {
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         navigate("/");
@@ -85,7 +80,7 @@ const Header = () => {
     } else if (href.startsWith("/#")) {
       e.preventDefault();
       const hash = href.substring(1);
-      if (location.pathname === "/") {
+      if (pathname === "/") {
         const el = document.querySelector(hash);
         if (el) el.scrollIntoView({ behavior: "smooth" });
       } else {
@@ -100,7 +95,7 @@ const Header = () => {
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (location.pathname === "/") {
+    if (pathname === "/") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       navigate("/");
