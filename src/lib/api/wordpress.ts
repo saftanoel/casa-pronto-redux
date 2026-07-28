@@ -1,6 +1,6 @@
 import { type Property } from "@/data/properties";
 
-export const WP_API_BASE = import.meta.env.VITE_API_BASE_URL || "https://casapronto.ro/wp-json/casapronto/v1";
+export const WP_API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://casapronto.ro/wp-json/casapronto/v1";
 
 
 console.log("MAGIE SAU EROARE? URL-UL ESTE:", WP_API_BASE);
@@ -75,8 +75,9 @@ export interface PaginatedResult {
 }
 
 function stripHtml(html: string): string {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  return doc.body.textContent || "";
+  if (!html) return "";
+  // In Next.js SSR, DOMParser is not available. Using regex fallback.
+  return html.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim();
 }
 
 function extractType(title: string): "Vânzare" | "Închiriere" | "Vândut" {

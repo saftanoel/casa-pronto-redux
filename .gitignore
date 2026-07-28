@@ -34,6 +34,7 @@ dist-ssr
 /playwright/.auth/
 
 # Build artifacts and generated cache
+.next
 *.zip
 public/prerender-properties.json
 public/prerender-taxonomies.json

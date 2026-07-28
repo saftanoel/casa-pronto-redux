@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import PropertyCard from "./PropertyCard";
 import { useSearch } from "@/context/SearchContext";
@@ -54,7 +54,7 @@ const FeaturedProperties = () => {
 
         <div className="flex justify-center mt-12">
           <Button variant="outline" size="lg" className="gap-2 group" asChild>
-            <Link to="/proprietati">
+            <Link href="/proprietati">
               Vezi Toate Proprietățile
               <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>

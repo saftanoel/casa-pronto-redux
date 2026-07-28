@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Search, MapPin, Home, Building2, Ruler, Euro, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -67,7 +67,7 @@ const Hero = () => {
 
   const [currentBg, setCurrentBg] = useState(0);
 
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -92,7 +92,7 @@ const Hero = () => {
     if (filters.price) params.set("price", filters.price);
     if (filters.searchQuery) params.set("q", filters.searchQuery);
     const qs = params.toString();
-    navigate(`/proprietati${qs ? `?${qs}` : ""}`);
+    router.push(`/proprietati${qs ? `?${qs}` : ""}`);
   };
 
   const tabs: { id: FilterTab; label: string }[] = [

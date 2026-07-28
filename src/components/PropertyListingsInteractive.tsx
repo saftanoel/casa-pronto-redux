@@ -1,6 +1,7 @@
-import { useState, useMemo, useEffect, useTransition, useRef, useCallback } from "react";
-import { useSearchParams, Link, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+"use client";
+import { useState, useMemo, useEffect, useTransition, useRef, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { MapPin, Bed, Bath, Square, ArrowRight, Search, Phone, Mail, ChevronRight, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ function matchTab(p: Property, tab: FilterTab): boolean {
 }
 
 const PropertyRow = ({ property, search, priority }: { property: Property; search: string; priority?: boolean }) => (
-  <Link to={`/proprietate/${property.id}${search}`} className="block">
+  <Link href={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 flex flex-col md:flex-row animate-fade-up">
       <PropertyImageCarousel
         images={property.images?.length > 0 ? property.images : [property.image]}
@@ -134,7 +135,7 @@ const PropertyRow = ({ property, search, priority }: { property: Property; searc
 );
 
 const PropertyGrid = ({ property, search, priority }: { property: Property; search: string; priority?: boolean }) => (
-  <Link to={`/proprietate/${property.id}${search}`} className="block">
+  <Link href={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 animate-fade-up">
       <PropertyImageCarousel
         images={property.images?.length > 0 ? property.images : [property.image]}
@@ -268,8 +269,8 @@ const FilterSelects = ({ mobile = false, tip, setTip, propertyTypes, zone, setZo
 const ITEMS_PER_PAGE = 12;
 
 // Am adăugat parametrul din rută (routeTip)
-const PropertiesPage = ({ tip: routeTip, zone: routeZone }: { tip?: string; zone?: string }) => {
-  const { data: initialProperties = [], isLoading: isLoadingInitial } = useInitialProperties(60);
+const PropertyListingsInteractiveInner = ({ tip: routeTip, zone: routeZone, initialProperties = [] }: { tip?: string; zone?: string; initialProperties?: Property[] }) => {
+  const isLoadingInitial = false;
   const { data: taxonomyData } = useTaxonomies();
   const { data: allPropertiesFull, isFetched: isAllFetched } = useAllProperties(true);
 
@@ -354,8 +355,9 @@ const PropertiesPage = ({ tip: routeTip, zone: routeZone }: { tip?: string; zone
       .sort((a, b) => a.label.localeCompare(b.label, "ro"));
   }, [taxonomyData]);
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const navigate = router.push;
   // Guard: don't fire the sync-params navigate() on the very first render.
   // Without this, the two competing useEffects (lines 406 + 418) race each other
   // on mount and cause tip !== routeTip → immediate redirect to /proprietati.
@@ -424,25 +426,24 @@ const PropertiesPage = ({ tip: routeTip, zone: routeZone }: { tip?: string; zone
   // preserving any other existing params (e.g. ?tip= from footer links).
   useEffect(() => {
     if (!isMounted.current) { isMounted.current = true; return; }
-    setSearchParams(prev => {
-      const params = new URLSearchParams(prev);
-      // activeTab
-      if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
-      else params.delete("tab");
-      // zone (only write to URL if not coming from a fixed route)
-      if (zone && !routeZone) params.set("zone", zone);
-      else if (!routeZone) params.delete("zone");
-      // tip (same)
-      if (tip && !routeTip) params.set("tip", tip);
-      else if (!routeTip) params.delete("tip");
-      // other filters
-      if (rooms) params.set("rooms", rooms); else params.delete("rooms");
-      if (area) params.set("area", area); else params.delete("area");
-      if (price) params.set("price", price); else params.delete("price");
-      if (debouncedSearch) params.set("q", debouncedSearch); else params.delete("q");
-      return params;
-    }, { replace: true });
-  }, [activeTab, zone, tip, rooms, area, price, debouncedSearch, routeTip, routeZone, setSearchParams]);
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    // activeTab
+    if (activeTab && activeTab !== "toate") params.set("tab", activeTab);
+    else params.delete("tab");
+    // zone (only write to URL if not coming from a fixed route)
+    if (zone && !routeZone) params.set("zone", zone);
+    else if (!routeZone) params.delete("zone");
+    // tip (same)
+    if (tip && !routeTip) params.set("tip", tip);
+    else if (!routeTip) params.delete("tip");
+    // other filters
+    if (rooms) params.set("rooms", rooms); else params.delete("rooms");
+    if (area) params.set("area", area); else params.delete("area");
+    if (price) params.set("price", price); else params.delete("price");
+    if (debouncedSearch) params.set("q", debouncedSearch); else params.delete("q");
+    
+    router.replace(`/proprietati?${params.toString()}`, { scroll: false });
+  }, [activeTab, zone, tip, rooms, area, price, debouncedSearch, routeTip, routeZone, router, searchParams]);
 
   // When user changes tip/zone on a fixed route, escape to /proprietati with query params.
   // These handlers are passed to FilterSelects instead of raw setTip/setZone.
@@ -729,22 +730,7 @@ const PropertiesPage = ({ tip: routeTip, zone: routeZone }: { tip?: string; zone
   return (
     <SearchProvider properties={initialProperties} isLoading={isLoadingInitial}>
 
-      {/* MAGIA SEO PENTRU GOOGLEBOT */}
-      <Helmet>
-        <title>{seoTitle}</title>
-        <meta name="description" content={seoDesc} />
-
-        {/* Canonical Link */}
-        <link rel="canonical" href={canonical} />
-
-        {/* OpenGraph */}
-        <meta property="og:title" content={ogTitle} />
-        <meta property="og:description" content={ogDesc} />
-        {activeTerm?.seo?.og_image && <meta property="og:image" content={activeTerm.seo.og_image} />}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={canonical} />
-        {activeTerm?.seo?.noindex && <meta name="robots" content="noindex, nofollow" />}
-      </Helmet>
+      {/* SEO is handled by Next.js generateMetadata */}
 
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -754,9 +740,9 @@ const PropertiesPage = ({ tip: routeTip, zone: routeZone }: { tip?: string; zone
           <div className="container mx-auto px-4">
             <h1 className="font-serif text-3xl md:text-4xl font-bold">{getTipLabel()} Alba Iulia</h1>
             <nav className="flex items-center gap-2 mt-3 text-sm text-muted-foreground mb-6">
-              <Link to="/" className="hover:text-primary transition-colors">Casa Pronto</Link>
+              <Link href="/" className="hover:text-primary transition-colors">Casa Pronto</Link>
               <ChevronRight className="h-3.5 w-3.5" />
-              <Link to="/proprietati" onClick={resetAllFilters} className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
+              <Link href="/proprietati" onClick={resetAllFilters} className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
               {tip && (
                 <>
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -1057,4 +1043,12 @@ const PropertiesPage = ({ tip: routeTip, zone: routeZone }: { tip?: string; zone
   );
 };
 
-export default PropertiesPage;
+const PropertyListingsInteractive = (props: { tip?: string; zone?: string; initialProperties: Property[] }) => {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Se încarcă proprietățile...</div>}>
+      <PropertyListingsInteractiveInner {...props} />
+    </Suspense>
+  );
+};
+
+export default PropertyListingsInteractive;
