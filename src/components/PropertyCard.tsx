@@ -1,5 +1,5 @@
 import { MapPin, Bed, Bath, Square, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import PropertyImageCarousel from "@/components/PropertyImageCarousel";
@@ -39,7 +39,7 @@ const PropertyCard = ({
 }: PropertyCardProps) => {
   const allImages = images && images.length > 0 ? images : [image];
   return (
-    <Link to={`/proprietate/${id}`} className="block">
+    <Link href={`/proprietate/${id}`} className="block">
       <article
         className={cn(
           "group bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300",

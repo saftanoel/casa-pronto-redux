@@ -54,7 +54,7 @@ function matchTab(p: Property, tab: FilterTab): boolean {
 }
 
 const PropertyRow = ({ property, search, priority }: { property: Property; search: string; priority?: boolean }) => (
-  <Link to={`/proprietate/${property.id}${search}`} className="block">
+  <Link href={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 flex flex-col md:flex-row animate-fade-up">
       <PropertyImageCarousel
         images={property.images?.length > 0 ? property.images : [property.image]}
@@ -135,7 +135,7 @@ const PropertyRow = ({ property, search, priority }: { property: Property; searc
 );
 
 const PropertyGrid = ({ property, search, priority }: { property: Property; search: string; priority?: boolean }) => (
-  <Link to={`/proprietate/${property.id}${search}`} className="block">
+  <Link href={`/proprietate/${property.id}${search}`} className="block">
     <article className="bg-card rounded-xl overflow-hidden shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-all duration-300 animate-fade-up">
       <PropertyImageCarousel
         images={property.images?.length > 0 ? property.images : [property.image]}
@@ -740,9 +740,9 @@ const PropertyListingsInteractiveInner = ({ tip: routeTip, zone: routeZone, init
           <div className="container mx-auto px-4">
             <h1 className="font-serif text-3xl md:text-4xl font-bold">{getTipLabel()} Alba Iulia</h1>
             <nav className="flex items-center gap-2 mt-3 text-sm text-muted-foreground mb-6">
-              <Link to="/" className="hover:text-primary transition-colors">Casa Pronto</Link>
+              <Link href="/" className="hover:text-primary transition-colors">Casa Pronto</Link>
               <ChevronRight className="h-3.5 w-3.5" />
-              <Link to="/proprietati" onClick={resetAllFilters} className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
+              <Link href="/proprietati" onClick={resetAllFilters} className="hover:text-primary transition-colors">Anunțuri Imobiliare</Link>
               {tip && (
                 <>
                   <ChevronRight className="h-3.5 w-3.5" />
